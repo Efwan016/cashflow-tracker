@@ -1,11 +1,13 @@
 import { useState } from 'react'
-import { supabase } from '../lib/supabase'
-import GoogleIcon from '../assets/Icon/GoogleIcon'
-import FacebookIcon from '../assets/Icon/FacebookIcon'
-import EyeOpen from '../assets/Icon/eyeOpen'
-import EyeClosed from '../assets/Icon/eyeClosed'
-import EmailIcon from '../assets/Icon/EmailIcon'
-import LockIcon from '../assets/Icon/LockIcon'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
+import { supabase } from '../../lib/supabase'
+import GoogleIcon from '../../assets/Icon/GoogleIcon'
+import FacebookIcon from '../../assets/Icon/FacebookIcon'
+import EyeOpen from '../../assets/Icon/eyeOpen'
+import EyeClosed from '../../assets/Icon/eyeClosed'
+import EmailIcon from '../../assets/Icon/EmailIcon'
+import LockIcon from '../../assets/Icon/LockIcon'
 
 export default function Auth() {
     const [email, setEmail] = useState('')
@@ -15,6 +17,7 @@ export default function Auth() {
     const [showPassword, setShowPassword] = useState(false)
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
     const [error, setError] = useState('')
+    const navigate = useNavigate()
 
     const handleSubmit = async () => {
         setError('')
@@ -38,7 +41,7 @@ export default function Auth() {
             if (error) {
                 setError('Login failed: ' + error.message)
             } else {
-                alert('Login successful, welcome back!')
+                navigate('/dashboard')
             }
 
         } else {
@@ -49,8 +52,9 @@ export default function Auth() {
 
             if (error) {
                 setError('Register failed: ' + error.message)
+                toast.error('Register failed: ' + error.message)
             } else {
-                alert('Register successful, check your email!')
+                toast.success('Register successful, check your email!')
             }
         }
     }
@@ -59,7 +63,7 @@ export default function Auth() {
         const { error } = await supabase.auth.signInWithOAuth({ provider })
 
         if (error) {
-            alert(`Login ${provider} gagal: ${error.message}`)
+            toast.error(`Login ${provider} gagal: ${error.message}`)
         }
     }
 
