@@ -1,457 +1,386 @@
-import { useEffect, useMemo, useState } from 'react'
-import { NavLink } from 'react-router-dom'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { toast } from 'react-toastify'
 import { supabase } from '../../lib/supabase'
-import type { Product, Transaction } from '../../types/types'
+import type { Product, Transaction as TransactionType } from '../../types/types'
+
+type TransactionRecord = TransactionType & {
+  product_name?: string;
+  profit?: number;
+  total?: number;
+}
 
 export default function Transaction() {
-  const [productId, setProductId] = useState('')
   const [products, setProducts] = useState<Product[]>([])
-  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [transactions, setTransactions] = useState<TransactionRecord[]>([])
+
+  const [productId, setProductId] = useState('')
   const [qty, setQty] = useState('')
+  const [modalPrice, setModalPrice] = useState('')
   const [salePrice, setSalePrice] = useState('')
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const [loading, setLoading] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  useEffect(() => {
-    async function loadData() {
-      const [productResult, transactionResult] = await Promise.all([
-        supabase.from('Product').select('id, name, harga_modal, harga_jual').order('id', { ascending: true }),
-        supabase.from('Transactions').select('id, product_id, qty, harga_jual, total, created_at').order('created_at', { ascending: false }).limit(10),
+  // 🔥 FETCH DATA
+  const loadData = useCallback(async (isMounted: boolean = true) => {
+    try {
+      const [p, t] = await Promise.all([
+        supabase.from('Product').select('*').order('name', { ascending: true }),
+        supabase
+          .from('Transactions')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(10),
       ])
 
-      const { data: productData, error: productError } = productResult
-      const { data: transactionData, error: transactionError } = transactionResult
+      if (!isMounted) return
+      if (p.error) throw p.error
+      if (t.error) throw t.error
 
-      if (!productError) {
-        setProducts(productData ?? [])
-      }
-      if (!transactionError) {
-        setTransactions(transactionData ?? [])
-      }
+      setProducts((p.data as Product[]) || [])
+      setTransactions((t.data as TransactionRecord[]) || [])
+    } catch {
+      toast.error('Data sync error: ')
     }
-
-    loadData()
   }, [])
 
-  const total = useMemo(() => {
-    const quantity = Number(qty)
-    const price = Number(salePrice)
-    return Number.isFinite(quantity) && Number.isFinite(price) ? quantity * price : 0
-  }, [qty, salePrice])
+  useEffect(() => {
+    let isMounted = true
+    loadData(isMounted)
+    return () => { isMounted = false }
+  }, [loadData])
 
-  const refreshTransactions = async () => {
-    const { data, error } = await supabase
-      .from('Transactions')
-      .select('id, product_id, qty, harga_jual, total, created_at')
-      .order('created_at', { ascending: false })
-      .limit(10)
-
-    if (!error) {
-      setTransactions(data ?? [])
-    }
-  }
-
+  // 🔥 MAP (FAST LOOKUP)
   const productMap = useMemo(
-    () => new Map(products.map((product) => [product.id, product.name])),
+    () => new Map(products.map((p) => [p.id, p])),
     [products]
   )
 
+  // 🔥 DERIVED
+  const total = useMemo(
+    () => Number(qty || 0) * Number(salePrice || 0),
+    [qty, salePrice]
+  )
+
+  const profit = useMemo(
+    () =>
+      (Number(salePrice || 0) - Number(modalPrice || 0)) *
+      Number(qty || 0),
+    [qty, salePrice, modalPrice]
+  )
+
+  const isWithStock = !!productId
+
+  // 🔥 SELECT PRODUCT
+  const handleSelectProduct = (id: string) => {
+    setProductId(id)
+
+    const p = productMap.get(id)
+    if (!p) return
+
+    setSalePrice(String(p.harga_jual))
+    setModalPrice(String(p.harga_modal))
+  }
+
+  // 🔥 RESET
+  const resetForm = () => {
+    setProductId('')
+    setQty('')
+    setModalPrice('')
+    setSalePrice('')
+  }
+
+  // 🔥 SUBMIT
+  const handleSubmit = async () => {
+    if (!qty || !salePrice) {
+      toast.error('Qty & harga jual wajib')
+      return
+    }
+
+    setLoading(true)
+    const now = new Date().toISOString()
+
+    const { error } = await supabase.from('Transactions').insert([
+      {
+        product_id: productId || null,
+        qty: Number(qty),
+        harga_jual: Number(salePrice),
+        harga_modal: Number(modalPrice || 0),
+        total,
+        profit,
+        mode: isWithStock ? 'WITH_STOCK' : 'MANUAL',
+        created_at: now,
+      },
+    ])
+
+    if (error) {
+      toast.error(error.message)
+      setLoading(false)
+      return
+    }
+
+    // 🔥 STOCK UPDATE
+    if (isWithStock) {
+      const { data: stock, error: stockError } = await supabase
+        .from('Stock')
+        .select('*')
+        .eq('product_id', productId)
+        .maybeSingle()
+
+      if (stockError) {
+        toast.error(stockError.message)
+        setLoading(false)
+        return
+      }
+
+      if (stock) {
+        await supabase
+          .from('Stock')
+          .update({ total: Math.max(0, stock.total - Number(qty)) })
+          .eq('id', stock.id)
+      }
+
+      await supabase.from('Stock_logs').insert([
+        {
+          product_id: productId,
+          type: 'OUT',
+          qty: Number(qty),
+          created_at: now,
+        },
+      ])
+    }
+
+    toast.success('Transaction recorded successfully 🚀')
+
+    resetForm()
+    setLoading(false)
+    loadData()
+  }
+
   const confirmAction = (message: string, onConfirm: () => void) => {
-    const toastId = toast.info(
+    const customId = "confirm-delete-trx";
+    toast.info(
       <div className="space-y-4">
         <p>{message}</p>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex gap-2">
           <button
             type="button"
-            className="rounded-3xl bg-sky-500 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-400"
+            className="rounded-3xl bg-rose-500 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-400"
             onClick={() => {
-              toast.dismiss(toastId)
+              toast.dismiss(customId)
               onConfirm()
             }}
           >
-            Yes
+            Delete
           </button>
           <button
             type="button"
-            className="rounded-3xl border border-slate-700 bg-slate-950 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-800"
-            onClick={() => toast.dismiss(toastId)}
+            className="rounded-3xl border border-slate-700 bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-800"
+            onClick={() => toast.dismiss(customId)}
           >
             Cancel
           </button>
         </div>
       </div>,
-      { autoClose: false, closeOnClick: false, closeButton: false, draggable: false }
+      { toastId: customId, autoClose: false, closeOnClick: false, closeButton: false, draggable: false }
     )
   }
 
-  const handleDeleteConfirmed = async (
-    transactionId: string,
-    productIdToRestore: string,
-    qtyToRestore: number,
-    transactionCreatedAt: string
-  ) => {
-    setError('')
-    setSuccess('')
+  // 🔥 DELETE
+  const handleDeleteConfirmed = async (trx: TransactionRecord) => {
     setIsDeleting(true)
+    const { error: deleteError } = await supabase.from('Transactions').delete().eq('id', trx.id)
 
-    const { error: deleteError } = await supabase.from('Transactions').delete().eq('id', transactionId)
     if (deleteError) {
-      setError('Failed to delete transaction: ' + deleteError.message)
-      toast.error('Failed to delete transaction: ' + deleteError.message)
+      toast.error('Could not delete: ' + deleteError.message)
       setIsDeleting(false)
       return
     }
 
-    const { error: deleteLogError } = await supabase
-      .from('Stock_logs')
-      .delete()
-      .match({
-        product_id: productIdToRestore,
-        type: 'OUT',
-        qty: qtyToRestore,
-        created_at: transactionCreatedAt,
-      })
-
-    if (deleteLogError) {
-      toast.warn('Transaction deleted, but could not delete matching stock log: ' + deleteLogError.message)
-    }
-
-    const { data: existingStock, error: stockFetchError } = await supabase
-      .from('Stock')
-      .select('id, total')
-      .eq('product_id', productIdToRestore)
-      .maybeSingle()
-
-    if (stockFetchError) {
-      setError('Transaction deleted but failed to restore stock: ' + stockFetchError.message)
-      toast.error('Transaction deleted but failed to restore stock: ' + stockFetchError.message)
-      setIsDeleting(false)
-      await refreshTransactions()
-      return
-    }
-
-    if (existingStock) {
-      const updatedTotal = Math.max(0, existingStock.total + qtyToRestore)
-      const { error: stockUpdateError } = await supabase
+    if (trx.product_id) {
+      const { data: stock } = await supabase
         .from('Stock')
-        .update({ total: updatedTotal })
-        .eq('id', existingStock.id)
+        .select('*')
+        .eq('product_id', trx.product_id)
+        .maybeSingle()
 
-      if (stockUpdateError) {
-        setError('Transaction deleted but failed to restore stock: ' + stockUpdateError.message)
-        toast.error('Transaction deleted but failed to restore stock: ' + stockUpdateError.message)
-        setIsDeleting(false)
-        await refreshTransactions()
-        return
+      if (stock) {
+        await supabase
+          .from('Stock')
+          .update({ total: stock.total + trx.qty })
+          .eq('id', stock.id)
       }
-    } else {
-      const { error: stockCreateError } = await supabase.from('Stock').insert([
-        { product_id: productIdToRestore, total: qtyToRestore },
+
+      await supabase.from('Stock_logs').insert([
+        {
+          product_id: trx.product_id,
+          type: 'IN',
+          qty: trx.qty,
+          created_at: new Date().toISOString(),
+        },
       ])
-
-      if (stockCreateError) {
-        setError('Transaction deleted but failed to restore stock: ' + stockCreateError.message)
-        toast.error('Transaction deleted but failed to restore stock: ' + stockCreateError.message)
-        setIsDeleting(false)
-        await refreshTransactions()
-        return
-      }
     }
 
-    const { error: logError } = await supabase.from('Stock_logs').insert([
-      {
-        product_id: productIdToRestore,
-        type: 'IN',
-        qty: qtyToRestore,
-        created_at: new Date().toISOString(),
-      },
-    ])
-
+    toast.success('Transaction deleted and stock reverted')
     setIsDeleting(false)
-    if (logError) {
-      setError('Transaction deleted but failed to log stock restore: ' + logError.message)
-      toast.error('Transaction deleted but failed to log stock restore: ' + logError.message)
-    } else {
-      setSuccess('Transaction deleted and stock restored successfully.')
-      toast.success('Transaction deleted and stock restored successfully.')
-    }
-
-    await refreshTransactions()
+    loadData()
   }
 
-  const handleDelete = (
-    transactionId: string,
-    productIdToRestore: string,
-    qtyToRestore: number,
-    transactionCreatedAt: string
-  ) => {
+  const handleDelete = (trx: TransactionRecord) => {
     confirmAction('Delete this transaction and restore stock?', () =>
-      handleDeleteConfirmed(transactionId, productIdToRestore, qtyToRestore, transactionCreatedAt)
+      handleDeleteConfirmed(trx)
     )
-  }
-
-  const handleSubmit = async () => {
-    setError('')
-    setSuccess('')
-
-    if (!productId || !qty || !salePrice) {
-      setError('Please complete all fields before submitting the transaction.')
-      return
-    }
-
-    const quantity = Number(qty)
-    const price = Number(salePrice)
-
-    if (quantity <= 0 || price <= 0) {
-      setError('Quantity and sale price must be greater than zero.')
-      return
-    }
-
-    setIsSubmitting(true)
-    const now = new Date().toISOString()
-
-    const { error: insertError } = await supabase
-      .from('Transactions')
-      .insert([
-        {
-          product_id: productId,
-          qty: quantity,
-          harga_jual: price,
-          total,
-          created_at: now,
-        },
-      ])
-
-    if (insertError) {
-      setIsSubmitting(false)
-      setError('Failed to save transaction: ' + insertError.message)
-      return
-    }
-
-    const { data: existingStock, error: stockFetchError } = await supabase
-      .from('Stock')
-      .select('id, total')
-      .eq('product_id', productId)
-      .maybeSingle()
-
-    if (stockFetchError) {
-      setIsSubmitting(false)
-      setError('Transaction saved but failed to update stock: ' + stockFetchError.message)
-      return
-    }
-
-    const stockAdjustment = -quantity
-    if (existingStock) {
-      const updatedTotal = Math.max(0, existingStock.total + stockAdjustment)
-      const { error: stockUpdateError } = await supabase
-        .from('Stock')
-        .update({ total: updatedTotal })
-        .eq('id', existingStock.id)
-
-      if (stockUpdateError) {
-        setIsSubmitting(false)
-        setError('Transaction saved but failed to update stock: ' + stockUpdateError.message)
-        return
-      }
-    } else {
-      const { error: stockCreateError } = await supabase.from('Stock').insert([
-        {
-          product_id: productId,
-          total: 0,
-        },
-      ])
-
-      if (stockCreateError) {
-        setIsSubmitting(false)
-        setError('Transaction saved but failed to create stock entry: ' + stockCreateError.message)
-        return
-      }
-    }
-
-    const { error: logError } = await supabase.from('Stock_logs').insert([
-      {
-        product_id: productId,
-        type: 'OUT',
-        qty: quantity,
-        created_at: now,
-      },
-    ])
-
-    setIsSubmitting(false)
-
-    if (logError) {
-      setError('Transaction saved but failed to log stock change: ' + logError.message)
-      return
-    }
-
-    setSuccess('Transaction saved successfully and stock was updated.')
-    setProductId('')
-    setQty('')
-    setSalePrice('')
   }
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
-      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="mb-10 rounded-[40px] border border-white/10 bg-slate-900/90 p-8 shadow-[0_30px_120px_-50px_rgba(15,23,42,0.85)] backdrop-blur-xl">
-          <p className="text-sm uppercase tracking-[0.35em] text-sky-300/80">New transaction</p>
-          <h1 className="mt-3 text-4xl font-semibold text-white">Enter transaction details</h1>
+          <p className="text-sm uppercase tracking-[0.35em] text-sky-300/80">Sales Entry</p>
+          <h1 className="mt-3 text-4xl font-semibold text-white">Record transaction</h1>
           <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-400">
-            Add a new transaction and automatically update stock levels and stock logs.
+            Log your sales to automatically track revenue, profit, and inventory changes. Use manual mode for items not tracked in the product catalog.
           </p>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+        <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
           <section className="rounded-[40px] border border-white/10 bg-slate-900/90 p-8 shadow-2xl shadow-slate-950/20">
             <div className="space-y-6">
-              {error && (
-                <div className="rounded-3xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-100">{error}</div>
-              )}
-              {success && (
-                <div className="rounded-3xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-100">{success}</div>
-              )}
+              <div className="flex items-center gap-3">
+                <span className="text-xs uppercase tracking-widest text-slate-500">Mode:</span>
+                <span className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${
+                  isWithStock ? 'bg-sky-500/10 text-sky-400 border border-sky-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                }`}>
+                  {isWithStock ? 'Inventory Linked' : 'Manual Entry'}
+                </span>
+              </div>
 
               <div className="grid gap-4 md:grid-cols-2">
-                <label className="grid gap-3 text-left">
-                  <span className="text-sm text-slate-400">Product</span>
+                <label className="grid gap-3 text-left md:col-span-2">
+                  <span className="text-sm text-slate-400">Select product</span>
                   <select
                     value={productId}
-                    onChange={(e) => {
-                      setProductId(e.target.value)
-                      const product = products.find((product) => product.id === e.target.value)
-                      if (product) setSalePrice(String(product.harga_jual))
-                    }}
+                    onChange={(e) => handleSelectProduct(e.target.value)}
                     className="rounded-3xl border border-slate-700 bg-slate-950/90 px-4 py-4 text-white outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20"
                   >
-                    <option value="">Select a product</option>
-                    {products.map((product) => (
-                      <option key={product.id} value={product.id}>
-                        {product.name} ({product.id})
-                      </option>
+                    <option value="">Manual Input (No Stock Sync)</option>
+                    {products.map((p) => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
                     ))}
                   </select>
                 </label>
+
                 <label className="grid gap-3 text-left">
-                  <span className="text-sm text-slate-400">Quantity</span>
+                  <span className="text-sm text-slate-400">Cost price</span>
                   <input
                     type="number"
-                    min="1"
-                    value={qty}
-                    onChange={(e) => setQty(e.target.value)}
                     placeholder="0"
+                    value={modalPrice}
+                    onChange={(e) => setModalPrice(e.target.value)}
                     className="rounded-3xl border border-slate-700 bg-slate-950/90 px-4 py-4 text-white outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20"
                   />
                 </label>
+
                 <label className="grid gap-3 text-left">
                   <span className="text-sm text-slate-400">Sale price</span>
                   <input
                     type="number"
-                    min="0"
+                    placeholder="0"
                     value={salePrice}
                     onChange={(e) => setSalePrice(e.target.value)}
-                    placeholder="0"
                     className="rounded-3xl border border-slate-700 bg-slate-950/90 px-4 py-4 text-white outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20"
                   />
                 </label>
-                <div className="grid gap-3 text-left">
-                  <span className="text-sm text-slate-400">Total (auto)</span>
-                  <div className="rounded-3xl border border-slate-700 bg-slate-950/90 px-4 py-4 text-white">Rp {total.toLocaleString('id-ID')}</div>
+
+                <label className="grid gap-3 text-left md:col-span-2">
+                  <span className="text-sm text-slate-400">Quantity</span>
+                  <input
+                    type="number"
+                    placeholder="1"
+                    value={qty}
+                    onChange={(e) => setQty(e.target.value)}
+                    className="rounded-3xl border border-slate-700 bg-slate-950/90 px-4 py-4 text-white outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20"
+                  />
+                </label>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="rounded-3xl bg-slate-950/50 p-6 border border-slate-800">
+                  <p className="text-xs uppercase tracking-widest text-slate-500">Transaction Total</p>
+                  <h2 className="mt-2 text-2xl font-semibold text-white">Rp {total.toLocaleString('id-ID')}</h2>
+                </div>
+                <div className="rounded-3xl bg-slate-950/50 p-6 border border-slate-800">
+                  <p className="text-xs uppercase tracking-widest text-slate-500">Expected Profit</p>
+                  <h2 className="mt-2 text-2xl font-semibold text-emerald-400">Rp {profit.toLocaleString('id-ID')}</h2>
                 </div>
               </div>
 
-              <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-sm text-slate-400">
-                    This transaction is saved to the <span className="font-semibold text-white">transactions</span> table and also updates stock inventory.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleSubmit}
-                  disabled={isSubmitting}
-                  className="inline-flex items-center justify-center rounded-3xl bg-gradient-to-r from-sky-500 to-indigo-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:from-sky-400 hover:to-indigo-400 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {isSubmitting ? 'Saving...' : 'Save transaction'}
-                </button>
-              </div>
+              <button
+                onClick={handleSubmit}
+                disabled={loading}
+                className="w-full inline-flex items-center justify-center rounded-3xl bg-gradient-to-r from-sky-500 to-indigo-500 px-6 py-4 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:from-sky-400 hover:to-indigo-400 disabled:opacity-60"
+              >
+                {loading ? 'Saving...' : 'Save Transaction'}
+              </button>
             </div>
           </section>
 
           <aside className="rounded-[40px] border border-white/10 bg-slate-900/90 p-8 shadow-2xl shadow-slate-950/20">
-            <div className="space-y-5">
-              <div>
-                <p className="text-sm uppercase tracking-[0.35em] text-slate-400">Inventory sync</p>
-                <h2 className="mt-3 text-2xl font-semibold text-white">Stock-aware sales</h2>
-              </div>
-              <div className="space-y-4 text-sm leading-6 text-slate-300">
-                <p>Saving a transaction now creates a stock log and adjusts inventory automatically.</p>
-                <p>Use the stock page to add stock and the stock logs page to review all movements.</p>
-              </div>
-              <div className="rounded-3xl border border-slate-800 bg-slate-950/90 p-5 shadow-sm shadow-slate-950/20">
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-500">Tip</p>
-                <p className="mt-3 text-sm text-slate-400">Keep stock levels accurate so your reports reflect actual inventory flow.</p>
-              </div>
-              <NavLink
-                to="/stock"
-                className="inline-flex w-full items-center justify-center rounded-3xl border border-slate-700 bg-slate-900/90 px-4 py-3 text-sm font-semibold text-slate-200 transition hover:border-sky-400 hover:bg-slate-800"
-              >
-                Manage stock
-              </NavLink>
-              <NavLink
-                to="/stock-logs"
-                className="inline-flex w-full items-center justify-center rounded-3xl border border-slate-700 bg-slate-900/90 px-4 py-3 text-sm font-semibold text-slate-200 transition hover:border-sky-400 hover:bg-slate-800"
-              >
-                View stock logs
-              </NavLink>
+            <h2 className="text-xl font-semibold text-white">Workflow Guide</h2>
+            <ul className="mt-6 space-y-4 text-sm text-slate-400">
+              <li className="flex gap-3">
+                <span className="text-sky-400 font-bold">01</span>
+                <span>Select a product to auto-fill prices and link to inventory counts.</span>
+              </li>
+              <li className="flex gap-3">
+                <span className="text-sky-400 font-bold">02</span>
+                <span>Profit is calculated as <code>(Sale - Cost) * Qty</code>.</span>
+              </li>
+              <li className="flex gap-3">
+                <span className="text-sky-400 font-bold">03</span>
+                <span>Deleting a transaction will automatically restore the product stock level.</span>
+              </li>
+            </ul>
+            <div className="mt-10 rounded-3xl border border-slate-800 bg-slate-950/90 p-5 text-sm text-slate-300">
+              Manual transactions do not impact inventory levels but are included in financial reports.
             </div>
           </aside>
         </div>
 
-        <div className="mt-10 rounded-[40px] border border-white/10 bg-slate-900/90 p-8 shadow-2xl shadow-slate-950/20">
-          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm uppercase tracking-[0.35em] text-slate-400">Recent transactions</p>
-              <h2 className="mt-3 text-2xl font-semibold text-white">Transaction history</h2>
-            </div>
-            <p className="text-sm text-slate-400">Delete any transaction and restore stock automatically.</p>
+        <div className="mt-10 overflow-hidden rounded-[40px] border border-white/10 bg-slate-900/90 p-8 shadow-2xl shadow-slate-950/20">
+          <div className="mb-6">
+            <p className="text-sm uppercase tracking-[0.35em] text-slate-400">History</p>
+            <h2 className="mt-3 text-2xl font-semibold text-white">Recent Sales</h2>
           </div>
 
           <div className="overflow-hidden rounded-[32px] border border-slate-800 bg-slate-950/90">
-            <table className="w-full text-left text-sm text-slate-200">
+            <table className="w-full text-left text-sm">
               <thead className="border-b border-slate-800 bg-slate-900/90 text-slate-400">
                 <tr>
-                  <th className="px-4 py-4">Product</th>
-                  <th className="px-4 py-4">Qty</th>
-                  <th className="px-4 py-4">Sale Price</th>
-                  <th className="px-4 py-4">Total</th>
-                  <th className="px-4 py-4">Date</th>
-                  <th className="px-4 py-4">Action</th>
+                  <th className="px-6 py-4">Product</th>
+                  <th className="px-6 py-4">Qty</th>
+                  <th className="px-6 py-4">Revenue</th>
+                  <th className="px-6 py-4">Profit</th>
+                  <th className="px-6 py-4 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="text-slate-200">
                 {transactions.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-4 py-6 text-slate-400">
-                      No transactions recorded yet.
-                    </td>
+                    <td colSpan={5} className="px-6 py-10 text-center text-slate-500">No transactions recorded yet.</td>
                   </tr>
                 ) : (
-                  transactions.map((transaction) => (
-                    <tr key={transaction.id} className="border-b border-slate-800 last:border-none">
-                      <td className="px-4 py-4 text-slate-100">{productMap.get(transaction.product_id) ?? transaction.product_id}</td>
-                      <td className="px-4 py-4 text-slate-100">{transaction.qty}</td>
-                      <td className="px-4 py-4 text-slate-100">Rp {transaction.harga_jual.toLocaleString('id-ID')}</td>
-                      <td className="px-4 py-4 text-slate-100">Rp {transaction.total.toLocaleString('id-ID')}</td>
-                      <td className="px-4 py-4 text-slate-400">{new Date(transaction.created_at).toLocaleDateString()}</td>
-                      <td className="px-4 py-4">
+                  transactions.map((t) => (
+                    <tr key={t.id} className="border-b border-slate-800 last:border-none hover:bg-white/[0.02] transition">
+                      <td className="px-6 py-4 font-medium">{productMap.get(t.product_id || '')?.name || 'Manual Sale'}</td>
+                      <td className="px-6 py-4">{t.qty}</td>
+                      <td className="px-6 py-4">Rp {t.total.toLocaleString('id-ID')}</td>
+                      <td className="px-6 py-4 text-emerald-400 font-semibold">Rp {(t.profit || 0).toLocaleString('id-ID')}</td>
+                      <td className="px-6 py-4 text-right">
                         <button
-                          type="button"
-                          onClick={() => handleDelete(transaction.id, transaction.product_id, transaction.qty, transaction.created_at)}
+                          onClick={() => handleDelete(t)}
                           disabled={isDeleting}
-                          className="rounded-3xl border border-rose-500/30 bg-rose-500/10 px-4 py-2 text-sm font-semibold text-rose-100 transition hover:bg-rose-500/20 disabled:opacity-60"
+                          className="rounded-full bg-rose-500/10 px-4 py-2 text-xs font-semibold text-rose-400 transition hover:bg-rose-500/20 disabled:opacity-50"
                         >
                           Delete
                         </button>

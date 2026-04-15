@@ -109,6 +109,7 @@ export default function Dashboard() {
   }, [transactions, expenses, stocks])
 
   return (
+  
     <main className="min-h-screen bg-slate-950 text-slate-100">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="mb-10 flex flex-col gap-6 rounded-[40px] border border-white/10 bg-slate-900/90 p-8 shadow-[0_30px_120px_-50px_rgba(15,23,42,0.85)] backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between">

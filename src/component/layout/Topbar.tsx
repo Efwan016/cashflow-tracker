@@ -3,9 +3,17 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 
 const SearchIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
         <circle cx="11" cy="11" r="7" />
         <path d="m21 21-4.3-4.3" />
+    </svg>
+)
+
+const MenuIcon = () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+        <line x1="4" x2="20" y1="12" y2="12" />
+        <line x1="4" x2="20" y1="6" y2="6" />
+        <line x1="4" x2="20" y1="18" y2="18" />
     </svg>
 )
 
@@ -44,63 +52,65 @@ export default function Topbar({ toggleSidebar }: { toggleSidebar: () => void })
     }
 
     return (
-        <div className="flex flex-col gap-5 rounded-[32px] border border-slate-800 bg-slate-950/95 p-5 shadow-xl shadow-slate-950/20 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col gap-6 rounded-[32px] border border-white/5 bg-slate-900/40 p-5 shadow-2xl backdrop-blur-xl lg:flex-row lg:items-center lg:justify-between">
             <div className="flex min-w-0 items-center gap-4">
                 <button
                     type="button"
                     onClick={toggleSidebar}
-                    className="inline-flex h-12 w-12 items-center justify-center rounded-3xl border border-slate-700 bg-slate-900 text-slate-100 shadow-sm shadow-slate-950/20 transition hover:border-sky-400 hover:bg-slate-800"
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-slate-800/50 text-slate-100 transition-all hover:bg-sky-500 hover:text-white active:scale-95"
                     aria-label="Toggle sidebar"
                 >
-                    <span className="text-xl leading-none">☰</span>
+                    <MenuIcon />
                 </button>
 
                 <div className="min-w-0">
-                    <h1 className="mt-2 truncate text-2xl font-semibold text-white sm:text-3xl">Welcome back, {name}</h1>
-                    <p className="mt-2 text-sm text-slate-400">See your latest activity and manage your account from one place.</p>
+                    <h1 className="truncate text-xl font-bold tracking-tight text-white sm:text-2xl">
+                        Hello, <span className="text-sky-400">{name.split(' ')[0]}</span>
+                    </h1>
                 </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-[1fr_auto] lg:grid-cols-[1fr_auto_auto] lg:items-center">
-                <div className="relative">
+            <div className="flex flex-wrap items-center gap-4 lg:flex-nowrap">
+                <div className="relative flex-1 lg:min-w-[300px]">
                     <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-slate-500">
                         <SearchIcon />
                     </span>
                     <input
                         type="search"
-                        placeholder="Search activity, reports, transactions"
-                        className="w-full rounded-3xl border border-slate-700 bg-slate-900/90 py-3 pr-4 pl-14 text-sm text-slate-100 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20"
+                        placeholder="Search anything..."
+                        className="w-full rounded-2xl border border-white/5 bg-slate-950/50 py-3 pr-4 pl-12 text-sm text-slate-200 placeholder-slate-600 outline-none transition-all focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10"
                     />
                 </div>
 
                 <div className="relative">
                     <button
                         onClick={() => setOpenMenu(!openMenu)}
-                        className="flex items-center gap-3 rounded-3xl border border-slate-700 bg-slate-900/90 px-4 py-3 shadow-sm shadow-slate-950/20"
+                        className={`flex items-center gap-3 rounded-2xl border border-white/5 bg-slate-950/40 p-1.5 pr-4 transition-all hover:bg-slate-800 ${openMenu ? 'ring-2 ring-sky-500/50' : ''}`}
                     >
-                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-indigo-500 text-sm font-semibold text-white">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 text-xs font-bold text-white shadow-lg shadow-sky-500/20">
                             {initials}
                         </div>
                         <div className="min-w-0 text-left">
-                            <p className="truncate text-sm font-semibold text-white">{name}</p>
-                            <p className="truncate text-xs text-slate-400">{email || 'Connected'}</p>
+                            <p className="max-w-[100px] truncate text-xs font-bold text-white">{name}</p>
+                            <p className="max-w-[100px] truncate text-[10px] font-medium text-slate-500">{email || 'Premium Plan'}</p>
                         </div>
                     </button>
+                    
                     {openMenu && (
-                        <div className="absolute right-0 mt-3 w-48 rounded-2xl border border-slate-700 bg-slate-900 shadow-lg">
+                        <div className="absolute right-0 mt-3 w-56 origin-top-right rounded-2xl border border-white/10 bg-slate-900 p-2 shadow-2xl ring-1 ring-black/5 backdrop-blur-xl">
                             <button
                                 onClick={() => {
                                     setOpenMenu(false)
                                     navigate('/profile')
                                 }}
-                                className="w-full px-4 py-3 text-left text-sm text-slate-200 hover:bg-slate-800 rounded-t-2xl"
+                                className="flex w-full items-center rounded-xl px-4 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:bg-white/5 hover:text-white"
                             >
                                 Profile
                             </button>
 
                             <button
                                 onClick={handleLogout}
-                                className="w-full px-4 py-3 text-left text-sm text-rose-400 hover:bg-slate-800 rounded-b-2xl"
+                                className="mt-1 flex w-full items-center rounded-xl px-4 py-2.5 text-sm font-medium text-rose-400 transition-colors hover:bg-rose-500/10 hover:text-rose-300"
                             >
                                 Logout
                             </button>

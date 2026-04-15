@@ -73,7 +73,8 @@ export default function StockLogs() {
   }
 
   const confirmAction = (message: string, onConfirm: () => void) => {
-    const toastId = toast.info(
+    const customId = "confirm-delete-log";
+    toast.info(
       <div className="space-y-4">
         <p>{message}</p>
         <div className="flex flex-wrap gap-2">
@@ -81,7 +82,7 @@ export default function StockLogs() {
             type="button"
             className="rounded-3xl bg-sky-500 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-400"
             onClick={() => {
-              toast.dismiss(toastId)
+              toast.dismiss(customId)
               onConfirm()
             }}
           >
@@ -90,13 +91,13 @@ export default function StockLogs() {
           <button
             type="button"
             className="rounded-3xl border border-slate-700 bg-slate-950 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-800"
-            onClick={() => toast.dismiss(toastId)}
+            onClick={() => toast.dismiss(customId)}
           >
             Cancel
           </button>
         </div>
       </div>,
-      { autoClose: false, closeOnClick: false, closeButton: false, draggable: false }
+      { toastId: customId, autoClose: false, closeOnClick: false, closeButton: false, draggable: false }
     )
   }
 
