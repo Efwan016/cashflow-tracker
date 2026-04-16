@@ -21,21 +21,38 @@ export default function Topbar({ toggleSidebar }: { toggleSidebar: () => void })
     const navigate = useNavigate()
     const [openMenu, setOpenMenu] = useState(false)
     const [email, setEmail] = useState<string>('')
-    const [name, setName] = useState<string>('Cashflow User')
+    const [name, setName] = useState<string>('user')
+    const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
 
     useEffect(() => {
         async function loadUser() {
+            //  ambil user dulu
             const { data } = await supabase.auth.getUser()
             const user = data?.user
             if (!user) return
+
             setEmail(user.email ?? '')
-            const metadataName = user.user_metadata?.full_name || user.user_metadata?.name
-            if (metadataName) {
-                setName(metadataName)
-            } else if (user.email) {
-                setName(user.email.split('@')[0])
+
+            //  ambil profile dari DB
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('full_name, avatar_url')
+                .eq('id', user.id)
+                .single()
+
+            if (profile) {
+                if (profile.full_name) {
+                    setName(profile.full_name)
+                } else if (user.email) {
+                    setName(user.email.split('@')[0])
+                }
+
+                if (profile.avatar_url) {
+                    setAvatarUrl(profile.avatar_url)
+                }
             }
         }
+
         loadUser()
     }, [])
 
@@ -87,15 +104,25 @@ export default function Topbar({ toggleSidebar }: { toggleSidebar: () => void })
                         onClick={() => setOpenMenu(!openMenu)}
                         className={`flex items-center gap-3 rounded-2xl border border-white/5 bg-slate-950/40 p-1.5 pr-4 transition-all hover:bg-slate-800 ${openMenu ? 'ring-2 ring-sky-500/50' : ''}`}
                     >
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 text-xs font-bold text-white shadow-lg shadow-sky-500/20">
-                            {initials}
+                        <div className="h-10 w-10 rounded-xl overflow-hidden shadow-lg shadow-sky-500/20">
+                            {avatarUrl ? (
+                                <img
+                                    src={avatarUrl}
+                                    alt="avatar"
+                                    className="h-full w-full object-cover"
+                                />
+                            ) : (
+                                <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-sky-500 to-indigo-600 text-xs font-bold text-white">
+                                    {initials}
+                                </div>
+                            )}
                         </div>
                         <div className="min-w-0 text-left">
                             <p className="max-w-[100px] truncate text-xs font-bold text-white">{name}</p>
                             <p className="max-w-[100px] truncate text-[10px] font-medium text-slate-500">{email || 'Premium Plan'}</p>
                         </div>
                     </button>
-                    
+
                     {openMenu && (
                         <div className="absolute right-0 mt-3 w-56 origin-top-right rounded-2xl border border-white/10 bg-slate-900 p-2 shadow-2xl ring-1 ring-black/5 backdrop-blur-xl">
                             <button

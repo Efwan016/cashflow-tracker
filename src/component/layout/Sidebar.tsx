@@ -8,6 +8,7 @@ interface Props {
   name: string
   revenue: number
   email: string
+  avatarUrl: string | null
 }
 
 // Ikon-ikon untuk tampilan premium
@@ -39,9 +40,10 @@ export default function Sidebar({
   closeMobileSidebar,
   name,
   revenue,
-  email
+  email,
+  avatarUrl,
 }: Props) {
-  
+
   const initials = useMemo(() => {
     const segments = name.split(' ').filter(Boolean)
     if (segments.length === 0) return 'CF'
@@ -51,16 +53,23 @@ export default function Sidebar({
 
   return (
     <div
-      className={`fixed top-0 left-0 z-50 flex h-full w-72 flex-col justify-between overflow-y-auto border-r border-white/10 bg-slate-900/95 p-6 shadow-2xl shadow-slate-950/20 transition-transform duration-300 ease-in-out backdrop-blur-xl ${
-        isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      } ${isDesktopSidebarOpen ? 'lg:translate-x-0' : 'lg:-translate-x-full'}`}
+      className={`fixed top-0 left-0 z-50 flex h-full w-72 flex-col justify-between overflow-y-auto border-r border-white/10 bg-slate-900/95 p-6 shadow-2xl shadow-slate-950/20 transition-transform duration-300 ease-in-out backdrop-blur-xl ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        } ${isDesktopSidebarOpen ? 'lg:translate-x-0' : 'lg:-translate-x-full'}`}
     >
       <div className="space-y-8">
         <div className="rounded-[32px] border border-white/10 bg-slate-900/90 p-5 shadow-sm shadow-slate-950/20">
           <p className="text-xs uppercase tracking-[0.35em] text-slate-500">Account</p>
           <div className="mt-4 flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-600 text-sm font-bold text-white shadow-lg shadow-sky-500/20">
-                {initials}
+            <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-600 text-sm font-bold text-white shadow-lg shadow-sky-500/20">
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt="Avatar"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                initials
+              )}
             </div>
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-white">{name}</p>
@@ -93,10 +102,9 @@ export default function Sidebar({
                 key={item.label}
                 to={item.path}
                 className={({ isActive }) =>
-                  `block w-full rounded-2xl border border-transparent px-4 py-3 text-left text-sm transition-all duration-200 ${
-                    isActive
-                      ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20'
-                      : 'text-slate-400 hover:bg-white/5 hover:text-white'
+                  `block w-full rounded-2xl border border-transparent px-4 py-3 text-left text-sm transition-all duration-200 ${isActive
+                    ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20'
+                    : 'text-slate-400 hover:bg-white/5 hover:text-white'
                   }`
                 }
                 onClick={closeMobileSidebar}

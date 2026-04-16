@@ -1,112 +1,300 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import { supabase } from '../../lib/supabase'
 
 export default function Profile() {
   const navigate = useNavigate()
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const [userId, setUserId] = useState('')
   const [email, setEmail] = useState('')
   const [createdAt, setCreatedAt] = useState('')
-  const [name, setName] = useState('Cashflow User')
 
+  const [name, setName] = useState('')
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
+
+  //  LOAD PROFILE (AUTH + DB)
   useEffect(() => {
-    async function loadProfile() {
+    const loadProfile = async () => {
       const { data } = await supabase.auth.getUser()
       const user = data?.user
+
       if (!user) {
         navigate('/')
         return
       }
 
+      setUserId(user.id)
       setEmail(user.email ?? '')
       setCreatedAt(user.created_at ?? '')
-      const metadataName = user.user_metadata?.full_name || user.user_metadata?.name
-      if (metadataName) {
-        setName(metadataName)
-      } else if (user.email) {
-        setName(user.email.split('@')[0])
+
+      //  ambil dari table profiles
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single()
+
+      if (profile) {
+        setName(profile.full_name || '')
+        setAvatarUrl(profile.avatar_url)
+      } else {
+        //  AUTO INSERT PROFILE kalau belum ada
+        await supabase.from('profiles').insert({
+          id: user.id,
+          full_name: user.email?.split('@')[0] || 'User',
+        })
+
+        setName(user.email?.split('@')[0] || 'User')
       }
+
+      setLoading(false)
     }
+
     loadProfile()
   }, [navigate])
 
+  //  UPDATE PROFILE (DB + AUTH)
+  const handleSave = async () => {
+    if (!userId) return
+
+    setSaving(true)
+
+    // 1. update ke profiles table
+    const { error } = await supabase.from('profiles').upsert({
+      id: userId,
+      full_name: name,
+      avatar_url: avatarUrl,
+    })
+
+    if (error) {
+      toast.error(error.message)
+      setSaving(false)
+      return
+    }
+
+    // 2. sync ke auth metadata (optional tapi bagus)
+    await supabase.auth.updateUser({
+      data: {
+        full_name: name,
+        avatar_url: avatarUrl,
+      },
+    })
+
+    toast.success('Profile updated')
+    setSaving(false)
+  }
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      setUploading(true)
+
+      if (!e.target.files?.length) {
+        throw new Error('No file selected')
+      }
+
+      const file = e.target.files[0]
+      const fileExt = file.name.split('.').pop()
+
+      //  PATH CLEAN & SCALABLE
+      const filePath = `profiles/${userId}/${Date.now()}.${fileExt}`
+
+      // upload ke bucket "avatars"
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, {
+          upsert: true, // biar overwrite kalau sama
+        })
+
+      if (uploadError) throw uploadError
+
+      // ambil public url
+      const { data } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath)
+
+      const publicUrl = data.publicUrl
+
+      setAvatarUrl(publicUrl)
+
+      toast.success('Avatar uploaded 🚀')
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        toast.error(err.message)
+      } else {
+        toast.error('An unknown error occurred during avatar upload.')
+      }
+    } finally {
+      setUploading(false)
+    }
+  }
   const handleLogout = async () => {
     await supabase.auth.signOut()
     navigate('/')
   }
 
+  if (loading) {
+    return <div className="text-white p-10">Loading...</div>
+  }
+
   return (
-    <div className="mx-auto max-w-6xl space-y-8">
-      <div className="rounded-[32px] border border-slate-800 bg-slate-950/95 p-8 shadow-xl shadow-slate-950/20">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+    <main className="min-h-screen bg-gradient-to-br from-[#020617] via-slate-900 to-black text-white p-6">
+      <div className="max-w-6xl mx-auto space-y-8">
+
+        {/* HEADER */}
+        <div className="card-glass flex justify-between items-center">
           <div>
-            <p className="text-xs uppercase tracking-[0.35em] text-sky-300">Account profile</p>
-            <h1 className="mt-3 text-3xl font-semibold text-white">Your profile</h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400">
-              Manage your account details, review authentication status, and sign out from here.
+            <h1 className="text-3xl font-semibold">Profile</h1>
+            <p className="text-slate-400 text-sm mt-1">
+              Manage your account
             </p>
           </div>
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="inline-flex h-12 items-center justify-center rounded-3xl border border-slate-700 bg-slate-900 px-5 text-sm font-semibold text-white transition hover:border-sky-400 hover:bg-slate-800"
-          >
-            Sign out now
+
+          <button onClick={handleLogout} className="btn-outline">
+            Logout
           </button>
         </div>
-      </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-        <div className="rounded-[32px] border border-slate-800 bg-slate-950/95 p-8 shadow-xl shadow-slate-950/20">
-          <div className="flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-cyan-500 to-indigo-500 text-2xl font-semibold text-white">
-              {name
-                .split(' ')
-                .map((part) => part[0])
-                .slice(0, 2)
-                .join('')
-                .toUpperCase()}
+        {/* PROFILE */}
+        <div className="card-glass flex gap-6 items-center">
+
+          {/* AVATAR */}
+          <div
+            className="relative cursor-pointer group"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <div className="avatar">
+              {avatarUrl ? (
+                <img src={avatarUrl} className="w-full h-full object-cover" />
+              ) : (
+                name.slice(0, 2).toUpperCase()
+              )}
             </div>
-            <div>
-              <p className="text-sm text-slate-400">Signed in as</p>
-              <p className="mt-1 text-xl font-semibold text-white">{name}</p>
+
+            <div className="avatar-overlay">
+              Change
             </div>
+
+            <input
+              type="file"
+              hidden
+              ref={fileInputRef}
+              onChange={handleUpload}
+            />
           </div>
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-2">
-            <div className="rounded-3xl border border-slate-800 bg-slate-900/90 p-5">
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-500">Email</p>
-              <p className="mt-3 text-lg font-medium text-white">{email}</p>
-            </div>
-            <div className="rounded-3xl border border-slate-800 bg-slate-900/90 p-5">
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-500">Member since</p>
-              <p className="mt-3 text-lg font-medium text-white">{createdAt ? new Date(createdAt).toLocaleDateString() : 'Loading...'}</p>
-            </div>
-          </div>
-        </div>
+          {/* FORM */}
+          <div className="flex-1 space-y-4">
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="input"
+              placeholder="Full name"
+            />
 
-        <div className="rounded-[32px] border border-slate-800 bg-slate-950/95 p-8 shadow-xl shadow-slate-950/20">
-          <p className="text-xs uppercase tracking-[0.35em] text-slate-500">Security</p>
-          <h2 className="mt-3 text-2xl font-semibold text-white">Logout protection</h2>
-          <p className="mt-4 text-sm leading-6 text-slate-400">
-            For security, always log out from shared or public devices. Your session will be closed and you will return to the login screen.
-          </p>
-
-          <div className="mt-6 space-y-4 rounded-3xl border border-slate-800 bg-slate-900/90 p-5">
-            <div className="flex items-center justify-between gap-3 text-sm text-slate-300">
-              <span>Session tracking</span>
-              <span className="rounded-full bg-slate-800 px-3 py-1 text-[11px] uppercase tracking-[0.25em] text-slate-400">Active</span>
-            </div>
-            <div className="flex items-center justify-between gap-3 text-sm text-slate-300">
-              <span>Two-factor auth</span>
-              <span className="rounded-full bg-slate-800 px-3 py-1 text-[11px] uppercase tracking-[0.25em] text-slate-400">Not set</span>
-            </div>
-            <div className="rounded-3xl bg-slate-950/90 p-4 text-sm text-slate-400">
-              <p className="font-medium text-white">Tip</p>
-              <p className="mt-2">Use sign out whenever you finish work to keep your account safe.</p>
-            </div>
+            <button
+              onClick={handleSave}
+              disabled={saving || uploading}
+              className="btn-primary"
+            >
+              {saving ? 'Saving...' : 'Save'}
+            </button>
           </div>
         </div>
+
+        {/* INFO */}
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="card-glass">
+            <p className="label">Email</p>
+            <p className="value">{email}</p>
+          </div>
+
+          <div className="card-glass">
+            <p className="label">Member since</p>
+            <p className="value">
+              {new Date(createdAt).toLocaleDateString()}
+            </p>
+          </div>
+        </div>
       </div>
-    </div>
+
+      {/* 🔥 STYLE */}
+      <style>{`
+        .card-glass {
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.08);
+          padding: 24px;
+          border-radius: 24px;
+          backdrop-filter: blur(20px);
+        }
+
+        .input {
+          width: 100%;
+          height: 48px;
+          border-radius: 12px;
+          padding: 0 12px;
+          background: #0f172a;
+          border: 1px solid #1e293b;
+        }
+
+        .btn-primary {
+          height: 48px;
+          padding: 0 20px;
+          border-radius: 14px;
+          background: linear-gradient(to right, #0ea5e9, #6366f1);
+          font-weight: 600;
+        }
+
+        .btn-outline {
+          border: 1px solid #334155;
+          padding: 10px 16px;
+          border-radius: 12px;
+        }
+
+        .avatar {
+          width: 96px;
+          height: 96px;
+          border-radius: 24px;
+          background: linear-gradient(to bottom right, #0ea5e9, #6366f1);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: bold;
+          font-size: 24px;
+          overflow: hidden;
+        }
+
+        .avatar-overlay {
+          position: absolute;
+          inset: 0;
+          background: rgba(0,0,0,0.5);
+          opacity: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 24px;
+          transition: 0.2s;
+        }
+
+        .group:hover .avatar-overlay {
+          opacity: 1;
+        }
+
+        .label {
+          font-size: 12px;
+          color: #94a3b8;
+        }
+
+        .value {
+          font-size: 18px;
+          margin-top: 4px;
+        }
+      `}</style>
+    </main>
   )
 }

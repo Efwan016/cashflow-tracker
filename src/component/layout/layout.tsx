@@ -9,28 +9,45 @@ export default function Layout({ children }: { children: ReactNode }) {
   const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(true)
   const [isScrolled, setIsScrolled] = useState(false)
 
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
 const [revenue, setRevenue] = useState(0)
 
   useEffect(() => {
-    const fetchData = async () => {
-      const { data: authData } = await supabase.auth.getUser()
-      const user = authData?.user
-      
-      if (user) {
-        const metadataName = user.user_metadata?.full_name || user.user_metadata?.name
-        setName(metadataName || user.email?.split('@')[0] || 'User')
-        setEmail(user.email || '')
-      }
+   const fetchData = async () => {
+  const { data: authData } = await supabase.auth.getUser()
+  const user = authData?.user
+  
+  if (user) {
+    setEmail(user.email || '')
 
-      const { data: transactions } = await supabase
-        .from('Transactions')
-        .select('total')
+    // 🔥 ambil profile dari database
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('full_name, avatar_url')
+      .eq('id', user.id)
+      .single()
 
-      const total = (transactions ?? []).reduce((sum, t) => sum + t.total, 0)
-      setRevenue(total)
+    if (profile?.full_name) {
+      setName(profile.full_name)
+    } else {
+      setName(user.email?.split('@')[0] || 'User')
     }
+
+    if (profile?.avatar_url) {
+      setAvatarUrl(profile.avatar_url)
+    }
+  }
+
+  // revenue tetap
+  const { data: transactions } = await supabase
+    .from('Transactions')
+    .select('total')
+
+  const total = (transactions ?? []).reduce((sum, t) => sum + t.total, 0)
+  setRevenue(total)
+}
 
     fetchData()
     
@@ -71,6 +88,7 @@ const [revenue, setRevenue] = useState(0)
         name={name}
         revenue={revenue}
         email={email}
+        avatarUrl={avatarUrl}
       />
 
       {/* Overlay mobile */}
