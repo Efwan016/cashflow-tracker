@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
+import { toast } from 'react-toastify'
 import { supabase } from '../../lib/supabase'
 import type { Product } from '../../types/types'
 
@@ -7,44 +8,65 @@ export default function ProductPage() {
   const [name, setName] = useState('')
   const [costPrice, setCostPrice] = useState('')
   const [salePrice, setSalePrice] = useState('')
+
   const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
+
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
-  useEffect(() => {
-    const loadProducts = async () => {
-      setLoading(true)
-      setError('')
-      const { data, error } = await supabase
-        .from('Product')
-        .select('*')
-        .order('id', { ascending: true })
+  const resetMessage = () => {
+    setError('')
+    setSuccess('')
+  }
 
-      if (error) {
-        setError('Unable to load products: ' + error.message)
-        setProducts([])
-      } else {
-        setProducts(data ?? [])
-      }
-      setLoading(false)
-    }
-    loadProducts()
-  }, [])
+  const getUserId = async () => {
+    const { data } = await supabase.auth.getUser()
+    return data?.user?.id ?? null
+  }
 
-  const refreshProducts = async () => {
+  const fetchProducts = useCallback(async () => {
+    const userId = await getUserId()
+    if (!userId) return
+
     const { data, error } = await supabase
       .from('Product')
       .select('*')
+      .eq('user_id', userId)
       .order('id', { ascending: true })
 
-    if (!error) {
+    if (error) {
+      setError(error.message)
+    } else {
+      setError('') // ✅ reset error kalau sukses
       setProducts(data ?? [])
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    let ignore = false
+
+    const init = async () => {
+      setLoading(true)
+      await fetchProducts()
+      if (!ignore) setLoading(false)
+    }
+
+    init()
+
+    return () => {
+      ignore = true
+    }
+  }, [fetchProducts])
 
   const handleSubmit = async () => {
-    setError('')
-    setSuccess('')
+    resetMessage()
+
+    const userId = await getUserId()
+    if (!userId) {
+      setError('User not found')
+      return
+    }
 
     if (!name.trim() || !costPrice || !salePrice) {
       setError('Please fill in all product fields.')
@@ -54,59 +76,129 @@ export default function ProductPage() {
     const parsedCost = Number(costPrice)
     const parsedSale = Number(salePrice)
 
-    if (!Number.isFinite(parsedCost) || parsedCost < 0 || !Number.isFinite(parsedSale) || parsedSale < 0) {
-      setError('Harga modal and harga jual must be valid non-negative numbers.')
+    if (
+      !Number.isFinite(parsedCost) ||
+      parsedCost < 0 ||
+      !Number.isFinite(parsedSale) ||
+      parsedSale < 0
+    ) {
+      setError('Harga tidak valid.')
       return
     }
 
-    setLoading(true)
+    setSubmitting(true)
 
-    const { data: existingProduct, error: existingError } = await supabase
-      .from('Product')
-      .select('id')
-      .eq('name', name)
-      .maybeSingle()
-
-    if (existingError) {
-      setError('Unable to check product existence: ' + existingError.message)
-      setLoading(false)
-      return
-    }
-
-    if (existingProduct) {
-      const { error: updateError } = await supabase
+    try {
+      const { data: existingProduct, error: checkError } = await supabase
         .from('Product')
-        .update({ harga_modal: parsedCost, harga_jual: parsedSale })
-        .eq('id', existingProduct.id)
+        .select('id')
+        .eq('name', name.trim())
+        .eq('user_id', userId)
+        .maybeSingle()
 
-      if (updateError) {
-        setError('Unable to update product: ' + updateError.message)
-        setLoading(false)
-        return
-      }
-      setSuccess('Product updated successfully.')
-    } else {
-      const { error: insertError } = await supabase.from('Product').insert([
-        {
-          name,
-          harga_modal: parsedCost,
-          harga_jual: parsedSale,
-        },
-      ])
+      if (checkError) throw checkError
 
-      if (insertError) {
-        setError('Unable to create product: ' + insertError.message)
-        setLoading(false)
-        return
+      if (existingProduct) {
+        const { error } = await supabase
+          .from('Product')
+          .update({
+            harga_modal: parsedCost,
+            harga_jual: parsedSale,
+          })
+          .eq('id', existingProduct.id)
+          .eq('user_id', userId)
+
+        if (error) throw error
+
+        setSuccess('Product updated.')
+      } else {
+        const { error } = await supabase
+          .from('Product')
+          .insert([
+            {
+              name,
+              harga_modal: parsedCost,
+              harga_jual: parsedSale,
+              user_id: userId,
+            },
+          ])
+
+        if (error) throw error
+
+        setSuccess('Product created.')
       }
-      setSuccess('Product created successfully.')
+
+      await fetchProducts()
+
+      setName('')
+      setCostPrice('')
+      setSalePrice('')
+    } catch {
+      setError('Something went wrong')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleDeleteConfirmed = async (id: string) => {
+    resetMessage()
+
+    const userId = await getUserId()
+    if (!userId) {
+      setError('User not found')
+      return
     }
 
-    await refreshProducts()
-    setName('')
-    setCostPrice('')
-    setSalePrice('')
-    setLoading(false)
+    setSubmitting(true)
+
+    try {
+      const { error } = await supabase
+        .from('Product')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', userId)
+
+      if (error) throw error
+
+      setSuccess('Product deleted.')
+      toast.success('Product deleted successfully 🚀')
+
+      await fetchProducts()
+    } catch {
+      setError('Failed to delete product')
+      toast.error('Failed to delete product')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleDelete = (id: string) => {
+    const customId = "confirm-delete-product";
+    toast.info(
+      <div className="space-y-4">
+        <p className="font-medium text-slate-100">Yakin mau hapus product ini?</p>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            className="rounded-3xl bg-rose-500 px-4 py-2 text-xs font-semibold text-white hover:bg-rose-400 transition"
+            onClick={() => {
+              toast.dismiss(customId)
+              handleDeleteConfirmed(id)
+            }}
+          >
+            Hapus
+          </button>
+          <button
+            type="button"
+            className="rounded-3xl border border-slate-700 bg-slate-900 px-4 py-2 text-xs font-semibold text-slate-200 hover:bg-slate-800 transition"
+            onClick={() => toast.dismiss(customId)}
+          >
+            Batal
+          </button>
+        </div>
+      </div>,
+      { toastId: customId, autoClose: false, closeOnClick: false, closeButton: false, draggable: false }
+    )
   }
 
   return (
@@ -169,10 +261,10 @@ export default function ProductPage() {
                 <button
                   type="button"
                   onClick={handleSubmit}
-                  disabled={loading}
+                  disabled={loading || submitting}
                   className="inline-flex items-center justify-center rounded-3xl bg-gradient-to-r from-sky-500 to-indigo-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:from-sky-400 hover:to-indigo-400 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {loading ? 'Saving…' : 'Save product'}
+                  {submitting ? 'Saving…' : 'Save product'}
                 </button>
               </div>
             </div>
@@ -212,6 +304,7 @@ export default function ProductPage() {
                   <th className="px-4 py-4">Name</th>
                   <th className="px-4 py-4">Harga modal</th>
                   <th className="px-4 py-4">Harga jual</th>
+                  <th className="px-4 py-4">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -234,6 +327,16 @@ export default function ProductPage() {
                       <td className="px-4 py-4 text-slate-100">{product.name}</td>
                       <td className="px-4 py-4 text-slate-100">Rp {product.harga_modal.toLocaleString('id-ID')}</td>
                       <td className="px-4 py-4 text-slate-100">Rp {product.harga_jual.toLocaleString('id-ID')}</td>
+                      <td className="px-4 py-4">
+                        <button
+                          onClick={() => handleDelete(product.id)}
+                          disabled={submitting}
+                          className="rounded-xl bg-rose-500/20 px-3 py-1 text-sm text-rose-300 hover:bg-rose-500/30 disabled:opacity-50"
+                        >
+                          Delete
+                        </button>
+                      </td>
+
                     </tr>
                   ))
                 )}
