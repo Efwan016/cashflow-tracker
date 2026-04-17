@@ -7,50 +7,49 @@ import { supabase } from "../../lib/supabase"
 export default function Layout({ children }: { children: ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(true)
-  const [isScrolled, setIsScrolled] = useState(false)
 
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-const [revenue, setRevenue] = useState(0)
+  const [revenue, setRevenue] = useState(0)
 
   useEffect(() => {
-   const fetchData = async () => {
-  const { data: authData } = await supabase.auth.getUser()
-  const user = authData?.user
-  
-  if (user) {
-    setEmail(user.email || '')
+    const fetchData = async () => {
+      const { data: authData } = await supabase.auth.getUser()
+      const user = authData?.user
 
-    // 🔥 ambil profile dari database
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('full_name, avatar_url')
-      .eq('id', user.id)
-      .single()
+      if (user) {
+        setEmail(user.email || '')
 
-    if (profile?.full_name) {
-      setName(profile.full_name)
-    } else {
-      setName(user.email?.split('@')[0] || 'User')
+        // 🔥 ambil profile dari database
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name, avatar_url')
+          .eq('id', user.id)
+          .single()
+
+        if (profile?.full_name) {
+          setName(profile.full_name)
+        } else {
+          setName(user.email?.split('@')[0] || 'User')
+        }
+
+        if (profile?.avatar_url) {
+          setAvatarUrl(profile.avatar_url)
+        }
+      }
+
+      // revenue tetap
+      const { data: transactions } = await supabase
+        .from('Transactions')
+        .select('total')
+
+      const total = (transactions ?? []).reduce((sum, t) => sum + t.total, 0)
+      setRevenue(total)
     }
-
-    if (profile?.avatar_url) {
-      setAvatarUrl(profile.avatar_url)
-    }
-  }
-
-  // revenue tetap
-  const { data: transactions } = await supabase
-    .from('Transactions')
-    .select('total')
-
-  const total = (transactions ?? []).reduce((sum, t) => sum + t.total, 0)
-  setRevenue(total)
-}
 
     fetchData()
-    
+
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!session) window.location.href = '/'
     })
@@ -68,14 +67,7 @@ const [revenue, setRevenue] = useState(0)
 
   const closeMobileSidebar = () => setIsSidebarOpen(false)
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 0)
-    }
 
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
 
   return (
     <div className="w-full min-h-screen bg-gray-900 text-white">
@@ -100,19 +92,14 @@ const [revenue, setRevenue] = useState(0)
       )}
 
       {/* Content */}
+      {/* Content */}
       <div
-        className={`flex flex-col min-h-screen transition-all ${
-          isDesktopSidebarOpen ? "lg:ml-72" : "lg:ml-0"
-        }`}
-      >
-        {/* Topbar */}
-        <header
-          className={`sticky top-0 z-30 p-4 transition ${
-            isScrolled ? "bg-gray-800 shadow" : "bg-transparent"
+        className={`flex flex-col min-h-screen transition-all ${isDesktopSidebarOpen ? "lg:ml-72" : "lg:ml-0"
           }`}
-        >
-          <Topbar toggleSidebar={toggleSidebar} />
-        </header>
+      >
+
+        {/* Topbar (FIXED) */}
+        <Topbar toggleSidebar={toggleSidebar} />
 
         {/* Main */}
         <main className="flex-1 p-6">{children}</main>

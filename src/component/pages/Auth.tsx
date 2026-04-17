@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { supabase } from '../../lib/supabase'
 import GoogleIcon from '../../assets/Icon/GoogleIcon'
-import FacebookIcon from '../../assets/Icon/FacebookIcon'
 import EyeOpen from '../../assets/Icon/eyeOpen'
 import EyeClosed from '../../assets/Icon/eyeClosed'
 import EmailIcon from '../../assets/Icon/EmailIcon'
@@ -60,12 +59,19 @@ export default function Auth() {
     }
 
     const handleOAuthSignIn = async (provider: 'google' | 'facebook') => {
-        const { error } = await supabase.auth.signInWithOAuth({ provider })
-
-        if (error) {
-            toast.error(`Login ${provider} gagal: ${error.message}`)
+    const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+            redirectTo: 'http://localhost:5173/dashboard' // 🔥 dev
+            // nanti production:
+            // redirectTo: 'https://your-domain.vercel.app/dashboard'
         }
+    })
+
+    if (error) {
+        toast.error(`Login ${provider} gagal: ${error.message}`)
     }
+}
 
     return (
         <main className="relative min-h-screen overflow-hidden bg-slate-950 text-slate-100">
@@ -241,17 +247,6 @@ export default function Auth() {
                                             <GoogleIcon />
                                         </span>
                                         <span className="leading-none">Continue with Google</span>
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        onClick={() => handleOAuthSignIn('facebook')}
-                                        className="w-full flex items-center justify-center gap-3 rounded-[28px] border border-slate-700 bg-slate-800 text-white px-5 py-4 text-sm font-semibold shadow-sm transition hover:bg-slate-700 hover:scale-[1.01] active:scale-[0.98]"
-                                    >
-                                        <span className="flex items-center justify-center w-5 h-5">
-                                            <FacebookIcon />
-                                        </span>
-                                        <span className="leading-none">Continue with Facebook</span>
                                     </button>
                                 </div>
                             )}

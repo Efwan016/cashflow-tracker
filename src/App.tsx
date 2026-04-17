@@ -13,6 +13,11 @@ import StockLogs from './component/pages/StockLogs'
 import Reports from './component/pages/Reports'
 import Profile from './component/pages/Profile'
 import Layout from './component/layout/layout'
+import Settings from './component/pages/Setting'
+import Privacy from './component/pages/Setting/Privacy'
+import DeleteAccount from './component/pages/Setting/DeleteAccount'
+import Terms from './component/pages/Setting/Term'
+import DetailInfo from './component/pages/Setting/DetailInfo'
 
 function App() {
   return (
@@ -93,6 +98,32 @@ function App() {
             </Layout>
           }
         />
+        <Route path='/settings' element={
+          <Layout>
+            <Settings />
+          </Layout>
+        } />
+        <Route path='/privacy' element={
+          <Layout>
+            <Privacy />
+          </Layout>
+        } />
+        <Route path='/terms' element={
+          <Layout>
+            <Terms />
+          </Layout>
+        } />
+        <Route path='/delete' element={
+          <Layout>
+            <DeleteAccount />
+          </Layout>
+        } />
+
+        <Route path='/detailinfo' element={
+          <Layout>
+            <DetailInfo />
+          </Layout>
+        } />
       </Routes>
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar newestOnTop closeOnClick pauseOnHover draggable theme="dark" />
     </BrowserRouter>

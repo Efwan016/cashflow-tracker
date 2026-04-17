@@ -133,10 +133,6 @@ export default function Profile() {
       setUploading(false)
     }
   }
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    navigate('/')
-  }
 
   if (loading) {
     return <div className="text-white p-10">Loading...</div>
@@ -154,10 +150,6 @@ export default function Profile() {
               Manage your account
             </p>
           </div>
-
-          <button onClick={handleLogout} className="btn-outline">
-            Logout
-          </button>
         </div>
 
         {/* PROFILE */}

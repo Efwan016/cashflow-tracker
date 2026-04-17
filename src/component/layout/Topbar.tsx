@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 
@@ -23,6 +23,27 @@ export default function Topbar({ toggleSidebar }: { toggleSidebar: () => void })
     const [email, setEmail] = useState<string>('')
     const [name, setName] = useState<string>('user')
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+    const [show, setShow] = useState(true)
+    const lastScrollY = useRef(0)
+
+    useEffect(() => {
+    const onScroll = () => {
+        const currentY = window.scrollY
+
+        if (currentY > lastScrollY.current && currentY > 80) {
+            // scroll down → hide
+            setShow(false)
+        } else {
+            // scroll up → show
+            setShow(true)
+        }
+
+        lastScrollY.current = currentY
+    }
+
+    window.addEventListener('scroll', onScroll)
+    return () => window.removeEventListener('scroll', onScroll)
+}, [])
 
     useEffect(() => {
         async function loadUser() {
@@ -69,7 +90,19 @@ export default function Topbar({ toggleSidebar }: { toggleSidebar: () => void })
     }
 
     return (
-        <div className="flex flex-col gap-6 rounded-[32px] border border-white/5 bg-slate-900/40 p-5 shadow-2xl backdrop-blur-xl lg:flex-row lg:items-center lg:justify-between">
+      <div
+    className={`
+        flex flex-col gap-6 rounded-[32px] border border-white/5 bg-slate-900/40 p-5 shadow-2xl backdrop-blur-xl
+        lg:flex-row lg:items-center lg:justify-between
+
+        transition-all duration-300 ease-in-out will-change-transform
+
+        ${show
+            ? 'translate-y-0 opacity-100'
+            : '-translate-y-full opacity-0'
+        }
+    `}
+>
             <div className="flex min-w-0 items-center gap-4">
                 <button
                     type="button"
