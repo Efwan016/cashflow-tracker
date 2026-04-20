@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { NavLink } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 
@@ -9,13 +9,6 @@ type StockRecord = {
     product_name?: string
 }
 
-const productTableName = 'Product'
-
-async function fetchProducts() {
-    const { data, error } = await supabase.from(productTableName).select('id, name, harga_modal, harga_jual')
-    if (error) throw error
-    return data ?? []
-}
 
 export default function Stock() {
     const [stockItems, setStockItems] = useState<StockRecord[]>([])
@@ -24,114 +17,215 @@ export default function Stock() {
     const [error, setError] = useState('')
     const [success, setSuccess] = useState('')
     const [loading, setLoading] = useState(true)
-    const [products, setProducts] = useState<any[]>([])
+    const [submitting, setSubmitting] = useState(false)
+
+    const [editingId, setEditingId] = useState<string | null>(null)
+    const [editQty, setEditQty] = useState('')
+    const [editName, setEditName] = useState('')
+
+    type Product = {
+        id: string
+        name: string
+    }
+
+    const [products, setProducts] = useState<Product[]>([])
+
+    const loadStock = useCallback(async () => {
+        setLoading(true)
+        try {
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) {
+                setError('User not found')
+                setLoading(false)
+                return
+            }
+
+            const [stockResponse, productsData] = await Promise.all([
+                supabase
+                    .from('Stock')
+                    .select('id, product_id, total')
+                    .eq('user_id', user?.id),
+                supabase
+                    .from('Product')
+                    .select('id, name')
+                    .eq('user_id', user?.id)
+            ])
+
+            if (productsData.error) throw productsData.error
+            if (stockResponse.error) throw stockResponse.error
+
+            setProducts((productsData.data ?? []) as Product[])
+
+
+            const productMap = new Map(
+                (productsData.data ?? []).map((p) => [p.id, p])
+            )
+
+            const merged = (stockResponse.data ?? []).map((stock) => ({
+                ...stock,
+                product_name: productMap.get(stock.product_id)?.name
+            }))
+
+            setStockItems(merged)
+
+        } catch {
+            setError('Unable to load stock items: ' + ('Unknown error'))
+        } finally {
+            setLoading(false)
+        }
+    }, [])
 
     useEffect(() => {
-        async function loadStock() {
-            setLoading(true)
-            try {
-                const [stockResponse, productsData] = await Promise.all([
-                    supabase
-                        .from('Stock')
-                        .select('id, product_id, total')
-                        .order('product_id', { ascending: true }),
-                    fetchProducts(),
-                ])
+        let channel: ReturnType<typeof supabase.channel> | null = null
+        let timeout: ReturnType<typeof setTimeout>
 
-                setProducts(productsData) 
+        const init = async () => {
+            const { data: { user } } = await supabase.auth.getUser()
 
-                if (stockResponse.error) {
-                    throw stockResponse.error
-                }
+            if (!user) return
 
-                const productMap = new Map(productsData.map((product) => [product.id, product]))
-                const mergedStocks = (stockResponse.data ?? []).map((stock) => {
-                    const product = productMap.get(stock.product_id)
-                    return {
-                        ...stock,
-                        product_name: product?.name,
+            await loadStock()
+
+            // subscribe realtime
+            channel = supabase
+                .channel('stock-changes')
+                .on(
+                    'postgres_changes',
+                    {
+                        event: '*', // INSERT, UPDATE, DELETE semua
+                        schema: 'public',
+                        table: 'Stock',
+                        filter: `user_id=eq.${user.id}`, // penting biar cuma data user ini
+                    },
+                    () => {
+                        // debounce biar gak spam
+                        clearTimeout(timeout)
+                        timeout = setTimeout(() => {
+                            loadStock()
+                        }, 300)
                     }
-                })
-                setStockItems(mergedStocks)
-            } catch (loadError: any) {
-                setError('Unable to load stock items: ' + (loadError?.message ?? 'Unknown error'))
-            } finally {
-                setLoading(false)
-            }
+                )
+                .subscribe()
         }
-        loadStock()
-    }, [])
+
+        init()
+
+        return () => {
+            if (channel) supabase.removeChannel(channel)
+            clearTimeout(timeout)
+        }
+    }, [loadStock])
+
 
     const totalStock = useMemo(() => stockItems.reduce((sum, item) => sum + item.total, 0), [stockItems])
 
-   const handleSubmit = async () => {
-    setError('')
-    setSuccess('')
+    const handleSubmit = async () => {
+        setError('')
+        setSuccess('')
 
-    if (!productId || !quantity) {
-        setError('Please enter product and quantity.')
-        return
-    }
-
-    const parsedQty = Number(quantity)
-
-    if (!Number.isFinite(parsedQty) || parsedQty < 0) {
-        setError('Quantity must be valid.')
-        return
-    }
-
-    setLoading(true)
-
-    try {
-        const { data: existingStock, error: fetchError } = await supabase
-            .from('Stock')
-            .select('id, total')
-            .eq('product_id', productId)
-            .maybeSingle()
-
-        if (fetchError) throw fetchError
-
-        if (existingStock) {
-            const { error: updateError } = await supabase
-                .from('Stock')
-                .update({ total: existingStock.total + parsedQty })
-                .eq('id', existingStock.id)
-
-            if (updateError) throw updateError
-        } else {
-            const { error: insertError } = await supabase
-                .from('Stock')
-                .insert([
-                    {
-                        product_id: productId,
-                        total: parsedQty,
-                    },
-                ])
-
-            if (insertError) throw insertError
+        if (!productId || !quantity) {
+            setError('Please enter product and quantity.')
+            return
         }
 
-        const { data } = await supabase
-            .from('Stock')
-            .select('id, product_id, total')
+        const parsedQty = Number(quantity)
+        if (!Number.isFinite(parsedQty) || parsedQty === 0) {
+            setError('Quantity must not be zero.')
+            return
+        }
 
-        const productMap = new Map(products.map(p => [p.id, p]))
+        setSubmitting(true)
 
-        const merged = (data ?? []).map(stock => ({
-            ...stock,
-            product_name: productMap.get(stock.product_id)?.name
-        }))
+        try {
+            const { data: { user } } = await supabase.auth.getUser()
 
-        setStockItems(merged)
-        setSuccess('Stock updated')
-        setProductId('')
-        setQuantity('')
-    } catch (err: any) {
-        setError(err.message)
-    } finally {
-        setLoading(false)
+            if (!user) {
+                setError('User not found.')
+                return
+            }
+
+            const { error } = await supabase.rpc('update_stock', {
+                p_product_id: productId,
+                p_qty: parsedQty,
+                p_user_id: user.id
+            })
+
+            if (error) throw error
+
+            setSuccess(`Stock ${parsedQty > 0 ? 'added' : 'reduced'} successfully`)
+            setProductId('')
+            setQuantity('')
+
+        } catch {
+            setError('Failed to update stock.')
+        } finally {
+            setSubmitting(false)
+        }
     }
-}
+
+    const handleEdit = async (item: StockRecord) => {
+        setError('')
+        setSuccess('')
+
+        const newTotal = Number(editQty)
+        if (editQty === '') {
+            setError('Quantity cannot be empty')
+            return
+        }
+
+        const delta = newTotal - item.total
+
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) {
+            setError('User not found')
+            return
+        }
+
+
+        if (!Number.isFinite(newTotal)) {
+            setError('Invalid quantity')
+            return
+        }
+
+        if (delta === 0 && editName === item.product_name) {
+            setError('No changes detected')
+            return
+        }
+
+        // update name kalau berubah aja
+        if (editName !== item.product_name && !editName.trim()) {
+            setError('Product name cannot be empty')
+            return
+        }
+        try {
+
+            if (editName !== item.product_name) {
+                const { error: nameError } = await supabase
+                    .from('Product')
+                    .update({ name: editName.trim() })
+                    .eq('id', item.product_id)
+                    .eq('user_id', user.id)
+
+                if (nameError) throw nameError
+            }
+            if (delta !== 0) {
+                const { error: stockError } = await supabase.rpc('update_stock', {
+                    p_product_id: item.product_id,
+                    p_qty: delta,
+                    p_user_id: user.id
+                })
+                if (stockError) throw stockError
+            }
+
+            setSuccess(`Updated successfully`)
+            setEditingId(null)
+            setEditQty('')
+            setEditName('')
+            await loadStock()
+        } catch {
+            setError('Failed to update product or stock')
+        }
+    }
 
     return (
         <main className="min-h-screen bg-slate-950 text-slate-100">
@@ -178,14 +272,14 @@ export default function Stock() {
                                     <span className="text-sm text-slate-400">Quantity to add</span>
                                     <input
                                         type="number"
-                                        min="0"
+                                        min={-1000}
                                         value={quantity}
                                         onChange={(e) => setQuantity(e.target.value)}
-                                        placeholder="0"
+                                        placeholder="+10 / -5"
                                         className="rounded-3xl border border-slate-700 bg-slate-950/90 px-4 py-4 text-white outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20"
                                     />
                                 </label>
-                               
+
                             </div>
 
                             <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -193,10 +287,10 @@ export default function Stock() {
                                 <button
                                     type="button"
                                     onClick={handleSubmit}
-                                    disabled={loading}
+                                    disabled={submitting}
                                     className="inline-flex items-center justify-center rounded-3xl bg-gradient-to-r from-sky-500 to-indigo-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:from-sky-400 hover:to-indigo-400 disabled:cursor-not-allowed disabled:opacity-60"
                                 >
-                                    {loading ? 'Saving…' : 'Update stock'}
+                                    {submitting ? 'Saving…' : 'Update stock'}
                                 </button>
                             </div>
                         </div>
@@ -242,31 +336,99 @@ export default function Stock() {
 
                     <div className="overflow-hidden rounded-[32px] border border-slate-800 bg-slate-950/90">
                         <table className="w-full text-left text-sm text-slate-200">
-                            <thead className="border-b border-slate-800 bg-slate-900/90 text-slate-400">
+                            <thead className="border-b border-slate-800 bg-slate-900/60 text-[10px] uppercase tracking-widest text-slate-500">
                                 <tr>
-                                    <th className="px-4 py-4">Product</th>
-                                    <th className="px-4 py-4">Quantity</th>
+                                    <th className="px-6 py-4 font-semibold">Product</th>
+                                    <th className="px-6 py-4 font-semibold text-center">Quantity</th>
+                                    <th className="px-6 py-4 font-semibold text-center">Status</th>
+                                    <th className="px-6 py-4 font-semibold text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody className="divide-y divide-slate-800/50">
                                 {loading ? (
                                     <tr>
-                                        <td colSpan={4} className="px-4 py-6 text-slate-400">
+                                        <td colSpan={4} className="px-6 py-10 text-center text-slate-500 italic">
                                             Loading stock items...
                                         </td>
                                     </tr>
                                 ) : stockItems.length === 0 ? (
                                     <tr>
-                                        <td colSpan={4} className="px-4 py-6 text-slate-400">
+                                        <td colSpan={4} className="px-6 py-10 text-center text-slate-500 italic">
                                             No stock items found.
                                         </td>
                                     </tr>
                                 ) : (
                                     stockItems.map((item) => (
-                                        <tr key={item.id} className="border-b border-slate-800 last:border-none">
-                                            <td className="px-4 py-4 text-slate-100">{item.product_name ?? item.product_id}</td>
-                                            <td className="px-4 py-4 text-slate-100">{item.total.toLocaleString('id-ID')}</td>
-                                            
+                                        <tr key={item.id} className="hover:bg-white/[0.02] transition-colors group">
+                                            <td className="px-6 py-4">
+                                                {editingId === item.id ? (
+                                                    <input
+                                                        type="text"
+                                                        value={editName}
+                                                        onChange={(e) => setEditName(e.target.value)}
+                                                        className="rounded-lg bg-slate-900 border border-slate-700 px-3 py-1 text-xs text-white focus:border-sky-500 outline-none"
+                                                        autoFocus
+                                                    />
+                                                ) : (
+                                                    <span className="font-medium text-slate-100">{item.product_name ?? item.product_id}</span>
+                                                )}
+                                            </td>
+
+                                            <td className="px-6 py-4 text-center">
+                                                {editingId === item.id ? (
+                                                    <input
+                                                        type="number"
+                                                        value={editQty}
+                                                        onChange={(e) => setEditQty(e.target.value)}
+                                                        className="w-20 rounded-lg bg-slate-900 border border-slate-700 px-2 py-1 text-center text-xs text-white focus:border-sky-500 outline-none"
+                                                        autoFocus
+                                                    />
+                                                ) : (
+                                                    <span className="font-mono text-slate-100">{item.total.toLocaleString('id-ID')}</span>
+                                                )}
+                                            </td>
+
+                                            <td className="px-6 py-4 text-center">
+                                                {item.total < 5 ? (
+                                                    <span className="inline-flex items-center rounded-full bg-rose-500/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-rose-400 border border-rose-500/20">Low Stock</span>
+                                                ) : (
+                                                    <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400 border border-emerald-500/20">In Stock</span>
+                                                )}
+                                            </td>
+
+                                            <td className="px-6 py-4 text-right">
+                                                {editingId === item.id ? (
+                                                    <div className="flex justify-end gap-3">
+                                                        <button
+                                                            onClick={() => handleEdit(item)}
+                                                            className="text-xs font-bold text-emerald-400 hover:text-emerald-300"
+                                                        >
+                                                            Save
+                                                        </button>
+                                                        <button
+                                                            onClick={() => {
+                                                                setEditingId(null)
+                                                                setEditQty('')
+                                                                setEditName('')
+                                                            }}
+                                                            className="text-xs font-bold text-slate-500 hover:text-slate-400"
+                                                        >
+                                                            Cancel
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => {
+                                                            setEditingId(item.id)
+                                                            setEditQty(item.total.toString())
+                                                            setEditName(item.product_name || '')
+                                                        }}
+                                                        className="rounded-full bg-sky-500/10 px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider text-sky-400 border border-sky-500/20 hover:bg-sky-500/20 transition-all"
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                )}
+                                            </td>
                                         </tr>
                                     ))
                                 )}
@@ -275,6 +437,6 @@ export default function Stock() {
                     </div>
                 </div>
             </div>
-        </main>
+        </main >
     )
 }

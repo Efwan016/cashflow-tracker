@@ -62,9 +62,7 @@ export default function Auth() {
     const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-            redirectTo: 'http://localhost:5173/dashboard' // 🔥 dev
-            // nanti production:
-            // redirectTo: 'https://your-domain.vercel.app/dashboard'
+            redirectTo: `${window.location.origin}/dashboard`
         }
     })
 
