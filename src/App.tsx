@@ -49,7 +49,7 @@ function App() {
       </Suspense>
 
       <ToastContainer
-        position="top-right"
+        position="top-center"
         autoClose={3000}
         hideProgressBar
         newestOnTop
@@ -57,6 +57,8 @@ function App() {
         pauseOnHover
         draggable
         theme="dark"
+        style={{ top: '50%', transform: 'translateY(-50%)' }}
+        toastClassName="!bg-slate-900/40 !backdrop-blur-2xl !border !border-white/10 !rounded-[30px] !shadow-[0_32px_64px_-15px_rgba(0,0,0,0.6)] !text-slate-100 !text-center !px-6"
       />
     </BrowserRouter>
   )
