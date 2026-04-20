@@ -2,130 +2,62 @@ import './App.css'
 import 'react-toastify/dist/ReactToastify.css'
 import { ToastContainer } from 'react-toastify'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { lazy, Suspense } from 'react'
 
-import Auth from './component/pages/Auth'
-import Dashboard from './component/pages/Dashboard'
-import Transaction from './component/pages/Transaction'
-import Expense from './component/pages/Expense'
-import Product from './component/pages/Product'
-import Stock from './component/pages/Stock'
-import StockLogs from './component/pages/StockLogs'
-import Reports from './component/pages/Reports'
-import Profile from './component/pages/Profile'
 import Layout from './component/layout/layout'
-import Settings from './component/pages/Setting'
-import Privacy from './component/pages/Setting/Privacy'
-import DeleteAccount from './component/pages/Setting/DeleteAccount'
-import Terms from './component/pages/Setting/Term'
-import DetailInfo from './component/pages/Setting/DetailInfo'
+
+// Lazy load semua page
+const Auth = lazy(() => import('./component/pages/Auth'))
+const Dashboard = lazy(() => import('./component/pages/Dashboard'))
+const Transaction = lazy(() => import('./component/pages/Transaction'))
+const Expense = lazy(() => import('./component/pages/Expense'))
+const Product = lazy(() => import('./component/pages/Product'))
+const Stock = lazy(() => import('./component/pages/Stock'))
+const StockLogs = lazy(() => import('./component/pages/StockLogs'))
+const Reports = lazy(() => import('./component/pages/Reports'))
+const Profile = lazy(() => import('./component/pages/Profile'))
+const Settings = lazy(() => import('./component/pages/Setting'))
+const Privacy = lazy(() => import('./component/pages/Setting/Privacy'))
+const DeleteAccount = lazy(() => import('./component/pages/Setting/DeleteAccount'))
+const Terms = lazy(() => import('./component/pages/Setting/Term'))
+const DetailInfo = lazy(() => import('./component/pages/Setting/DetailInfo'))
 
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
+      <Suspense fallback={<div className="text-white text-center mt-10">Loading...</div>}>
+        <Routes>
 
-        {/* Login Pages*/}
-        <Route path="/" element={<Auth />} />
+          <Route path="/" element={<Auth />} />
 
-        <Route
-          path="/dashboard"
-          element={
-            <Layout>
-              <Dashboard />
-            </Layout>
-          }
-        />
+          <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
+          <Route path="/transactions" element={<Layout><Transaction /></Layout>} />
+          <Route path="/products" element={<Layout><Product /></Layout>} />
+          <Route path="/expenses" element={<Layout><Expense /></Layout>} />
+          <Route path="/stock" element={<Layout><Stock /></Layout>} />
+          <Route path="/stock-logs" element={<Layout><StockLogs /></Layout>} />
+          <Route path="/reports" element={<Layout><Reports /></Layout>} />
+          <Route path="/profile" element={<Layout><Profile /></Layout>} />
 
-        <Route
-          path="/transactions"
-          element={
-            <Layout>
-              <Transaction />
-            </Layout>
-          }
-        />
+          <Route path="/settings" element={<Layout><Settings /></Layout>} />
+          <Route path="/privacy" element={<Layout><Privacy /></Layout>} />
+          <Route path="/terms" element={<Layout><Terms /></Layout>} />
+          <Route path="/delete" element={<Layout><DeleteAccount /></Layout>} />
+          <Route path="/detailinfo" element={<Layout><DetailInfo /></Layout>} />
 
-        <Route
-          path="/products"
-          element={
-            <Layout>
-              <Product />
-            </Layout>
-          }
-        />
+        </Routes>
+      </Suspense>
 
-        <Route
-          path="/expenses"
-          element={
-            <Layout>
-              <Expense />
-            </Layout>
-          }
-        />
-
-        <Route
-          path="/stock"
-          element={
-            <Layout>
-              <Stock />
-            </Layout>
-          }
-        />
-
-        <Route
-          path="/stock-logs"
-          element={
-            <Layout>
-              <StockLogs />
-            </Layout>
-          }
-        />
-
-        <Route
-          path="/reports"
-          element={
-            <Layout>
-              <Reports />
-            </Layout>
-          }
-        />
-
-        <Route
-          path="/profile"
-          element={
-            <Layout>
-              <Profile />
-            </Layout>
-          }
-        />
-        <Route path='/settings' element={
-          <Layout>
-            <Settings />
-          </Layout>
-        } />
-        <Route path='/privacy' element={
-          <Layout>
-            <Privacy />
-          </Layout>
-        } />
-        <Route path='/terms' element={
-          <Layout>
-            <Terms />
-          </Layout>
-        } />
-        <Route path='/delete' element={
-          <Layout>
-            <DeleteAccount />
-          </Layout>
-        } />
-
-        <Route path='/detailinfo' element={
-          <Layout>
-            <DetailInfo />
-          </Layout>
-        } />
-      </Routes>
-      <ToastContainer position="top-right" autoClose={3000} hideProgressBar newestOnTop closeOnClick pauseOnHover draggable theme="dark" />
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar
+        newestOnTop
+        closeOnClick
+        pauseOnHover
+        draggable
+        theme="dark"
+      />
     </BrowserRouter>
   )
 }
