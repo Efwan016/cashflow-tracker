@@ -15,6 +15,7 @@ export default function Transaction() {
   const [transactions, setTransactions] = useState<TransactionRecord[]>([])
 
   const [productId, setProductId] = useState('')
+  const [manualName, setManualName] = useState('')
   const [qty, setQty] = useState('')
   const [modalPrice, setModalPrice] = useState('')
   const [salePrice, setSalePrice] = useState('')
@@ -116,6 +117,19 @@ export default function Transaction() {
     loadData()
   }, [userId, loadData])
 
+  // 🌍 CURRENCY & NUMBER FORMATTER
+  const currencyFormatter = useMemo(() => {
+    // Mencoba menebak mata uang berdasarkan locale browser (default ke IDR jika Indo)
+    const currency = navigator.language.includes('ID') ? 'IDR' : 'USD';
+    return new Intl.NumberFormat(navigator.language, {
+      style: 'currency',
+      currency: currency,
+      minimumFractionDigits: 0,
+    });
+  }, []);
+
+  const numberFormatter = useMemo(() => new Intl.NumberFormat(navigator.language), []);
+
   // 🔥 CALCULATE TOTALS FOR DISPLAYED TRANSACTIONS
   const totalDisplayedQty = useMemo(() => {
     return transactions.reduce((sum, t) => sum + t.qty, 0);
@@ -155,11 +169,17 @@ export default function Transaction() {
   const handleSelectProduct = (id: string) => {
     setProductId(id)
 
-    const p = productMap.get(id)
-    if (!p) return
+    if (id === '') {
 
-    setSalePrice(String(p.harga_jual))
-    setModalPrice(String(p.harga_modal))
+      setModalPrice('')
+      setSalePrice('')
+    } else {
+      const p = productMap.get(id)
+      if (p) {
+        setSalePrice(String(p.harga_jual))
+        setModalPrice(String(p.harga_modal))
+      }
+    }
   }
 
   // 🔥 RESET
@@ -168,10 +188,13 @@ export default function Transaction() {
     setQty('')
     setModalPrice('')
     setSalePrice('')
+    setManualName('')
   }
 
   // 🔥 SUBMIT
-  const handleSubmit = async () => {
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault()
+
     const parsedQty = Number(qty)
     if (!Number.isFinite(parsedQty) || parsedQty <= 0) {
       toast.error('Qty must be greater than zero')
@@ -201,11 +224,21 @@ export default function Transaction() {
       const sign = offset <= 0 ? '+' : '-';
       return `${sign}${hours}:${minutes}`;
     };
-    
+
     // Menggunakan locale 'sv-SE' untuk mendapatkan format YYYY-MM-DD HH:mm:ss yang stabil
     const now = new Date().toLocaleString('sv-SE').replace(' ', 'T') + getTzOffset();
 
     const product = productMap.get(productId || '')
+
+    const productName = product
+      ? product.name
+      : manualName
+
+    if (!productId && !manualName.trim()) {
+      toast.error('Please enter a product name for manual entry')
+      setLoading(false)
+      return
+    }
 
     const realSalePrice = product ? product.harga_jual : Number(salePrice)
     const realModalPrice = product ? product.harga_modal : Number(modalPrice || 0)
@@ -244,6 +277,7 @@ export default function Transaction() {
       {
         user_id: userId,
         product_id: productId || null,
+        product_name: productName,
         qty: Number(qty),
         harga_jual: realSalePrice,
         harga_modal: realModalPrice,
@@ -380,6 +414,7 @@ export default function Transaction() {
     )
   }
 
+
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
@@ -393,7 +428,7 @@ export default function Transaction() {
 
         <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
           <section className="rounded-[40px] border border-white/10 bg-slate-900/90 p-8 shadow-2xl shadow-slate-950/20">
-            <div className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="flex items-center gap-3">
                 <span className="text-xs uppercase tracking-widest text-slate-500">Mode:</span>
                 <span className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${isWithStock ? 'bg-sky-500/10 text-sky-400 border border-sky-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
@@ -417,16 +452,18 @@ export default function Transaction() {
                   </select>
                 </label>
 
-                <label className="grid gap-3 text-left">
-                  <span className="text-sm text-slate-400">Cost price</span>
-                  <input
-                    type="number"
-                    placeholder="0"
-                    value={modalPrice}
-                    onChange={(e) => setModalPrice(e.target.value)}
-                    className="rounded-3xl border border-slate-700 bg-slate-950/90 px-4 py-4 text-white outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20"
-                  />
-                </label>
+                {productId === '' && (
+                  <label className="grid gap-3 text-left md:col-span-2">
+                    <span className="text-sm text-slate-400">Product name</span>
+                    <input
+                      type="text"
+                      placeholder="Enter product name"
+                      value={manualName}
+                      onChange={(e) => setManualName(e.target.value)}
+                      className="rounded-3xl border border-slate-700 bg-slate-950/90 px-4 py-4 text-white disabled:opacity-50"
+                    />
+                  </label>
+                )}
 
                 <label className="grid gap-3 text-left">
                   <span className="text-sm text-slate-400">Sale price</span>
@@ -435,6 +472,17 @@ export default function Transaction() {
                     placeholder="0"
                     value={salePrice}
                     onChange={(e) => setSalePrice(e.target.value)}
+                    className="rounded-3xl border border-slate-700 bg-slate-950/90 px-4 py-4 text-white outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20"
+                  />
+                </label>
+
+                <label className="grid gap-3 text-left">
+                  <span className="text-sm text-slate-400">Cost price</span>
+                  <input
+                    type="number"
+                    placeholder="0"
+                    value={modalPrice}
+                    onChange={(e) => setModalPrice(e.target.value)}
                     className="rounded-3xl border border-slate-700 bg-slate-950/90 px-4 py-4 text-white outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20"
                   />
                 </label>
@@ -454,22 +502,22 @@ export default function Transaction() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="rounded-3xl bg-slate-950/50 p-6 border border-slate-800">
                   <p className="text-xs uppercase tracking-widest text-slate-500">Transaction Total</p>
-                  <h2 className="mt-2 text-2xl font-semibold text-white">Rp {total.toLocaleString('id-ID')}</h2>
+                  <h2 className="mt-2 text-2xl font-semibold text-white">{currencyFormatter.format(total)}</h2>
                 </div>
                 <div className="rounded-3xl bg-slate-950/50 p-6 border border-slate-800">
                   <p className="text-xs uppercase tracking-widest text-slate-500">Expected Profit</p>
-                  <h2 className="mt-2 text-2xl font-semibold text-emerald-400">Rp {profit.toLocaleString('id-ID')}</h2>
+                  <h2 className="mt-2 text-2xl font-semibold text-emerald-400">{currencyFormatter.format(profit)}</h2>
                 </div>
               </div>
 
               <button
-                onClick={handleSubmit}
+                type="submit"
                 disabled={loading}
                 className="w-full inline-flex items-center justify-center rounded-3xl bg-gradient-to-r from-sky-500 to-indigo-500 px-6 py-4 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:from-sky-400 hover:to-indigo-400 disabled:opacity-60"
               >
                 {loading ? 'Saving...' : 'Save Transaction'}
               </button>
-            </div>
+            </form>
           </section>
 
           <aside className="rounded-[40px] border border-white/10 bg-slate-900/90 p-8 shadow-2xl shadow-slate-950/20">
@@ -577,10 +625,10 @@ export default function Transaction() {
                 ) : (
                   transactions.map((t) => (
                     <tr key={t.id} className="hover:bg-white/[0.02] transition-colors group">
-                      <td className="px-6 py-4 font-medium">{productMap.get(t.product_id || '')?.name || 'Manual Sale'}</td>
-                      <td className="px-6 py-4 text-center font-mono">{t.qty}</td>
-                      <td className="px-6 py-4">Rp {t.total.toLocaleString('id-ID')}</td>
-                      <td className="px-6 py-4 text-emerald-400 font-semibold">Rp {(t.profit || 0).toLocaleString('id-ID')}</td>
+                      <td className="px-6 py-4 font-medium">{productMap.get(t.product_id || '')?.name || t.product_name || 'Manual Sale'}</td>
+                      <td className="px-6 py-4 text-center font-mono">{numberFormatter.format(t.qty)}</td>
+                      <td className="px-6 py-4">{currencyFormatter.format(t.total)}</td>
+                      <td className="px-6 py-4 text-emerald-400 font-semibold">{currencyFormatter.format(t.profit || 0)}</td>
                       <td className="px-6 py-4 text-right">
                         <button
                           onClick={() => handleDelete(t)}
@@ -598,10 +646,10 @@ export default function Transaction() {
                 <tfoot className="border-t border-slate-800/50 bg-sky-900/50 text-slate-200">
                   <tr>
                     <td className="px-6 py-4 font-bold">Total</td>
-                    <td className="px-6 py-4 text-center font-bold font-mono">{totalDisplayedQty.toLocaleString('id-ID')}</td>
-                    <td className="px-6 py-4 font-bold">Rp {totalDisplayedRevenue.toLocaleString('id-ID')}</td>
+                    <td className="px-6 py-4 text-center font-bold font-mono">{numberFormatter.format(totalDisplayedQty)}</td>
+                    <td className="px-6 py-4 font-bold">{currencyFormatter.format(totalDisplayedRevenue)}</td>
                     <td className={`px-6 py-4 font-bold ${totalDisplayedProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                      Rp {totalDisplayedProfit.toLocaleString('id-ID')}
+                      {currencyFormatter.format(totalDisplayedProfit)}
                     </td>
                     <td className="px-6 py-4 text-right"></td>
                   </tr>

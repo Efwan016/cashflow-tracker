@@ -21,18 +21,33 @@ export default function StockLogs() {
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(true)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [sortBy, setSortBy] = useState('date-desc')
+
+  const [userId, setUserId] = useState<string | null>(null)
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setUserId(data.user?.id || null)
+    })
+  }, [])
 
   useEffect(() => {
     async function loadData() {
+      if (!userId) return
       setLoading(true)
 
       const [logResult, productResult] = await Promise.all([
         supabase
           .from('Stock_logs')
           .select('id, product_id, type, qty, created_at')
+          .eq('user_id', userId)
           .order('created_at', { ascending: false })
           .limit(12),
-        supabase.from('Product').select('id, name').order('name', { ascending: true }),
+        supabase
+          .from('Product')
+          .select('id, name')
+          .eq('user_id', userId)
+          .order('name', { ascending: true }),
       ])
 
       const { data: logData, error: logError } = logResult
@@ -51,7 +66,9 @@ export default function StockLogs() {
       setLoading(false)
     }
     loadData()
-  }, [])
+  }, [userId])
+
+  const numberFormatter = useMemo(() => new Intl.NumberFormat(navigator.language), []);
 
   const totalLogs = useMemo(() => stockLogs.length, [stockLogs])
   const totalQty = useMemo(() => stockLogs.reduce((sum, item) => sum + item.qty * (item.type === 'IN' ? 1 : -1), 0), [stockLogs])
@@ -60,10 +77,30 @@ export default function StockLogs() {
     [products]
   )
 
+  const sortedLogs = useMemo(() => {
+    const list = [...stockLogs]
+    list.sort((a, b) => {
+      const nameA = productMap.get(a.product_id) || a.product_id
+      const nameB = productMap.get(b.product_id) || b.product_id
+      switch (sortBy) {
+        case 'name-asc': return nameA.localeCompare(nameB)
+        case 'name-desc': return nameB.localeCompare(nameA)
+        case 'qty-desc': return b.qty - a.qty
+        case 'qty-asc': return a.qty - b.qty
+        case 'date-asc': return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        default: return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      }
+    })
+    return list
+  }, [stockLogs, sortBy, productMap])
+
   const refreshLogs = async () => {
+    if (!userId) return
+
     const { data, error } = await supabase
       .from('Stock_logs')
       .select('id, product_id, type, qty, created_at')
+      .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .limit(12)
 
@@ -111,7 +148,13 @@ export default function StockLogs() {
     setSuccess('')
     setIsDeleting(true)
 
-    const { error: deleteError } = await supabase.from('Stock_logs').delete().eq('id', logId)
+    if (!userId) {
+      toast.error('User not authenticated')
+      setIsDeleting(false)
+      return
+    }
+
+    const { error: deleteError } = await supabase.from('Stock_logs').delete().eq('id', logId).eq('user_id', userId)
     if (deleteError) {
       setError('Unable to delete stock log: ' + deleteError.message)
       toast.error('Unable to delete stock log: ' + deleteError.message)
@@ -124,6 +167,7 @@ export default function StockLogs() {
       .from('Stock')
       .select('id, total')
       .eq('product_id', productIdToRestore)
+      .eq('user_id', userId)
       .maybeSingle()
 
     if (stockError) {
@@ -140,6 +184,7 @@ export default function StockLogs() {
         .from('Stock')
         .update({ total: updatedTotal })
         .eq('id', existingStock.id)
+        .eq('user_id', userId)
 
       if (updateError) {
         setError('Stock log deleted but failed to update stock: ' + updateError.message)
@@ -150,7 +195,7 @@ export default function StockLogs() {
       }
     } else if (adjustment > 0) {
       const { error: createError } = await supabase.from('Stock').insert([
-        { product_id: productIdToRestore, total: adjustment },
+        { product_id: productIdToRestore, total: adjustment, user_id: userId },
       ])
       if (createError) {
         setError('Stock log deleted but failed to restore stock item: ' + createError.message)
@@ -193,14 +238,31 @@ export default function StockLogs() {
       return
     }
 
+    if (!userId) {
+      toast.error('User not authenticated')
+      return
+    }
+
     setLoading(true)
+
+    const getTzOffset = () => {
+      const offset = new Date().getTimezoneOffset();
+      const absOffset = Math.abs(offset);
+      const hours = String(Math.floor(absOffset / 60)).padStart(2, '0');
+      const minutes = String(absOffset % 60).padStart(2, '0');
+      const sign = offset <= 0 ? '+' : '-';
+      return `${sign}${hours}:${minutes}`;
+    };
+
+    const now = new Date().toLocaleString('sv-SE').replace(' ', 'T') + getTzOffset();
 
     const { error: insertError } = await supabase.from('Stock_logs').insert([
       {
+        user_id: userId,
         product_id: productId,
         type,
         qty: parsedQty,
-        created_at: new Date().toISOString(),
+        created_at: now,
       },
     ])
 
@@ -214,6 +276,7 @@ export default function StockLogs() {
       .from('Stock')
       .select('id, total')
       .eq('product_id', productId)
+      .eq('user_id', userId)
       .maybeSingle()
 
     if (stockError) {
@@ -229,6 +292,7 @@ export default function StockLogs() {
         .from('Stock')
         .update({ total: updatedTotal })
         .eq('id', existingStock.id)
+        .eq('user_id', userId)
       if (updateError) {
         setError('Unable to update stock count: ' + updateError.message)
         setLoading(false)
@@ -237,6 +301,7 @@ export default function StockLogs() {
     } else if (type === 'IN') {
       const { error: createError } = await supabase.from('Stock').insert([
         {
+          user_id: userId,
           product_id: productId,
           total: parsedQty,
         },
@@ -252,11 +317,13 @@ export default function StockLogs() {
       supabase
         .from('Stock_logs')
         .select('id, product_id, type, qty, created_at')
+        .eq('user_id', userId)
         .order('created_at', { ascending: false })
         .limit(12),
       supabase
         .from('Stock')
         .select('id, product_id, total')
+        .eq('user_id', userId)
         .order('product_id', { ascending: true }),
     ])
 
@@ -372,7 +439,7 @@ export default function StockLogs() {
                 </div>
                 <div className="rounded-3xl border border-slate-800 bg-slate-950/90 p-5">
                   <p className="text-sm text-slate-400">Net stock movement</p>
-                  <p className="mt-3 text-3xl font-semibold text-white">{totalQty.toLocaleString('id-ID')}</p>
+                  <p className="mt-3 text-3xl font-semibold text-white">{numberFormatter.format(totalQty)}</p>
                 </div>
               </div>
 
@@ -396,7 +463,21 @@ export default function StockLogs() {
               <p className="text-sm uppercase tracking-[0.35em] text-slate-400">Recent stock logs</p>
               <h2 className="mt-3 text-2xl font-semibold text-white">Inventory movement history</h2>
             </div>
-            <p className="text-sm text-slate-400">Logged from stock updates and inventory operations.</p>
+            <div className="flex items-center gap-3">
+               <span className="text-xs text-slate-500">Sort:</span>
+               <select
+                 value={sortBy}
+                 onChange={(e) => setSortBy(e.target.value)}
+                 className="rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-2 text-xs text-white outline-none focus:border-sky-500/50 hover:bg-slate-900/80 cursor-pointer"
+               >
+                 <option value="date-desc">Terbaru</option>
+                 <option value="date-asc">Terlama</option>
+                 <option value="name-asc">Alphabet (A-Z)</option>
+                 <option value="name-desc">Alphabet (Z-A)</option>
+                 <option value="qty-desc">Qty (Banyak-Sedikit)</option>
+                 <option value="qty-asc">Qty (Sedikit-Banyak)</option>
+               </select>
+            </div>
           </div>
 
           <div className="overflow-hidden rounded-[32px] border border-slate-800 bg-slate-950/90">
@@ -424,13 +505,13 @@ export default function StockLogs() {
                     </td>
                   </tr>
                 ) : (
-                  stockLogs.map((log) => (
+                  sortedLogs.map((log) => (
                     <tr key={log.id} className="border-b border-slate-800 last:border-none">
                       <td className="px-4 py-4 text-slate-100">{productMap.get(log.product_id) ?? log.product_id}</td>
                       <td className={`px-4 py-4 font-semibold ${log.type === 'IN' ? 'text-emerald-300' : 'text-rose-300'}`}>
                         {log.type}
                       </td>
-                      <td className="px-4 py-4 text-slate-100">{log.qty.toLocaleString('id-ID')}</td>
+                      <td className="px-4 py-4 text-slate-100">{numberFormatter.format(log.qty)}</td>
                       <td className="px-4 py-4 text-slate-400">{new Date(log.created_at).toLocaleDateString()}</td>
                       <td className="px-4 py-4">
                         <button

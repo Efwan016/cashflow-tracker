@@ -96,6 +96,17 @@ export default function Dashboard() {
     fetchDashboardData()
   }, [])
 
+  const currencyFormatter = useMemo(() => {
+    const currency = navigator.language.includes('ID') ? 'IDR' : 'USD';
+    return new Intl.NumberFormat(navigator.language, {
+      style: 'currency',
+      currency: currency,
+      minimumFractionDigits: 0,
+    });
+  }, []);
+
+  const numberFormatter = useMemo(() => new Intl.NumberFormat(navigator.language), []);
+
   const overview = useMemo(() => {
     const totalRevenue = transactions.reduce((sum, item) => sum + item.total, 0)
     const totalTransactions = transactions.length
@@ -123,11 +134,11 @@ export default function Dashboard() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="rounded-[32px] border border-slate-700 bg-slate-950/80 p-5 shadow-sm shadow-slate-950/30">
               <p className="text-sm text-slate-400">Available revenue</p>
-              <p className="mt-3 text-3xl font-semibold text-white">Rp {overview.totalRevenue.toLocaleString('id-ID')}</p>
+              <p className="mt-3 text-3xl font-semibold text-white">{currencyFormatter.format(overview.totalRevenue)}</p>
             </div>
             <div className="rounded-[32px] border border-slate-700 bg-slate-950/80 p-5 shadow-sm shadow-slate-950/30">
               <p className="text-sm text-slate-400">Total expenses</p>
-              <p className="mt-3 text-3xl font-semibold text-white">Rp {overview.totalExpense.toLocaleString('id-ID')}</p>
+              <p className="mt-3 text-3xl font-semibold text-white">{currencyFormatter.format(overview.totalExpense)}</p>
             </div>
           </div>
         </div>
@@ -147,19 +158,19 @@ export default function Dashboard() {
             <div className="grid gap-4 sm:grid-cols-4">
               <div className="rounded-[32px] border border-slate-700 bg-slate-950/80 p-5">
                 <p className="text-sm text-slate-400">Revenue</p>
-                <p className="mt-3 text-2xl font-semibold text-white">Rp {overview.totalRevenue.toLocaleString('id-ID')}</p>
+                <p className="mt-3 text-2xl font-semibold text-white">{currencyFormatter.format(overview.totalRevenue)}</p>
               </div>
               <div className="rounded-[32px] border border-slate-700 bg-slate-950/80 p-5">
                 <p className="text-sm text-slate-400">Expenses</p>
-                <p className="mt-3 text-2xl font-semibold text-white">Rp {overview.totalExpense.toLocaleString('id-ID')}</p>
+                <p className="mt-3 text-2xl font-semibold text-white">{currencyFormatter.format(overview.totalExpense)}</p>
               </div>
               <div className="rounded-[32px] border border-slate-700 bg-slate-950/80 p-5">
                 <p className="text-sm text-slate-400">Total stock qty</p>
-                <p className="mt-3 text-2xl font-semibold text-white">{overview.totalStockQty.toLocaleString('id-ID')}</p>
+                <p className="mt-3 text-2xl font-semibold text-white">{numberFormatter.format(overview.totalStockQty)}</p>
               </div>
               <div className="rounded-[32px] border border-slate-700 bg-slate-950/80 p-5">
                 <p className="text-sm text-slate-400">Net cashflow</p>
-                <p className="mt-3 text-2xl font-semibold text-white">Rp {overview.netCashflow.toLocaleString('id-ID')}</p>
+                <p className="mt-3 text-2xl font-semibold text-white">{currencyFormatter.format(overview.netCashflow)}</p>
               </div>
             </div>
 
@@ -197,7 +208,7 @@ export default function Dashboard() {
                       <div className="flex items-center justify-between gap-4">
                         <div>
                           <p className="text-sm text-slate-400">Transaction</p>
-                          <p className="mt-2 text-lg font-semibold text-white">Rp {item.total.toLocaleString('id-ID')}</p>
+                          <p className="mt-2 text-lg font-semibold text-white">{currencyFormatter.format(item.total)}</p>
                         </div>
                         <span className="rounded-full bg-slate-800 px-3 py-1 text-sm font-semibold text-slate-400">{new Date(item.created_at).toLocaleDateString()}</span>
                       </div>
@@ -208,7 +219,7 @@ export default function Dashboard() {
                       <div className="flex items-center justify-between gap-4">
                         <div>
                           <p className="text-sm text-slate-400">Expense</p>
-                          <p className="mt-2 text-lg font-semibold text-white">Rp {item.total.toLocaleString('id-ID')}</p>
+                          <p className="mt-2 text-lg font-semibold text-white">{currencyFormatter.format(item.total)}</p>
                           <p className="mt-1 text-sm text-slate-400">{item.description}</p>
                         </div>
                         <span className="rounded-full bg-slate-800 px-3 py-1 text-sm font-semibold text-slate-400">{new Date(item.created_at).toLocaleDateString()}</span>
@@ -221,7 +232,7 @@ export default function Dashboard() {
                         <div>
                           <p className="text-sm text-slate-400">Stock {item.type}</p>
                           <p className="mt-2 text-lg font-semibold text-white">{item.product_id}</p>
-                          <p className="mt-1 text-sm text-slate-400">Qty {item.qty.toLocaleString('id-ID')}</p>
+                          <p className="mt-1 text-sm text-slate-400">Qty {numberFormatter.format(item.qty)}</p>
                         </div>
                         <span className="rounded-full bg-slate-800 px-3 py-1 text-sm font-semibold text-slate-400">{new Date(item.created_at).toLocaleDateString()}</span>
                       </div>

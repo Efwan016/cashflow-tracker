@@ -1,64 +1,85 @@
-import './App.css'
-import 'react-toastify/dist/ReactToastify.css'
-import { ToastContainer } from 'react-toastify'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { lazy, Suspense } from 'react'
-
+import { lazy, Suspense } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
 import Layout from './component/layout/layout'
 
-// Lazy load semua page
-const Auth = lazy(() => import('./component/pages/Auth'))
-const Dashboard = lazy(() => import('./component/pages/Dashboard'))
-const Transaction = lazy(() => import('./component/pages/Transaction'))
-const Expense = lazy(() => import('./component/pages/Expense'))
-const Product = lazy(() => import('./component/pages/Product'))
-const Stock = lazy(() => import('./component/pages/Stock'))
-const StockLogs = lazy(() => import('./component/pages/StockLogs'))
-const Reports = lazy(() => import('./component/pages/Reports'))
-const Profile = lazy(() => import('./component/pages/Profile'))
-const Settings = lazy(() => import('./component/pages/Setting'))
-const Privacy = lazy(() => import('./component/pages/Setting/Privacy'))
-const DeleteAccount = lazy(() => import('./component/pages/Setting/DeleteAccount'))
-const Terms = lazy(() => import('./component/pages/Setting/Term'))
-const DetailInfo = lazy(() => import('./component/pages/Setting/DetailInfo'))
+// Styles
+import 'react-toastify/dist/ReactToastify.css';
+import './App.css';
+
+// Lazy Loaded Components
+const Auth = lazy(() => import('./component/pages/Auth'));
+const Dashboard = lazy(() => import('./component/pages/Dashboard'));
+const Transaction = lazy(() => import('./component/pages/Transaction'));
+const Expense = lazy(() => import('./component/pages/Expense'));
+const Product = lazy(() => import('./component/pages/Product'));
+const Stock = lazy(() => import('./component/pages/Stock'));
+const StockLogs = lazy(() => import('./component/pages/StockLogs'));
+const Reports = lazy(() => import('./component/pages/Reports'));
+const Profile = lazy(() => import('./component/pages/Profile'));
+
+// Settings Group
+const Settings = lazy(() => import('./component/pages/Setting'));
+const Privacy = lazy(() => import('./component/pages/Setting/Privacy'));
+const DeleteAccount = lazy(() => import('./component/pages/Setting/DeleteAccount'));
+const Terms = lazy(() => import('./component/pages/Setting/Term'));
+const DetailInfo = lazy(() => import('./component/pages/Setting/DetailInfo'));
+
+const LoadingFallback = () => (
+  <div className="flex h-screen w-full items-center justify-center bg-slate-950 text-white">
+    <div className="flex flex-col items-center gap-4">
+      <div className="h-10 w-10 animate-spin rounded-full border-4 border-sky-500 border-t-transparent" />
+      <p className="text-sm font-medium tracking-widest uppercase text-slate-400">Loading Cashflow...</p>
+    </div>
+  </div>
+);
 
 function App() {
   return (
     <BrowserRouter>
-      <Suspense fallback={<div className="text-white text-center mt-10">Loading...</div>}>
+      <Suspense fallback={<LoadingFallback />}>
         <Routes>
-
+          {/* Public Routes */}
           <Route path="/" element={<Auth />} />
 
-          <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
-          <Route path="/transactions" element={<Layout><Transaction /></Layout>} />
-          <Route path="/products" element={<Layout><Product /></Layout>} />
-          <Route path="/expenses" element={<Layout><Expense /></Layout>} />
-          <Route path="/stock" element={<Layout><Stock /></Layout>} />
-          <Route path="/stock-logs" element={<Layout><StockLogs /></Layout>} />
-          <Route path="/reports" element={<Layout><Reports /></Layout>} />
-          <Route path="/profile" element={<Layout><Profile /></Layout>} />
-
-          <Route path="/settings" element={<Layout><Settings /></Layout>} />
-          <Route path="/privacy" element={<Layout><Privacy /></Layout>} />
-          <Route path="/terms" element={<Layout><Terms /></Layout>} />
-          <Route path="/delete" element={<Layout><DeleteAccount /></Layout>} />
-          <Route path="/detailinfo" element={<Layout><DetailInfo /></Layout>} />
-
+          {/* Protected Routes */}
+          {[
+            { path: '/dashboard', element: <Dashboard /> },
+            { path: '/transactions', element: <Transaction /> },
+            { path: '/products', element: <Product /> },
+            { path: '/expenses', element: <Expense /> },
+            { path: '/stock', element: <Stock /> },
+            { path: '/stock-logs', element: <StockLogs /> },
+            { path: '/reports', element: <Reports /> },
+            { path: '/profile', element: <Profile /> },
+            { path: '/settings', element: <Settings /> },
+            { path: '/privacy', element: <Privacy /> },
+            { path: '/terms', element: <Terms /> },
+            { path: '/delete', element: <DeleteAccount /> },
+            { path: '/detailinfo', element: <DetailInfo /> },
+          ].map((route) => (
+            <Route
+              key={route.path}
+              path={route.path}
+              element={<Layout>{route.element}</Layout>}
+            />
+          ))}
         </Routes>
       </Suspense>
 
       <ToastContainer
-        position="top-center"
-        autoClose={3000}
-        hideProgressBar
+        position="bottom-right"
+        autoClose={4000}
         newestOnTop
+        theme="dark"
         closeOnClick
         pauseOnHover
         draggable
-        theme="dark"
-        style={{ top: '50%', transform: 'translateY(-50%)' }}
-        toastClassName="!bg-slate-900/40 !backdrop-blur-2xl !border !border-white/10 !rounded-[30px] !shadow-[0_32px_64px_-15px_rgba(0,0,0,0.6)] !text-slate-100 !text-center !px-6"
+        toastClassName={() =>
+          "!flex !items-center !gap-3 !rounded-2xl !px-4 !py-3 !mb-4 " +
+          "!bg-slate-900/70 !backdrop-blur-xl !border !border-white/10 " +
+          "!shadow-[0_20px_50px_rgba(0,0,0,0.5)] !text-slate-100"
+        }
       />
     </BrowserRouter>
   )

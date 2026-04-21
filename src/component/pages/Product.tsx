@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { toast } from 'react-toastify'
 import { supabase } from '../../lib/supabase'
 import type { Product } from '../../types/types'
@@ -11,6 +11,7 @@ export default function ProductPage() {
 
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [sortBy, setSortBy] = useState('name-asc')
 
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -20,10 +21,33 @@ export default function ProductPage() {
     setSuccess('')
   }
 
+  const currencyFormatter = useMemo(() => {
+    const currency = navigator.language.includes('ID') ? 'IDR' : 'USD';
+    return new Intl.NumberFormat(navigator.language, {
+      style: 'currency',
+      currency: currency,
+      minimumFractionDigits: 0,
+    });
+  }, []);
+
   const getUserId = async () => {
     const { data } = await supabase.auth.getUser()
     return data?.user?.id ?? null
   }
+
+  const sortedProducts = useMemo(() => {
+    return [...products].sort((a, b) => {
+      switch (sortBy) {
+        case 'name-asc': return a.name.localeCompare(b.name)
+        case 'name-desc': return b.name.localeCompare(a.name)
+        case 'modal-asc': return a.harga_modal - b.harga_modal
+        case 'modal-desc': return b.harga_modal - a.harga_modal
+        case 'sale-asc': return a.harga_jual - b.harga_jual
+        case 'sale-desc': return b.harga_jual - a.harga_jual
+        default: return 0
+      }
+    })
+  }, [products, sortBy])
 
   const fetchProducts = useCallback(async () => {
     const userId = await getUserId()
@@ -293,7 +317,21 @@ export default function ProductPage() {
               <p className="text-sm uppercase tracking-[0.35em] text-slate-400">Product list</p>
               <h2 className="mt-3 text-2xl font-semibold text-white">Current catalog</h2>
             </div>
-            <p className="text-sm text-slate-400">Pulled from the Product table.</p>
+            <div className="flex items-center gap-3">
+               <span className="text-xs text-slate-500">Sort:</span>
+               <select
+                 value={sortBy}
+                 onChange={(e) => setSortBy(e.target.value)}
+                 className="rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-2 text-xs text-white outline-none focus:border-sky-500/50 hover:bg-slate-900/80 cursor-pointer"
+               >
+                 <option value="name-asc">Alphabet (A-Z)</option>
+                 <option value="name-desc">Alphabet (Z-A)</option>
+                 <option value="modal-desc">Modal (High-Low)</option>
+                 <option value="modal-asc">Modal (Low-High)</option>
+                 <option value="sale-desc">Jual (High-Low)</option>
+                 <option value="sale-asc">Jual (Low-High)</option>
+               </select>
+            </div>
           </div>
 
           <div className="overflow-hidden rounded-[32px] border border-slate-800 bg-slate-950/90">
@@ -321,12 +359,12 @@ export default function ProductPage() {
                     </td>
                   </tr>
                 ) : (
-                  products.map((product) => (
+                  sortedProducts.map((product) => (
                     <tr key={product.id} className="border-b border-slate-800 last:border-none">
                       <td className="px-4 py-4 text-slate-100">{product.id}</td>
                       <td className="px-4 py-4 text-slate-100">{product.name}</td>
-                      <td className="px-4 py-4 text-slate-100">Rp {product.harga_modal.toLocaleString('id-ID')}</td>
-                      <td className="px-4 py-4 text-slate-100">Rp {product.harga_jual.toLocaleString('id-ID')}</td>
+                      <td className="px-4 py-4 text-slate-100">{currencyFormatter.format(product.harga_modal)}</td>
+                      <td className="px-4 py-4 text-slate-100">{currencyFormatter.format(product.harga_jual)}</td>
                       <td className="px-4 py-4">
                         <button
                           onClick={() => handleDelete(product.id)}

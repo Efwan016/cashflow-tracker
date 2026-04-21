@@ -98,6 +98,17 @@ export default function Reports() {
     fetchReports()
   }, [])
 
+  const currencyFormatter = useMemo(() => {
+    const currency = navigator.language.includes('ID') ? 'IDR' : 'USD';
+    return new Intl.NumberFormat(navigator.language, {
+      style: 'currency',
+      currency: currency,
+      minimumFractionDigits: 0,
+    });
+  }, []);
+
+  const numberFormatter = useMemo(() => new Intl.NumberFormat(navigator.language), []);
+
   const overview = useMemo(() => {
     const totalRevenue = transactions.reduce((sum, item) => sum + item.total, 0)
     const totalExpenses = expenses.reduce((sum, item) => sum + item.total, 0)
@@ -130,17 +141,17 @@ export default function Reports() {
         <div className="grid gap-6 lg:grid-cols-4">
           <div className="rounded-[32px] border border-slate-700 bg-slate-950/80 p-6 shadow-sm shadow-slate-950/30">
             <p className="text-sm uppercase tracking-[0.35em] text-slate-400">Total revenue</p>
-            <p className="mt-4 text-3xl font-semibold text-white">Rp {overview.totalRevenue.toLocaleString('id-ID')}</p>
+            <p className="mt-4 text-3xl font-semibold text-white">{currencyFormatter.format(overview.totalRevenue)}</p>
             <p className="mt-2 text-sm text-slate-400">Recent transaction total</p>
           </div>
           <div className="rounded-[32px] border border-slate-700 bg-slate-950/80 p-6 shadow-sm shadow-slate-950/30">
             <p className="text-sm uppercase tracking-[0.35em] text-slate-400">Net profit</p>
-            <p className="mt-4 text-3xl font-semibold text-white">Rp {overview.netProfit.toLocaleString('id-ID')}</p>
+            <p className="mt-4 text-3xl font-semibold text-white">{currencyFormatter.format(overview.netProfit)}</p>
             <p className="mt-2 text-sm text-slate-400">Revenue minus spend</p>
           </div>
           <div className="rounded-[32px] border border-slate-700 bg-slate-950/80 p-6 shadow-sm shadow-slate-950/30">
             <p className="text-sm uppercase tracking-[0.35em] text-slate-400">Stock quantity</p>
-            <p className="mt-4 text-3xl font-semibold text-white">{overview.totalStockQuantity.toLocaleString('id-ID')}</p>
+            <p className="mt-4 text-3xl font-semibold text-white">{numberFormatter.format(overview.totalStockQuantity)}</p>
             <p className="mt-2 text-sm text-slate-400">Available inventory</p>
           </div>
           <div className="rounded-[32px] border border-slate-700 bg-slate-950/80 p-6 shadow-sm shadow-slate-950/30">
@@ -189,8 +200,8 @@ export default function Reports() {
                       <tr key={item.id} className="border-b border-slate-800 last:border-none">
                         <td className="px-4 py-4 text-slate-100">{productMap.get(item.product_id) ?? item.product_id}</td>
                         <td className="px-4 py-4 text-slate-100">{item.qty}</td>
-                        <td className="px-4 py-4 text-slate-100">Rp {item.harga_jual.toLocaleString('id-ID')}</td>
-                        <td className="px-4 py-4 text-slate-100">Rp {item.total.toLocaleString('id-ID')}</td>
+                        <td className="px-4 py-4 text-slate-100">{currencyFormatter.format(item.harga_jual)}</td>
+                        <td className="px-4 py-4 text-slate-100">{currencyFormatter.format(item.total)}</td>
                         <td className="px-4 py-4 text-slate-400">{new Date(item.created_at).toLocaleDateString()}</td>
                       </tr>
                     ))
@@ -209,11 +220,11 @@ export default function Reports() {
             <div className="mt-6 space-y-4">
               <div className="rounded-[28px] border border-slate-700 bg-slate-950/80 p-5">
                 <p className="text-sm text-slate-400">Total stock flow in</p>
-                <p className="mt-3 text-2xl font-semibold text-white">{overview.totalIn.toLocaleString('id-ID')}</p>
+                <p className="mt-3 text-2xl font-semibold text-white">{numberFormatter.format(overview.totalIn)}</p>
               </div>
               <div className="rounded-[28px] border border-slate-700 bg-slate-950/80 p-5">
                 <p className="text-sm text-slate-400">Total stock flow out</p>
-                <p className="mt-3 text-2xl font-semibold text-white">{overview.totalOut.toLocaleString('id-ID')}</p>
+                <p className="mt-3 text-2xl font-semibold text-white">{numberFormatter.format(overview.totalOut)}</p>
               </div>
               <div className="rounded-[28px] border border-slate-700 bg-slate-900/90 p-5 text-sm text-slate-300">
                 Stock logs and inventory records are synchronized for consistent stock reporting.
@@ -263,7 +274,7 @@ export default function Reports() {
                   stocks.map((item) => (
                     <tr key={item.id} className="border-b border-slate-800 last:border-none">
                       <td className="px-4 py-4 text-slate-100">{productMap.get(item.product_id) ?? item.product_id}</td>
-                      <td className="px-4 py-4 text-slate-100">{item.total.toLocaleString('id-ID')}</td>
+                      <td className="px-4 py-4 text-slate-100">{numberFormatter.format(item.total)}</td>
                     </tr>
                   ))
                 )}

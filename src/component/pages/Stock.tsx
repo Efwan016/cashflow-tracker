@@ -22,6 +22,7 @@ export default function Stock() {
     const [editingId, setEditingId] = useState<string | null>(null)
     const [editQty, setEditQty] = useState('')
     const [editName, setEditName] = useState('')
+    const [sortBy, setSortBy] = useState('name-asc')
 
     type Product = {
         id: string
@@ -29,6 +30,20 @@ export default function Stock() {
     }
 
     const [products, setProducts] = useState<Product[]>([])
+
+    const sortedStockItems = useMemo(() => {
+        return [...stockItems].sort((a, b) => {
+            const nameA = a.product_name ?? a.product_id
+            const nameB = b.product_name ?? b.product_id
+            switch (sortBy) {
+                case 'name-asc': return nameA.localeCompare(nameB)
+                case 'name-desc': return nameB.localeCompare(nameA)
+                case 'qty-desc': return b.total - a.total
+                case 'qty-asc': return a.total - b.total
+                default: return 0
+            }
+        })
+    }, [stockItems, sortBy])
 
     const loadStock = useCallback(async () => {
         setLoading(true)
@@ -78,17 +93,19 @@ export default function Stock() {
     useEffect(() => {
         let channel: ReturnType<typeof supabase.channel> | null = null
         let timeout: ReturnType<typeof setTimeout>
+        let isMounted = true
 
         const init = async () => {
             const { data: { user } } = await supabase.auth.getUser()
-
-            if (!user) return
+            if (!user || !isMounted) return
 
             await loadStock()
+            if (!isMounted) return
 
             // subscribe realtime
             channel = supabase
-                .channel('stock-changes')
+                // Gunakan suffix random agar tidak bentrok antar render/session
+                .channel(`stock-changes-${user.id}-${Math.random().toString(36).substring(7)}`)
                 .on(
                     'postgres_changes',
                     {
@@ -111,11 +128,13 @@ export default function Stock() {
         init()
 
         return () => {
+            isMounted = false
             if (channel) supabase.removeChannel(channel)
             clearTimeout(timeout)
         }
     }, [loadStock])
 
+    const numberFormatter = useMemo(() => new Intl.NumberFormat(navigator.language), []);
 
     const totalStock = useMemo(() => stockItems.reduce((sum, item) => sum + item.total, 0), [stockItems])
 
@@ -309,7 +328,7 @@ export default function Stock() {
                                 </div>
                                 <div className="rounded-3xl border border-slate-800 bg-slate-950/90 p-5">
                                     <p className="text-sm text-slate-400">Total quantity</p>
-                                    <p className="mt-3 text-3xl font-semibold text-white">{totalStock.toLocaleString('id-ID')}</p>
+                                    <p className="mt-3 text-3xl font-semibold text-white">{numberFormatter.format(totalStock)}</p>
                                 </div>
                             </div>
                             <div className="rounded-3xl border border-slate-800 bg-slate-900/90 p-5 text-sm text-slate-300">
@@ -331,7 +350,19 @@ export default function Stock() {
                             <p className="text-sm uppercase tracking-[0.35em] text-slate-400">Live inventory</p>
                             <h2 className="mt-3 text-2xl font-semibold text-white">Current stock list</h2>
                         </div>
-                        <p className="text-sm text-slate-400">Updated from the Supabase stocks table.</p>
+                        <div className="flex items-center gap-3">
+                            <span className="text-xs text-slate-500">Sort:</span>
+                            <select
+                                value={sortBy}
+                                onChange={(e) => setSortBy(e.target.value)}
+                                className="rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-2 text-xs text-white outline-none focus:border-sky-500/50 hover:bg-slate-900/80 cursor-pointer"
+                            >
+                                <option value="name-asc">Alphabet (A-Z)</option>
+                                <option value="name-desc">Alphabet (Z-A)</option>
+                                <option value="qty-desc">Stok (Banyak-Sedikit)</option>
+                                <option value="qty-asc">Stok (Sedikit-Banyak)</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div className="overflow-hidden rounded-[32px] border border-slate-800 bg-slate-950/90">
@@ -358,7 +389,7 @@ export default function Stock() {
                                         </td>
                                     </tr>
                                 ) : (
-                                    stockItems.map((item) => (
+                                    sortedStockItems.map((item) => (
                                         <tr key={item.id} className="hover:bg-white/[0.02] transition-colors group">
                                             <td className="px-6 py-4">
                                                 {editingId === item.id ? (
@@ -384,7 +415,7 @@ export default function Stock() {
                                                         autoFocus
                                                     />
                                                 ) : (
-                                                    <span className="font-mono text-slate-100">{item.total.toLocaleString('id-ID')}</span>
+                                                    <span className="font-mono text-slate-100">{numberFormatter.format(item.total)}</span>
                                                 )}
                                             </td>
 

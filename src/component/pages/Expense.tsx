@@ -1,51 +1,208 @@
-import { useMemo, useState } from 'react'
-import { NavLink } from 'react-router-dom'
+import { useMemo, useState, useEffect, useCallback } from 'react'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
+import { toast } from 'react-toastify'
+
+type ExpenseRecord = {
+  id: string
+  description: string
+  total: number
+  created_at: string
+}
 
 export default function Expense() {
+  const navigate = useNavigate()
   const [description, setDescription] = useState('')
   const [amount, setAmount] = useState('')
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
+
+  const [expenses, setExpenses] = useState<ExpenseRecord[]>([])
+  const [loading, setLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [userId, setUserId] = useState<string | null>(null)
+  const [filterType, setFilterType] = useState('all') // all, today, last7, last30, specific, range
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
+  const [sortBy, setSortBy] = useState('date-desc')
 
   const formattedAmount = useMemo(() => {
     const parsed = Number(amount)
     return Number.isFinite(parsed) ? parsed : 0
   }, [amount])
 
-  const handleSubmit = async () => {
-    setError('')
-    setSuccess('')
+  const currencyFormatter = useMemo(() => {
+    const currency = navigator.language.includes('ID') ? 'IDR' : 'USD';
+    return new Intl.NumberFormat(navigator.language, {
+      style: 'currency',
+      currency: currency,
+      minimumFractionDigits: 0,
+    });
+  }, []);
 
+  // 🔥 HELPERS
+  const getTzOffset = () => {
+    const offset = new Date().getTimezoneOffset();
+    const absOffset = Math.abs(offset);
+    const hours = String(Math.floor(absOffset / 60)).padStart(2, '0');
+    const minutes = String(absOffset % 60).padStart(2, '0');
+    const sign = offset <= 0 ? '+' : '-';
+    return `${sign}${hours}:${minutes}`;
+  };
+
+  const loadData = useCallback(async () => {
+    if (!userId) return
+    setLoading(true)
+    try {
+      let query = supabase
+        .from('expenses')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+
+      const tzOffset = getTzOffset();
+      const getLocalDate = (daysAgo = 0) => {
+        const d = new Date();
+        d.setDate(d.getDate() - daysAgo);
+        return d.toLocaleDateString('en-CA');
+      };
+
+      let startStr: string | null = null;
+      let endStr: string | null = null;
+
+      if (filterType === 'today') {
+        const date = getLocalDate();
+        startStr = `${date}T00:00:00.000${tzOffset}`;
+        endStr = `${date}T23:59:59.999${tzOffset}`;
+      } else if (filterType === 'last7') {
+        startStr = `${getLocalDate(7)}T00:00:00.000${tzOffset}`;
+      } else if (filterType === 'last30') {
+        startStr = `${getLocalDate(30)}T00:00:00.000${tzOffset}`;
+      } else if (filterType === 'specific' && startDate) {
+        startStr = `${startDate}T00:00:00.000${tzOffset}`;
+        endStr = `${startDate}T23:59:59.999${tzOffset}`;
+      } else if (filterType === 'range' && startDate && endDate) {
+        startStr = `${startDate}T00:00:00.000${tzOffset}`;
+        endStr = `${endDate}T23:59:59.999${tzOffset}`;
+      }
+
+      if (startStr) query = query.gte('created_at', startStr);
+      if (endStr) query = query.lte('created_at', endStr);
+      if (filterType === 'all') query = query.limit(20);
+
+      const { data, error } = await query
+      if (error) throw error
+      setExpenses(data || [])
+    } catch  {
+      toast.error('Gagal memuat data: ')
+    } finally {
+      setLoading(false)
+    }
+  }, [userId, filterType, startDate, endDate])
+
+  // 🔥 INITIAL LOAD
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) {
+        setUserId(data.user.id)
+      } else {
+        navigate('/')
+      }
+    })
+  }, [navigate])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
+
+  const sortedExpenses = useMemo(() => {
+    const list = [...expenses]
+    list.sort((a, b) => {
+      switch (sortBy) {
+        case 'name-asc': return a.description.localeCompare(b.description)
+        case 'name-desc': return b.description.localeCompare(a.description)
+        case 'amount-desc': return b.total - a.total
+        case 'amount-asc': return a.total - b.total
+        case 'date-asc': return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        default: return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      }
+    })
+    return list
+  }, [expenses, sortBy])
+
+  const totalFilteredExpense = useMemo(() => {
+    return expenses.reduce((sum, exp) => sum + exp.total, 0)
+  }, [expenses])
+
+  // 🔥 HANDLERS
+  const handleSubmit = async () => {
     if (!description || !amount) {
-      setError('Please complete the description and amount fields.')
+      toast.error('Deskripsi dan nominal harus diisi.')
       return
     }
 
     if (formattedAmount <= 0) {
-      setError('Expense amount must be greater than zero.')
+      toast.error('Nominal harus lebih dari nol.')
+      return
+    }
+
+    if (!userId) {
+      toast.error('Sesi berakhir, silakan login kembali.')
       return
     }
 
     setIsSubmitting(true)
-    const { error: insertError } = await supabase.from('expenses').insert([
-      {
-        description,
-        total: formattedAmount,
-        created_at: new Date().toISOString(),
-      },
-    ])
-    setIsSubmitting(false)
+    try {
+      const now = new Date().toLocaleString('sv-SE').replace(' ', 'T') + getTzOffset();
+      const { error } = await supabase.from('expenses').insert([
+        {
+          user_id: userId,
+          description,
+          total: formattedAmount,
+          created_at: now,
+        },
+      ])
 
-    if (insertError) {
-      setError('Failed to save expense: ' + insertError.message)
-      return
+      if (error) throw error
+
+      toast.success('Pengeluaran berhasil dicatat 🚀')
+      setDescription('')
+      setAmount('')
+      loadData()
+    } catch  {
+      toast.error('Gagal menyimpan: ')
+    } finally {
+      setIsSubmitting(false)
     }
+  }
 
-    setSuccess('Expense saved successfully to the database.')
-    setDescription('')
-    setAmount('')
+  const handleDelete = async (id: string) => {
+    const customId = "confirm-delete-expense";
+    toast.info(
+      <div className="space-y-4">
+        <p>Hapus pengeluaran ini?</p>
+        <div className="flex gap-2">
+          <button
+            className="rounded-3xl bg-rose-500 px-4 py-2 text-xs font-semibold text-white hover:bg-rose-400"
+            onClick={async () => {
+              toast.dismiss(customId)
+              setIsDeleting(true)
+              const { error } = await supabase.from('expenses').delete().eq('id', id).eq('user_id', userId)
+              if (error) {
+                toast.error(error.message)
+              } else {
+                toast.success('Dihapus')
+                loadData()
+              }
+              setIsDeleting(false)
+            }}
+          >
+            Hapus
+          </button>
+          <button className="rounded-3xl bg-slate-800 px-4 py-2 text-xs font-semibold" onClick={() => toast.dismiss(customId)}>Batal</button>
+        </div>
+      </div>,
+      { toastId: customId, autoClose: false, closeOnClick: false }
+    )
   }
 
   return (
@@ -61,18 +218,7 @@ export default function Expense() {
 
         <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
           <section className="rounded-[40px] border border-white/10 bg-slate-900/90 p-8 shadow-2xl shadow-slate-950/20">
-            <div className="space-y-6">
-              {error && (
-                <div className="rounded-3xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-100">
-                  {error}
-                </div>
-              )}
-              {success && (
-                <div className="rounded-3xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-100">
-                  {success}
-                </div>
-              )}
-
+            <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="space-y-6">
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="grid gap-3 text-left">
                   <span className="text-sm text-slate-400">Expense description</span>
@@ -100,7 +246,7 @@ export default function Expense() {
               <div className="grid gap-3 text-left">
                 <span className="text-sm text-slate-400">Calculated expense</span>
                 <div className="rounded-3xl border border-slate-700 bg-slate-950/90 px-4 py-4 text-white">
-                  Rp {formattedAmount.toLocaleString('id-ID')}
+                  {currencyFormatter.format(formattedAmount)}
                 </div>
               </div>
 
@@ -109,15 +255,14 @@ export default function Expense() {
                   This expense entry is stored in the <span className="font-semibold text-white">expenses</span> table and will be reflected in both dashboard and report totals.
                 </p>
                 <button
-                  type="button"
-                  onClick={handleSubmit}
+                  type="submit"
                   disabled={isSubmitting}
                   className="inline-flex items-center justify-center rounded-3xl bg-gradient-to-r from-sky-500 to-indigo-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:from-sky-400 hover:to-indigo-400 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isSubmitting ? 'Saving...' : 'Save expense'}
                 </button>
               </div>
-            </div>
+            </form>
           </section>
 
           <aside className="rounded-[40px] border border-white/10 bg-slate-900/90 p-8 shadow-2xl shadow-slate-950/20">
@@ -126,11 +271,15 @@ export default function Expense() {
                 <p className="text-sm uppercase tracking-[0.35em] text-slate-400">Expense tracking</p>
                 <h2 className="mt-3 text-2xl font-semibold text-white">Capture spend instantly</h2>
               </div>
-              <div className="space-y-4 text-sm leading-6 text-slate-300">
-                <p>Record every expense with an easy description and amount.</p>
-                <p>Expenses are saved in Supabase and become part of your dashboard cashflow and reports.</p>
-                <p>Use this page when you pay for supplies, services, or overhead.</p>
+              
+              <div className="grid gap-4">
+                <div className="rounded-3xl border border-slate-800 bg-slate-950/90 p-5">
+                  <p className="text-sm text-slate-400">Total period spend</p>
+                  <p className="mt-3 text-3xl font-semibold text-white">{currencyFormatter.format(totalFilteredExpense)}</p>
+                  <p className="mt-1 text-xs text-slate-500 uppercase tracking-wider">{filterType.replace('all', 'Recent items')}</p>
+                </div>
               </div>
+
               <div className="rounded-3xl border border-slate-800 bg-slate-950/90 p-5 shadow-sm shadow-slate-950/20">
                 <p className="text-xs uppercase tracking-[0.35em] text-slate-500">Why it matters</p>
                 <p className="mt-3 text-sm text-slate-400">Expenses are essential for accurate cashflow reporting and help you understand real net profit after spend.</p>
@@ -143,6 +292,117 @@ export default function Expense() {
               </NavLink>
             </div>
           </aside>
+        </div>
+
+        {/* HISTORY SECTION */}
+        <div className="mt-10 overflow-hidden rounded-[40px] border border-white/5 bg-slate-900/50 p-8 shadow-2xl backdrop-blur-xl">
+          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-sky-400/80">History</p>
+              <h2 className="mt-2 text-2xl font-semibold text-white">Expense Log</h2>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-2 text-xs text-white outline-none transition-all focus:border-sky-500/50 hover:bg-slate-900/80 cursor-pointer"
+              >
+                <option value="date-desc">Terbaru</option>
+                <option value="date-asc">Terlama</option>
+                <option value="name-asc">Alphabet (A-Z)</option>
+                <option value="name-desc">Alphabet (Z-A)</option>
+                <option value="amount-desc">Nominal (Besar-Kecil)</option>
+                <option value="amount-asc">Nominal (Kecil-Besar)</option>
+              </select>
+              <select
+                value={filterType}
+                onChange={(e) => {
+                  setFilterType(e.target.value)
+                  if (e.target.value !== 'specific' && e.target.value !== 'range') {
+                    setStartDate('')
+                    setEndDate('')
+                  }
+                }}
+                className="rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-2 text-xs text-white outline-none focus:border-sky-500/50 hover:bg-slate-900/80 cursor-pointer"
+              >
+                <option value="all">Recent activity</option>
+                <option value="today">Today</option>
+                <option value="last7">Last 7 Days</option>
+                <option value="last30">Last 30 Days</option>
+                <option value="specific">Pick a Date</option>
+                <option value="range">Date Range</option>
+              </select>
+
+              {(filterType === 'specific' || filterType === 'range') && (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-2 text-xs text-white outline-none focus:border-sky-500/50"
+                  />
+                  {filterType === 'range' && (
+                    <input
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      className="rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-2 text-xs text-white outline-none focus:border-sky-500/50"
+                    />
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="overflow-hidden rounded-[32px] border border-slate-800/50 bg-slate-950/20">
+            <table className="w-full text-left text-xs sm:text-sm">
+              <thead className="border-b border-slate-800/50 text-[10px] uppercase tracking-widest text-slate-500">
+                <tr>
+                  <th className="px-6 py-5 font-medium">Description</th>
+                  <th className="px-6 py-5 font-medium text-center">Date</th>
+                  <th className="px-6 py-5 font-medium">Amount</th>
+                  <th className="px-6 py-5 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800/30 text-slate-300">
+                {loading ? (
+                  <tr><td colSpan={4} className="px-6 py-10 text-center text-slate-500">Loading expenses...</td></tr>
+                ) : expenses.length === 0 ? (
+                  <tr><td colSpan={4} className="px-6 py-10 text-center text-slate-500">No expenses recorded for this period.</td></tr>
+                ) : (
+                  sortedExpenses.map((exp) => (
+                    <tr key={exp.id} className="hover:bg-white/[0.02] transition-colors group">
+                      <td className="px-6 py-4 font-medium">{exp.description}</td>
+                      <td className="px-6 py-4 text-center text-slate-500">
+                        {new Date(exp.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </td>
+                      <td className="px-6 py-4 text-rose-400 font-semibold">{currencyFormatter.format(exp.total)}</td>
+                      <td className="px-6 py-4 text-right">
+                        <button
+                          onClick={() => handleDelete(exp.id)}
+                          disabled={isDeleting}
+                          className="rounded-xl border border-rose-500/10 bg-rose-500/5 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-rose-400 transition hover:bg-rose-500/20 disabled:opacity-50"
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+              {expenses.length > 0 && (
+                <tfoot className="border-t border-slate-800/50 bg-slate-900/30 text-slate-200">
+                  <tr>
+                    <td className="px-6 py-4 font-bold">Total Period Spend</td>
+                    <td></td>
+                    <td className="px-6 py-4 font-bold text-rose-400">{currencyFormatter.format(totalFilteredExpense)}</td>
+                    <td></td>
+                  </tr>
+                </tfoot>
+              )}
+            </table>
+          </div>
         </div>
       </div>
     </main>
