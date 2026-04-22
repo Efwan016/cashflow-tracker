@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect, useCallback } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { toast } from 'react-toastify'
+import { createCurrencyFormatter, getTzOffset, getLocalDate, formatDateTimeLocal } from '../../lib/utils'
 
 type ExpenseRecord = {
   id: string
@@ -30,24 +31,8 @@ export default function Expense() {
     return Number.isFinite(parsed) ? parsed : 0
   }, [amount])
 
-  const currencyFormatter = useMemo(() => {
-    const currency = navigator.language.includes('ID') ? 'IDR' : 'USD';
-    return new Intl.NumberFormat(navigator.language, {
-      style: 'currency',
-      currency: currency,
-      minimumFractionDigits: 0,
-    });
-  }, []);
-
-  // 🔥 HELPERS
-  const getTzOffset = () => {
-    const offset = new Date().getTimezoneOffset();
-    const absOffset = Math.abs(offset);
-    const hours = String(Math.floor(absOffset / 60)).padStart(2, '0');
-    const minutes = String(absOffset % 60).padStart(2, '0');
-    const sign = offset <= 0 ? '+' : '-';
-    return `${sign}${hours}:${minutes}`;
-  };
+  const fmt = useMemo(() => createCurrencyFormatter(), []);
+  const tzOffset = useMemo(() => getTzOffset(), []);
 
   const loadData = useCallback(async () => {
     if (!userId) return
@@ -58,13 +43,6 @@ export default function Expense() {
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
-
-      const tzOffset = getTzOffset();
-      const getLocalDate = (daysAgo = 0) => {
-        const d = new Date();
-        d.setDate(d.getDate() - daysAgo);
-        return d.toLocaleDateString('en-CA');
-      };
 
       let startStr: string | null = null;
       let endStr: string | null = null;
@@ -152,7 +130,7 @@ export default function Expense() {
 
     setIsSubmitting(true)
     try {
-      const now = new Date().toLocaleString('sv-SE').replace(' ', 'T') + getTzOffset();
+      const now = formatDateTimeLocal();
       const { error } = await supabase.from('expenses').insert([
         {
           user_id: userId,
@@ -181,8 +159,8 @@ export default function Expense() {
       <div className="space-y-4">
         <p>Hapus pengeluaran ini?</p>
         <div className="flex gap-2">
-          <button
-            className="rounded-3xl bg-rose-500 px-4 py-2 text-xs font-semibold text-white hover:bg-rose-400"
+            <button type="button"
+            className="rounded-3xl bg-rose-500 px-4 py-2 text-xs font-semibold text-white transition hover:bg-rose-400"
             onClick={async () => {
               toast.dismiss(customId)
               setIsDeleting(true)
@@ -198,7 +176,7 @@ export default function Expense() {
           >
             Hapus
           </button>
-          <button className="rounded-3xl bg-slate-800 px-4 py-2 text-xs font-semibold" onClick={() => toast.dismiss(customId)}>Batal</button>
+          <button type="button" className="rounded-3xl border border-slate-700 bg-slate-900 px-4 py-2 text-xs font-semibold text-slate-200 transition hover:bg-slate-800" onClick={() => toast.dismiss(customId)}>Batal</button>
         </div>
       </div>,
       { toastId: customId, autoClose: false, closeOnClick: false }
@@ -246,7 +224,7 @@ export default function Expense() {
               <div className="grid gap-3 text-left">
                 <span className="text-sm text-slate-400">Calculated expense</span>
                 <div className="rounded-3xl border border-slate-700 bg-slate-950/90 px-4 py-4 text-white">
-                  {currencyFormatter.format(formattedAmount)}
+                  {fmt.format(formattedAmount)}
                 </div>
               </div>
 
@@ -275,7 +253,7 @@ export default function Expense() {
               <div className="grid gap-4">
                 <div className="rounded-3xl border border-slate-800 bg-slate-950/90 p-5">
                   <p className="text-sm text-slate-400">Total period spend</p>
-                  <p className="mt-3 text-3xl font-semibold text-white">{currencyFormatter.format(totalFilteredExpense)}</p>
+                  <p className="mt-3 text-3xl font-semibold text-white">{fmt.format(totalFilteredExpense)}</p>
                   <p className="mt-1 text-xs text-slate-500 uppercase tracking-wider">{filterType.replace('all', 'Recent items')}</p>
                 </div>
               </div>
@@ -308,8 +286,8 @@ export default function Expense() {
                 onChange={(e) => setSortBy(e.target.value)}
                 className="rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-2 text-xs text-white outline-none transition-all focus:border-sky-500/50 hover:bg-slate-900/80 cursor-pointer"
               >
-                <option value="date-desc">Terbaru</option>
-                <option value="date-asc">Terlama</option>
+                <option value="date-desc">Newest</option>
+                <option value="date-asc">Oldest</option>
                 <option value="name-asc">Alphabet (A-Z)</option>
                 <option value="name-desc">Alphabet (Z-A)</option>
                 <option value="amount-desc">Nominal (Besar-Kecil)</option>
@@ -377,7 +355,7 @@ export default function Expense() {
                       <td className="px-6 py-4 text-center text-slate-500">
                         {new Date(exp.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </td>
-                      <td className="px-6 py-4 text-rose-400 font-semibold">{currencyFormatter.format(exp.total)}</td>
+                      <td className="px-6 py-4 text-rose-400 font-semibold">{fmt.format(exp.total)}</td>
                       <td className="px-6 py-4 text-right">
                         <button
                           onClick={() => handleDelete(exp.id)}
@@ -396,7 +374,7 @@ export default function Expense() {
                   <tr>
                     <td className="px-6 py-4 font-bold">Total Period Spend</td>
                     <td></td>
-                    <td className="px-6 py-4 font-bold text-rose-400">{currencyFormatter.format(totalFilteredExpense)}</td>
+                    <td className="px-6 py-4 font-bold text-rose-400">{fmt.format(totalFilteredExpense)}</td>
                     <td></td>
                   </tr>
                 </tfoot>

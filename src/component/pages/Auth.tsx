@@ -170,7 +170,7 @@ export default function Auth() {
                                     </span>
 
                                     <button
-                                        type="button"
+                                        type="button" // Tambahkan type="button" untuk mencegah submit form
                                         onPointerDown={() => setShowPassword(true)}
                                         onPointerUp={() => setShowPassword(false)}
                                         onPointerLeave={() => setShowPassword(false)}
@@ -202,7 +202,7 @@ export default function Auth() {
                                         </span>
 
                                         <button
-                                            type="button"
+                                            type="button" // Tambahkan type="button" untuk mencegah submit form
                                             onPointerDown={() => setShowConfirmPassword(true)}
                                             onPointerUp={() => setShowConfirmPassword(false)}
                                             onPointerLeave={() => setShowConfirmPassword(false)}

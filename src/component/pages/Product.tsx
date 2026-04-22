@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react'
 import { toast } from 'react-toastify'
 import { supabase } from '../../lib/supabase'
+import { createCurrencyFormatter } from '../../lib/utils'
 import type { Product } from '../../types/types'
 
 export default function ProductPage() {
@@ -21,14 +22,7 @@ export default function ProductPage() {
     setSuccess('')
   }
 
-  const currencyFormatter = useMemo(() => {
-    const currency = navigator.language.includes('ID') ? 'IDR' : 'USD';
-    return new Intl.NumberFormat(navigator.language, {
-      style: 'currency',
-      currency: currency,
-      minimumFractionDigits: 0,
-    });
-  }, []);
+  const fmt = useMemo(() => createCurrencyFormatter(), []);
 
   const getUserId = async () => {
     const { data } = await supabase.auth.getUser()
@@ -363,11 +357,11 @@ export default function ProductPage() {
                     <tr key={product.id} className="border-b border-slate-800 last:border-none">
                       <td className="px-4 py-4 text-slate-100">{product.id}</td>
                       <td className="px-4 py-4 text-slate-100">{product.name}</td>
-                      <td className="px-4 py-4 text-slate-100">{currencyFormatter.format(product.harga_modal)}</td>
-                      <td className="px-4 py-4 text-slate-100">{currencyFormatter.format(product.harga_jual)}</td>
+                      <td className="px-4 py-4 text-slate-100">{fmt.format(product.harga_modal)}</td>
+                      <td className="px-4 py-4 text-slate-100">{fmt.format(product.harga_jual)}</td>
                       <td className="px-4 py-4">
                         <button
-                          onClick={() => handleDelete(product.id)}
+                          type="button" onClick={() => handleDelete(product.id)}
                           disabled={submitting}
                           className="rounded-xl bg-rose-500/20 px-3 py-1 text-sm text-rose-300 hover:bg-rose-500/30 disabled:opacity-50"
                         >

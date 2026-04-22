@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { supabase } from '../../lib/supabase'
+import { createNumberFormatter, formatDateTimeLocal } from '../../lib/utils'
 import type { Stock_Logs } from '../../types/types'
 
 type StockLogRecord = Stock_Logs & { type: 'IN' | 'OUT' }
@@ -68,7 +69,7 @@ export default function StockLogs() {
     loadData()
   }, [userId])
 
-  const numberFormatter = useMemo(() => new Intl.NumberFormat(navigator.language), []);
+  const num = useMemo(() => createNumberFormatter(), []);
 
   const totalLogs = useMemo(() => stockLogs.length, [stockLogs])
   const totalQty = useMemo(() => stockLogs.reduce((sum, item) => sum + item.qty * (item.type === 'IN' ? 1 : -1), 0), [stockLogs])
@@ -244,17 +245,7 @@ export default function StockLogs() {
     }
 
     setLoading(true)
-
-    const getTzOffset = () => {
-      const offset = new Date().getTimezoneOffset();
-      const absOffset = Math.abs(offset);
-      const hours = String(Math.floor(absOffset / 60)).padStart(2, '0');
-      const minutes = String(absOffset % 60).padStart(2, '0');
-      const sign = offset <= 0 ? '+' : '-';
-      return `${sign}${hours}:${minutes}`;
-    };
-
-    const now = new Date().toLocaleString('sv-SE').replace(' ', 'T') + getTzOffset();
+    const now = formatDateTimeLocal();
 
     const { error: insertError } = await supabase.from('Stock_logs').insert([
       {
@@ -403,7 +394,7 @@ export default function StockLogs() {
                   <select
                     value={type}
                     onChange={(e) => setType(e.target.value as 'IN' | 'OUT')}
-                    className="mt-3 w-full rounded-3xl border border-slate-700 bg-slate-900 px-4 py-4 text-white outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20"
+                    className="mt-3 w-full rounded-3xl border border-slate-700 bg-slate-950/90 px-4 py-4 text-white outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20"
                   >
                     <option value="IN">IN</option>
                     <option value="OUT">OUT</option>
@@ -439,7 +430,7 @@ export default function StockLogs() {
                 </div>
                 <div className="rounded-3xl border border-slate-800 bg-slate-950/90 p-5">
                   <p className="text-sm text-slate-400">Net stock movement</p>
-                  <p className="mt-3 text-3xl font-semibold text-white">{numberFormatter.format(totalQty)}</p>
+                  <p className="mt-3 text-3xl font-semibold text-white">{num.format(totalQty)}</p>
                 </div>
               </div>
 
@@ -470,12 +461,12 @@ export default function StockLogs() {
                  onChange={(e) => setSortBy(e.target.value)}
                  className="rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-2 text-xs text-white outline-none focus:border-sky-500/50 hover:bg-slate-900/80 cursor-pointer"
                >
-                 <option value="date-desc">Terbaru</option>
-                 <option value="date-asc">Terlama</option>
+                 <option value="date-desc">Newest</option>
+                 <option value="date-asc">Oldest</option>
                  <option value="name-asc">Alphabet (A-Z)</option>
                  <option value="name-desc">Alphabet (Z-A)</option>
-                 <option value="qty-desc">Qty (Banyak-Sedikit)</option>
-                 <option value="qty-asc">Qty (Sedikit-Banyak)</option>
+                 <option value="qty-desc">Quantity (High-Low)</option>
+                 <option value="qty-asc">Quantity (Low-High)</option>
                </select>
             </div>
           </div>
@@ -511,7 +502,7 @@ export default function StockLogs() {
                       <td className={`px-4 py-4 font-semibold ${log.type === 'IN' ? 'text-emerald-300' : 'text-rose-300'}`}>
                         {log.type}
                       </td>
-                      <td className="px-4 py-4 text-slate-100">{numberFormatter.format(log.qty)}</td>
+                      <td className="px-4 py-4 text-slate-100">{num.format(log.qty)}</td>
                       <td className="px-4 py-4 text-slate-400">{new Date(log.created_at).toLocaleDateString()}</td>
                       <td className="px-4 py-4">
                         <button

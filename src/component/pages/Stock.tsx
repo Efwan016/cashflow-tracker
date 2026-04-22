@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState, useCallback } from 'react'
 import { NavLink } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
+import { createNumberFormatter } from '../../lib/utils'
+import type { Product } from './Dashboard'
 
 type StockRecord = {
     id: string
@@ -23,11 +25,6 @@ export default function Stock() {
     const [editQty, setEditQty] = useState('')
     const [editName, setEditName] = useState('')
     const [sortBy, setSortBy] = useState('name-asc')
-
-    type Product = {
-        id: string
-        name: string
-    }
 
     const [products, setProducts] = useState<Product[]>([])
 
@@ -112,7 +109,7 @@ export default function Stock() {
                         event: '*', // INSERT, UPDATE, DELETE semua
                         schema: 'public',
                         table: 'Stock',
-                        filter: `user_id=eq.${user.id}`, // penting biar cuma data user ini
+                        filter: `user_id=eq.${user.id}`,
                     },
                     () => {
                         // debounce biar gak spam
@@ -134,7 +131,7 @@ export default function Stock() {
         }
     }, [loadStock])
 
-    const numberFormatter = useMemo(() => new Intl.NumberFormat(navigator.language), []);
+    const num = useMemo(() => createNumberFormatter(), []);
 
     const totalStock = useMemo(() => stockItems.reduce((sum, item) => sum + item.total, 0), [stockItems])
 
@@ -276,8 +273,8 @@ export default function Stock() {
                                     <span className="text-sm text-slate-400">Product ID</span>
                                     <select
                                         value={productId}
-                                        onChange={(e) => setProductId(e.target.value)}
-                                        className="rounded-3xl border border-slate-700 bg-slate-950/90 px-4 py-4 text-white"
+                                        onChange={(e) => setProductId(e.target.value)} // Tambahkan kelas Tailwind untuk konsistensi
+                                        className="rounded-3xl border border-slate-700 bg-slate-950/90 px-4 py-4 text-white outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20"
                                     >
                                         <option value="">Pilih product</option>
                                         {products.map((p) => (
@@ -328,7 +325,7 @@ export default function Stock() {
                                 </div>
                                 <div className="rounded-3xl border border-slate-800 bg-slate-950/90 p-5">
                                     <p className="text-sm text-slate-400">Total quantity</p>
-                                    <p className="mt-3 text-3xl font-semibold text-white">{numberFormatter.format(totalStock)}</p>
+                                    <p className="mt-3 text-3xl font-semibold text-white">{num.format(totalStock)}</p>
                                 </div>
                             </div>
                             <div className="rounded-3xl border border-slate-800 bg-slate-900/90 p-5 text-sm text-slate-300">
@@ -357,10 +354,10 @@ export default function Stock() {
                                 onChange={(e) => setSortBy(e.target.value)}
                                 className="rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-2 text-xs text-white outline-none focus:border-sky-500/50 hover:bg-slate-900/80 cursor-pointer"
                             >
-                                <option value="name-asc">Alphabet (A-Z)</option>
-                                <option value="name-desc">Alphabet (Z-A)</option>
-                                <option value="qty-desc">Stok (Banyak-Sedikit)</option>
-                                <option value="qty-asc">Stok (Sedikit-Banyak)</option>
+                                <option value="name-asc">Name (A-Z)</option>
+                                <option value="name-desc">Name (Z-A)</option>
+                                <option value="qty-desc">Quantity (High-Low)</option>
+                                <option value="qty-asc">Quantity (Low-High)</option>
                             </select>
                         </div>
                     </div>
@@ -415,7 +412,7 @@ export default function Stock() {
                                                         autoFocus
                                                     />
                                                 ) : (
-                                                    <span className="font-mono text-slate-100">{numberFormatter.format(item.total)}</span>
+                                                    <span className="font-mono text-slate-100">{num.format(item.total)}</span>
                                                 )}
                                             </td>
 

@@ -51,7 +51,7 @@ export default function Settings() {
                 </div>
 
                 {/* ACCOUNT */}
-                <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 hover:bg-white/10 transition">
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl transition hover:bg-white/10">
                     <h2 className="text-lg font-semibold">Account Info</h2>
                     <p className="text-sm text-slate-400 mt-2 leading-relaxed">
                         View your account details including email, username, and membership info.
@@ -59,14 +59,14 @@ export default function Settings() {
 
                     <button
                         onClick={() => navigate('/detailinfo')}
-                        className="mt-5 inline-flex items-center justify-center rounded-xl px-5 py-2.5 text-sm font-medium border border-white/10 bg-white/5 hover:bg-white/10 transition"
+                        className="mt-5 inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-medium transition hover:bg-white/10"
                     >
                         View Account Details →
                     </button>
                 </div>
 
                 {/* TERMS */}
-                <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6">
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
                     <h2 className="text-lg font-semibold">Legal</h2>
                     <p className="text-sm text-slate-400 mt-2 leading-relaxed">
                         By using this application, you agree to our terms and privacy policy.
@@ -76,14 +76,14 @@ export default function Settings() {
                     <div className="flex flex-col sm:flex-row gap-3 mt-5">
                         <button
                             onClick={() => navigate('/privacy')}
-                            className="flex-1 rounded-xl px-5 py-2.5 text-sm border border-white/10 bg-white/5 hover:bg-white/10 transition"
+                            className="flex-1 rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-sm transition hover:bg-white/10"
                         >
                             Privacy Policy
                         </button>
 
                         <button
                             onClick={() => navigate('/terms')}
-                            className="flex-1 rounded-xl px-5 py-2.5 text-sm border border-white/10 bg-white/5 hover:bg-white/10 transition"
+                            className="flex-1 rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-sm transition hover:bg-white/10"
                         >
                             Terms of Service
                         </button>
@@ -91,7 +91,7 @@ export default function Settings() {
                 </div>
 
                 {/* ACTION */}
-                <div className="rounded-2xl border border-red-500/20 bg-red-500/10 backdrop-blur-xl p-6">
+                <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-6 backdrop-blur-xl">
                     <h2 className="text-lg font-semibold text-red-300">
                         Danger Zone
                     </h2>
