@@ -18,7 +18,8 @@ export default function Auth() {
     const [error, setError] = useState('')
     const navigate = useNavigate()
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (e?: React.FormEvent) => {
+        if (e) e.preventDefault()
         setError('')
 
         if (!email || !password) {
@@ -131,7 +132,7 @@ export default function Auth() {
                             </p>
                         </div>
 
-                        <div className="space-y-6">
+                        <form onSubmit={handleSubmit} className="space-y-6">
                             <label className="grid gap-3 text-left">
                                 <div className="relative">
                                     <div className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-slate-400">
@@ -139,6 +140,7 @@ export default function Auth() {
                                     </div>
                                     <input
                                         type="email"
+                                        name="email"
                                         autoComplete="email"
                                         placeholder=" "
                                         value={email}
@@ -158,6 +160,7 @@ export default function Auth() {
                                     </div>
                                     <input
                                         type={showPassword ? 'text' : 'password'}
+                                        name="password"
                                         autoComplete={isLogin ? 'current-password' : 'new-password'}
                                         placeholder=" "
                                         className="peer w-full rounded-[28px] border border-slate-700 bg-slate-900/85 px-5 py-4 pl-12 pr-12 text-slate-100 shadow-inner shadow-slate-950/10 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"
@@ -190,6 +193,7 @@ export default function Auth() {
                                     </div>
                                         <input
                                             type={showConfirmPassword ? 'text' : 'password'}
+                                            name="confirmPassword"
                                             autoComplete="new-password"
                                             placeholder=" "
                                             className="peer w-full rounded-[28px] border border-slate-700 bg-slate-900/85 px-5 py-4 pl-12 pr-12 text-slate-100 shadow-inner shadow-slate-950/10 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"
@@ -221,13 +225,14 @@ export default function Auth() {
                             )}
 
                             <button
-                                type="button"
-                                onClick={handleSubmit}
+                                type="submit"
                                 className="w-full rounded-[28px] bg-gradient-to-r from-sky-500 to-indigo-500 px-5 py-4 text-base font-semibold text-white shadow-lg shadow-sky-500/20 transition duration-200 hover:from-sky-400 hover:to-indigo-400"
                             >
                                 {isLogin ? 'Sign In' : 'Create Account'}
                             </button>
+                        </form>
 
+                        <div className="mt-6 space-y-4">
                             {isLogin && (
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-center gap-3 text-xs text-slate-500">

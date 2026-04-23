@@ -27,9 +27,12 @@ export default function Stock() {
     const [sortBy, setSortBy] = useState('name-asc')
 
     const [products, setProducts] = useState<Product[]>([])
+    
+    const [currentPage, setCurrentPage] = useState(1)
+    const itemsPerPage = 10
 
     const sortedStockItems = useMemo(() => {
-        return [...stockItems].sort((a, b) => {
+        const sorted = [...stockItems].sort((a, b) => {
             const nameA = a.product_name ?? a.product_id
             const nameB = b.product_name ?? b.product_id
             switch (sortBy) {
@@ -40,7 +43,28 @@ export default function Stock() {
                 default: return 0
             }
         })
+        return sorted
     }, [stockItems, sortBy])
+
+    const paginatedItems = useMemo(() => {
+        return sortedStockItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+    }, [sortedStockItems, currentPage])
+
+    const getPageRange = (current: number, total: number) => {
+        const range: (number | string)[] = []
+        if (total <= 7) {
+          for (let i = 1; i <= total; i++) range.push(i)
+        } else {
+          if (current <= 4) {
+            range.push(1, 2, 3, 4, 5, '...', total)
+          } else if (current >= total - 3) {
+            range.push(1, '...', total - 4, total - 3, total - 2, total - 1, total)
+          } else {
+            range.push(1, '...', current - 1, current, current + 1, '...', total)
+          }
+        }
+        return range
+    }
 
     const loadStock = useCallback(async () => {
         setLoading(true)
@@ -386,7 +410,7 @@ export default function Stock() {
                                         </td>
                                     </tr>
                                 ) : (
-                                    sortedStockItems.map((item) => (
+                                    paginatedItems.map((item) => (
                                         <tr key={item.id} className="hover:bg-white/[0.02] transition-colors group">
                                             <td className="px-6 py-4">
                                                 {editingId === item.id ? (
@@ -462,6 +486,33 @@ export default function Stock() {
                                 )}
                             </tbody>
                         </table>
+                        <div className="flex flex-wrap items-center justify-between gap-4 px-6 py-4 bg-slate-900/60 border-t border-slate-800">
+                            <button 
+                                disabled={currentPage === 1}
+                                onClick={() => setCurrentPage(p => p - 1)}
+                                className="text-xs font-bold text-sky-400 disabled:text-slate-600 transition-colors">PREV</button>
+                            <div className="flex items-center gap-1">
+                                {getPageRange(currentPage, Math.ceil(sortedStockItems.length / itemsPerPage)).map((p, i) => (
+                                    typeof p === 'number' ? (
+                                        <button
+                                            key={i}
+                                            onClick={() => setCurrentPage(p)}
+                                            className={`h-7 min-w-[28px] rounded-lg text-[10px] font-bold transition-all ${
+                                                currentPage === p ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                                            }`}
+                                        >
+                                            {p}
+                                        </button>
+                                    ) : (
+                                        <span key={i} className="px-1 text-slate-600 font-bold">...</span>
+                                    )
+                                ))}
+                            </div>
+                            <button 
+                                disabled={currentPage * itemsPerPage >= sortedStockItems.length}
+                                onClick={() => setCurrentPage(p => p + 1)}
+                                className="text-xs font-bold text-sky-400 disabled:text-slate-600 transition-colors">NEXT</button>
+                        </div>
                     </div>
                 </div>
             </div>

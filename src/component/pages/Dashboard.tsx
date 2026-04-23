@@ -78,10 +78,30 @@ function useDashboardData(filter: FilterType, startDate: string, endDate: string
   }, [filter, startDate, endDate])
 
   useEffect(() => {
-    const init = async () => { await fetchData() }
-    init()
-    const channel = supabase.channel('db-changes').on('postgres_changes', { event: '*', schema: 'public' }, fetchData).subscribe()
-    return () => { supabase.removeChannel(channel) }
+    let timeout: ReturnType<typeof setTimeout>
+    let channel: ReturnType<typeof supabase.channel> | null = null
+
+    const setupSubscription = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      await fetchData()
+
+      channel = supabase
+        .channel(`dashboard-realtime-${user.id}`)
+        .on('postgres_changes', { event: '*', schema: 'public', filter: `user_id=eq.${user.id}` }, () => {
+          clearTimeout(timeout)
+          timeout = setTimeout(() => fetchData(), 500) // Debounce 500ms
+        })
+        .subscribe()
+    }
+
+    setupSubscription()
+
+    return () => {
+      if (channel) supabase.removeChannel(channel)
+      clearTimeout(timeout)
+    }
   }, [fetchData])
 
   return { ...data, loading, error, refetch: fetchData }
@@ -248,6 +268,24 @@ export default function Dashboard() {
       .slice(0, 5)
   }, [transactions])
 
+  // ─── Chart Data for Visual Sections ─────────────────────────────────────────
+  const bestSellingChartData = useMemo(() => ({
+    labels: bestSelling.map(p => p.name),
+    revenue: bestSelling.map(p => p.total),
+    expense: [],
+    netProfit: []
+  }), [bestSelling])
+
+  const stockChartData = useMemo(() => {
+    const topStocks = [...stocks].sort((a, b) => b.total - a.total).slice(0, 6)
+    return {
+      labels: topStocks.map(s => s.product?.name ?? s.product_id),
+      revenue: topStocks.map(s => s.total),
+      expense: [],
+      netProfit: []
+    }
+  }, [stocks])
+
   // ─── Feed ────────────────────────────────────────────────────────────────────
   type FeedEntry = { kind: 'tx' | 'exp' | 'log'; data: Transaction | Expense | StockLog; ts: string }
   const feed = useMemo<FeedEntry[]>(() => [
@@ -413,115 +451,48 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Transactions */}
-              <div className="rounded-[32px] border border-white/10 bg-slate-900/40 p-8 backdrop-blur-2xl">
-                <div className="flex items-center justify-between mb-5">
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-500 mb-1">Sales</p>
-                    <h2 className="font-['Syne'] text-xl font-bold text-white">Recent Transactions</h2>
+              {/* Visual Analytics Sections (Replacing Lists) */}
+              <div className="grid gap-5 md:grid-cols-2">
+                <NavLink to="/transactions" className="rounded-[32px] border border-white/10 bg-slate-900/40 p-8 backdrop-blur-2xl transition-all hover:bg-slate-800/60 group">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-500 mb-1">Sales</p>
+                      <h2 className="text-xl font-bold text-white group-hover:text-emerald-400 transition-colors">Daily Sales Volume</h2>
+                    </div>
+                    <IC.Arrow />
                   </div>
-                  <NavLink to="/transactions" className="flex items-center gap-1.5 text-xs font-semibold transition-colors" style={{ color: '#38bdf8' }}>
-                    View all <IC.Arrow />
-                  </NavLink>
-                </div>
-                {loading ? <Skel /> : transactions.length === 0 ? (
-                  <p className="py-8 text-center text-sm text-slate-600">No transactions recorded</p>
-                ) : (
-                  <div className="space-y-2">
-                    {transactions.slice(0, 6).map((tx) => (
-                      <div key={tx.id} className="flex items-center gap-4 rounded-2xl border border-white/[0.03] bg-white/[0.01] p-4 transition-all duration-200 hover:bg-white/[0.04] hover:border-white/10 group">
-                        <div className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center bg-emerald-500/10 text-emerald-400 group-hover:scale-110 transition-transform">
-                          <IC.Tx />
-                        </div>
-                        <div className="min-w-0 flex-1 font-['DM_Sans']">
-                          <p className="text-[15px] font-bold text-slate-100 truncate">{tx.product_name ?? 'Product'}</p>
-                          <p className="text-xs text-slate-400 mt-1">
-                            {num.format(tx.qty)} pcs × {fmt.format(tx.harga_jual)}
-                            {tx.mode && <span className="ml-2 px-1.5 py-0.5 rounded bg-white/5 text-[9px] font-bold text-slate-500">{tx.mode}</span>}
-                          </p>
-                        </div>
-                        <div className="text-right flex-shrink-0 space-y-0.5 font-['DM_Sans']">
-                          <p className="text-sm font-bold" style={{ color: '#34d399' }}>{fmt.format(tx.total)}</p>
-                          {tx.profit > 0 && <p className="text-[11px]" style={{ color: '#38bdf8' }}>+{fmt.format(tx.profit)}</p>}
-                          <p className="text-[10px] text-slate-600">{ago(tx.created_at)}</p>
-                        </div>
-                      </div>
-                    ))}
+                  <div className="h-[200px]">
+                    <ChartComponent data={chartData} />
                   </div>
-                )}
+                </NavLink>
+
+                <NavLink to="/reports" className="rounded-[32px] border border-white/10 bg-slate-900/40 p-8 backdrop-blur-2xl transition-all hover:bg-slate-800/60 group">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-500 mb-1">Performance</p>
+                      <h2 className="text-xl font-bold text-white group-hover:text-amber-400 transition-colors">Best Sellers Revenue</h2>
+                    </div>
+                    <IC.Arrow />
+                  </div>
+                  <div className="h-[200px]">
+                    <ChartComponent data={bestSellingChartData} />
+                  </div>
+                </NavLink>
+
+                <NavLink to="/stock" className="md:col-span-2 rounded-[32px] border border-white/10 bg-slate-900/40 p-8 backdrop-blur-2xl transition-all hover:bg-slate-800/60 group">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-500 mb-1">Inventory</p>
+                      <h2 className="text-xl font-bold text-white group-hover:text-sky-400 transition-colors">Live Stock Distribution</h2>
+                    </div>
+                    <IC.Arrow />
+                  </div>
+                  <div className="h-[220px]">
+                    <ChartComponent data={stockChartData} />
+                  </div>
+                </NavLink>
               </div>
 
-              {/* Best Selling Products */}
-              <div className="rounded-[32px] border border-white/10 bg-slate-900/40 p-8 backdrop-blur-2xl">
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="rounded-xl p-2 bg-amber-500/10 text-amber-500"><IC.Fire /></div>
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-500 mb-1">Popular</p>
-                    <h2 className="text-xl font-bold text-white">Best Selling Products</h2>
-                  </div>
-                </div>
-                {loading ? <Skel n={3} h={40} /> : bestSelling.length === 0 ? (
-                   <p className="py-4 text-center text-xs text-slate-600 italic">No sales data available</p>
-                ) : (
-                  <div className="space-y-4">
-                    {bestSelling.map((p, i) => {
-                      const maxQty = Math.max(...bestSelling.map(x => x.qty), 1)
-                      const barPct = Math.round((p.qty / maxQty) * 100)
-                      return (
-                        <div key={p.name}>
-                          <div className="flex items-center justify-between text-xs mb-1.5">
-                            <span className="text-slate-300 font-medium truncate">{i + 1}. {p.name}</span>
-                            <span className="text-slate-400">{num.format(p.qty)} units</span>
-                          </div>
-                          <div className="h-1.5 rounded-full bg-white/[0.03] overflow-hidden">
-                            <div className="h-full bg-gradient-to-r from-amber-600 to-amber-400 rounded-full" style={{ width: `${barPct}%` }} />
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                )}
-              </div>
-
-              {/* Stock */}
-              <div className="rounded-[32px] border border-white/10 bg-slate-900/40 p-8 backdrop-blur-2xl">
-                <div className="flex items-center justify-between mb-5">
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-500 mb-1">Inventory</p>
-                    <h2 className="text-xl font-bold text-white">Stock per Product</h2>
-                  </div>
-                  <NavLink to="/stock" className="flex items-center gap-1.5 text-xs font-semibold transition-colors" style={{ color: '#fbbf24' }}>
-                    Manage <IC.Arrow />
-                  </NavLink>
-                </div>
-                {loading ? <Skel n={5} h={46} /> : stocks.length === 0 ? (
-                  <p className="py-8 text-center text-sm text-slate-600">No stock data found</p>
-                ) : (
-                  <div className="space-y-3">
-                    {stocks.slice(0, 7).map(st => {
-                      const max = Math.max(...stocks.map(s => s.total), 1)
-                      const pct = Math.round((st.total / max) * 100)
-                      const low = pct < 20
-                      return (
-                        <div key={st.id}>
-                          <div className="flex items-center justify-between text-xs mb-1.5">
-                            <span className="text-slate-300 font-medium truncate max-w-[65%]">{st.product?.name ?? st.product_id}</span>
-                            <span className="font-bold" style={{ color: low ? '#fb7185' : '#fbbf24' }}>
-                              {num.format(st.total)} {low && '⚠'}
-                            </span>
-                          </div>
-                          <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
-                            <div className="h-full rounded-full transition-all duration-1000 ease-out" style={{
-                              width: `${pct}%`,
-                              background: low ? 'linear-gradient(90deg,#be123c,#fb7185)' : 'linear-gradient(90deg,#d97706,#fbbf24)'
-                            }} />
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                )}
-              </div>
             </div>
 
             {/* RIGHT */}

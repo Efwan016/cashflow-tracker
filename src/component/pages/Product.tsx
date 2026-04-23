@@ -17,6 +17,9 @@ export default function ProductPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
+
   const resetMessage = () => {
     setError('')
     setSuccess('')
@@ -43,6 +46,26 @@ export default function ProductPage() {
     })
   }, [products, sortBy])
 
+  const paginatedProducts = useMemo(() => {
+    return sortedProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+  }, [sortedProducts, currentPage])
+
+  const getPageRange = (current: number, total: number) => {
+    const range: (number | string)[] = []
+    if (total <= 7) {
+      for (let i = 1; i <= total; i++) range.push(i)
+    } else {
+      if (current <= 4) {
+        range.push(1, 2, 3, 4, 5, '...', total)
+      } else if (current >= total - 3) {
+        range.push(1, '...', total - 4, total - 3, total - 2, total - 1, total)
+      } else {
+        range.push(1, '...', current - 1, current, current + 1, '...', total)
+      }
+    }
+    return range
+  }
+
   const fetchProducts = useCallback(async () => {
     const userId = await getUserId()
     if (!userId) return
@@ -62,18 +85,31 @@ export default function ProductPage() {
   }, [])
 
   useEffect(() => {
-    let ignore = false
+    let timeout: ReturnType<typeof setTimeout>
+    let channel: ReturnType<typeof supabase.channel> | null = null
 
     const init = async () => {
+      const userId = await getUserId()
+      if (!userId) return
+
       setLoading(true)
       await fetchProducts()
-      if (!ignore) setLoading(false)
+      setLoading(false)
+
+      channel = supabase
+        .channel(`products-realtime-${userId}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'Product', filter: `user_id=eq.${userId}` }, () => {
+          clearTimeout(timeout)
+          timeout = setTimeout(() => fetchProducts(), 500)
+        })
+        .subscribe()
     }
 
     init()
 
     return () => {
-      ignore = true
+      if (channel) supabase.removeChannel(channel)
+      clearTimeout(timeout)
     }
   }, [fetchProducts])
 
@@ -353,7 +389,7 @@ export default function ProductPage() {
                     </td>
                   </tr>
                 ) : (
-                  sortedProducts.map((product) => (
+                  paginatedProducts.map((product) => (
                     <tr key={product.id} className="border-b border-slate-800 last:border-none">
                       <td className="px-4 py-4 text-slate-100">{product.id}</td>
                       <td className="px-4 py-4 text-slate-100">{product.name}</td>
@@ -374,6 +410,33 @@ export default function ProductPage() {
                 )}
               </tbody>
             </table>
+            <div className="flex flex-wrap items-center justify-between gap-4 px-6 py-4 bg-slate-900/60">
+                <button 
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(p => p - 1)}
+                  className="text-xs font-bold text-sky-400 disabled:text-slate-600 transition-colors">PREV</button>
+                <div className="flex items-center gap-1">
+                  {getPageRange(currentPage, Math.ceil(sortedProducts.length / itemsPerPage)).map((p, i) => (
+                    typeof p === 'number' ? (
+                      <button
+                        key={i}
+                        onClick={() => setCurrentPage(p)}
+                        className={`h-7 min-w-[28px] rounded-lg text-[10px] font-bold transition-all ${
+                          currentPage === p ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    ) : (
+                      <span key={i} className="px-1 text-slate-600 font-bold">...</span>
+                    )
+                  ))}
+                </div>
+                <button 
+                  disabled={currentPage * itemsPerPage >= sortedProducts.length}
+                  onClick={() => setCurrentPage(p => p + 1)}
+                  className="text-xs font-bold text-sky-400 disabled:text-slate-600 transition-colors">NEXT</button>
+            </div>
           </div>
         </div>
       </div>

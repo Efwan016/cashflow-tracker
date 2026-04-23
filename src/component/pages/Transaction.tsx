@@ -13,17 +13,60 @@ export default function Transaction() {
   const [endDate, setEndDate] = useState('')
   const [userId, setUserId] = useState<string | null>(null)
 
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id || null))
-  }, [])
-
+  // Deklarasi hooks dipindah ke atas agar 'refresh' bisa diakses oleh useEffect di bawahnya
   const { transactions, isLoading, refresh, removeTransaction } = useTransactions(userId, filterType, startDate, endDate);
   const { products } = useProducts(userId);
-
   const { form, setForm, handleSelectProduct, handleSubmit, isSubmitting, total, profit } = useTransactionForm(userId, products, refresh);
+
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
+
+  useEffect(() => {
+    let timeout: ReturnType<typeof setTimeout>
+    let channel: ReturnType<typeof supabase.channel> | null = null
+
+    supabase.auth.getUser().then(({ data }) => {
+      const uId = data.user?.id || null
+      setUserId(uId)
+      if (uId) {
+        channel = supabase
+          .channel(`tx-realtime-${uId}`)
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'Transactions', filter: `user_id=eq.${uId}` }, () => {
+            clearTimeout(timeout)
+            timeout = setTimeout(() => refresh(), 500)
+          })
+          .subscribe()
+      }
+    })
+
+    return () => {
+      if (channel) supabase.removeChannel(channel)
+      clearTimeout(timeout)
+    }
+  }, [refresh])
 
   const fmt = useMemo(() => createCurrencyFormatter(), [])
   const num = useMemo(() => createNumberFormatter(), [])
+
+  const paginatedTransactions = useMemo(() => {
+    return transactions.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+  }, [transactions, currentPage])
+
+  const getPageRange = (current: number, total: number) => {
+    const range: (number | string)[] = []
+    if (total <= 7) {
+      for (let i = 1; i <= total; i++) range.push(i)
+    } else {
+      if (current <= 4) {
+        range.push(1, 2, 3, 4, 5, '...', total)
+      } else if (current >= total - 3) {
+        range.push(1, '...', total - 4, total - 3, total - 2, total - 1, total)
+      } else {
+        range.push(1, '...', current - 1, current, current + 1, '...', total)
+      }
+    }
+    return range
+  }
 
   const summary = useMemo(() => {
     const qty = transactions.reduce((s: number, t: TransactionType) => s + t.qty, 0);
@@ -158,7 +201,7 @@ export default function Transaction() {
                     </td>
                   </tr>
                 ) : (
-                  transactions.map((t) => (
+                  paginatedTransactions.map((t) => (
                     <tr key={t.id} className="hover:bg-white/[0.02] transition-colors group">
                       <td className="px-6 py-4 font-medium">{t.product_name || 'Manual Sale'}</td>
                       <td className="px-6 py-4 text-center font-mono">{num.format(t.qty)}</td>
@@ -189,6 +232,33 @@ export default function Transaction() {
                 </tfoot>
               )}
             </table>
+            <div className="flex flex-wrap items-center justify-between gap-4 px-6 py-4 bg-sky-900/20">
+                <button 
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(p => p - 1)}
+                  className="text-xs font-bold text-sky-400 disabled:text-slate-600 transition-colors">PREV</button>
+                <div className="flex items-center gap-1">
+                  {getPageRange(currentPage, Math.ceil(transactions.length / itemsPerPage)).map((p, i) => (
+                    typeof p === 'number' ? (
+                      <button
+                        key={i}
+                        onClick={() => setCurrentPage(p)}
+                        className={`h-7 min-w-[28px] rounded-lg text-[10px] font-bold transition-all ${
+                          currentPage === p ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    ) : (
+                      <span key={i} className="px-1 text-slate-600 font-bold">...</span>
+                    )
+                  ))}
+                </div>
+                <button 
+                  disabled={currentPage * itemsPerPage >= transactions.length}
+                  onClick={() => setCurrentPage(p => p + 1)}
+                  className="text-xs font-bold text-sky-400 disabled:text-slate-600 transition-colors">NEXT</button>
+            </div>
           </div>
         </div>
 

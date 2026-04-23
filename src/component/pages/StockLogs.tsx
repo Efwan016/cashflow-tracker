@@ -24,6 +24,9 @@ export default function StockLogs() {
   const [isDeleting, setIsDeleting] = useState(false)
   const [sortBy, setSortBy] = useState('date-desc')
 
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
+
   const [userId, setUserId] = useState<string | null>(null)
 
   useEffect(() => {
@@ -43,7 +46,7 @@ export default function StockLogs() {
           .select('id, product_id, type, qty, created_at')
           .eq('user_id', userId)
           .order('created_at', { ascending: false })
-          .limit(12),
+          .limit(100),
         supabase
           .from('Product')
           .select('id, name')
@@ -94,6 +97,26 @@ export default function StockLogs() {
     })
     return list
   }, [stockLogs, sortBy, productMap])
+
+  const paginatedLogs = useMemo(() => {
+    return sortedLogs.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+  }, [sortedLogs, currentPage])
+
+  const getPageRange = (current: number, total: number) => {
+    const range: (number | string)[] = []
+    if (total <= 7) {
+      for (let i = 1; i <= total; i++) range.push(i)
+    } else {
+      if (current <= 4) {
+        range.push(1, 2, 3, 4, 5, '...', total)
+      } else if (current >= total - 3) {
+        range.push(1, '...', total - 4, total - 3, total - 2, total - 1, total)
+      } else {
+        range.push(1, '...', current - 1, current, current + 1, '...', total)
+      }
+    }
+    return range
+  }
 
   const refreshLogs = async () => {
     if (!userId) return
@@ -496,7 +519,7 @@ export default function StockLogs() {
                     </td>
                   </tr>
                 ) : (
-                  sortedLogs.map((log) => (
+                  paginatedLogs.map((log) => (
                     <tr key={log.id} className="border-b border-slate-800 last:border-none">
                       <td className="px-4 py-4 text-slate-100">{productMap.get(log.product_id) ?? log.product_id}</td>
                       <td className={`px-4 py-4 font-semibold ${log.type === 'IN' ? 'text-emerald-300' : 'text-rose-300'}`}>
@@ -519,6 +542,33 @@ export default function StockLogs() {
                 )}
               </tbody>
             </table>
+            <div className="flex flex-wrap items-center justify-between gap-4 px-6 py-4 bg-slate-900/60">
+                <button 
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(p => p - 1)}
+                  className="text-xs font-bold text-sky-400 disabled:text-slate-600 transition-colors">PREV</button>
+                <div className="flex items-center gap-1">
+                  {getPageRange(currentPage, Math.ceil(sortedLogs.length / itemsPerPage)).map((p, i) => (
+                    typeof p === 'number' ? (
+                      <button
+                        key={i}
+                        onClick={() => setCurrentPage(p)}
+                        className={`h-7 min-w-[28px] rounded-lg text-[10px] font-bold transition-all ${
+                          currentPage === p ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    ) : (
+                      <span key={i} className="px-1 text-slate-600 font-bold">...</span>
+                    )
+                  ))}
+                </div>
+                <button 
+                  disabled={currentPage * itemsPerPage >= sortedLogs.length}
+                  onClick={() => setCurrentPage(p => p + 1)}
+                  className="text-xs font-bold text-sky-400 disabled:text-slate-600 transition-colors">NEXT</button>
+            </div>
           </div>
         </div>
       </div>

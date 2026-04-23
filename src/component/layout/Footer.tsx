@@ -39,7 +39,7 @@ export default function Footer() {
               <p className="text-[10px] font-medium uppercase tracking-[0.3em] text-slate-500 group-hover:text-sky-400 transition-colors">
                 Support
               </p>
-              <p className="mt-1 text-xs text-slate-300">help@cashflow.app</p>
+              <p className="mt-1 text-xs text-slate-300">chaniezfdw@gmail.com</p>
             </div>
 
             <div className="group rounded-2xl border border-white/5 bg-white/[0.02] p-4 transition-all duration-300 hover:bg-white/[0.05] hover:border-white/10">

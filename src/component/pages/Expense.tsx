@@ -26,6 +26,9 @@ export default function Expense() {
   const [endDate, setEndDate] = useState('')
   const [sortBy, setSortBy] = useState('date-desc')
 
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
+
   const formattedAmount = useMemo(() => {
     const parsed = Number(amount)
     return Number.isFinite(parsed) ? parsed : 0
@@ -65,7 +68,7 @@ export default function Expense() {
 
       if (startStr) query = query.gte('created_at', startStr);
       if (endStr) query = query.lte('created_at', endStr);
-      if (filterType === 'all') query = query.limit(20);
+      if (filterType === 'all') query = query.limit(100);
 
       const { data, error } = await query
       if (error) throw error
@@ -89,8 +92,29 @@ export default function Expense() {
   }, [navigate])
 
   useEffect(() => {
-    loadData()
-  }, [loadData])
+    let timeout: ReturnType<typeof setTimeout>
+    let channel: ReturnType<typeof supabase.channel> | null = null
+
+    const setupSubscription = async () => {
+      if (!userId) return
+      await loadData()
+
+      channel = supabase
+        .channel(`expense-realtime-${userId}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'expenses', filter: `user_id=eq.${userId}` }, () => {
+          clearTimeout(timeout)
+          timeout = setTimeout(() => loadData(), 500)
+        })
+        .subscribe()
+    }
+
+    setupSubscription()
+
+    return () => {
+      if (channel) supabase.removeChannel(channel)
+      clearTimeout(timeout)
+    }
+  }, [loadData, userId])
 
   const sortedExpenses = useMemo(() => {
     const list = [...expenses]
@@ -106,6 +130,26 @@ export default function Expense() {
     })
     return list
   }, [expenses, sortBy])
+
+  const paginatedExpenses = useMemo(() => {
+    return sortedExpenses.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+  }, [sortedExpenses, currentPage])
+
+  const getPageRange = (current: number, total: number) => {
+    const range: (number | string)[] = []
+    if (total <= 7) {
+      for (let i = 1; i <= total; i++) range.push(i)
+    } else {
+      if (current <= 4) {
+        range.push(1, 2, 3, 4, 5, '...', total)
+      } else if (current >= total - 3) {
+        range.push(1, '...', total - 4, total - 3, total - 2, total - 1, total)
+      } else {
+        range.push(1, '...', current - 1, current, current + 1, '...', total)
+      }
+    }
+    return range
+  }
 
   const totalFilteredExpense = useMemo(() => {
     return expenses.reduce((sum, exp) => sum + exp.total, 0)
@@ -349,7 +393,7 @@ export default function Expense() {
                 ) : expenses.length === 0 ? (
                   <tr><td colSpan={4} className="px-6 py-10 text-center text-slate-500">No expenses recorded for this period.</td></tr>
                 ) : (
-                  sortedExpenses.map((exp) => (
+                  paginatedExpenses.map((exp) => (
                     <tr key={exp.id} className="hover:bg-white/[0.02] transition-colors group">
                       <td className="px-6 py-4 font-medium">{exp.description}</td>
                       <td className="px-6 py-4 text-center text-slate-500">
@@ -380,6 +424,33 @@ export default function Expense() {
                 </tfoot>
               )}
             </table>
+            <div className="flex flex-wrap items-center justify-between gap-4 px-6 py-4 bg-slate-900/60">
+                <button 
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(p => p - 1)}
+                  className="text-xs font-bold text-sky-400 disabled:text-slate-600 transition-colors">PREV</button>
+                <div className="flex items-center gap-1">
+                  {getPageRange(currentPage, Math.ceil(sortedExpenses.length / itemsPerPage)).map((p, i) => (
+                    typeof p === 'number' ? (
+                      <button
+                        key={i}
+                        onClick={() => setCurrentPage(p)}
+                        className={`h-7 min-w-[28px] rounded-lg text-[10px] font-bold transition-all ${
+                          currentPage === p ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    ) : (
+                      <span key={i} className="px-1 text-slate-600 font-bold">...</span>
+                    )
+                  ))}
+                </div>
+                <button 
+                  disabled={currentPage * itemsPerPage >= sortedExpenses.length}
+                  onClick={() => setCurrentPage(p => p + 1)}
+                  className="text-xs font-bold text-sky-400 disabled:text-slate-600 transition-colors">NEXT</button>
+            </div>
           </div>
         </div>
       </div>
