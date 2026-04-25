@@ -332,7 +332,7 @@ export default function Dashboard() {
               <select
                 value={filter}
                 onChange={(e) => setFilter(e.target.value as FilterType)}
-                className="rounded-2xl border border-white/10 bg-slate-900/60 px-4 py-2.5 text-xs font-bold text-slate-200 outline-none backdrop-blur-xl cursor-pointer hover:bg-slate-800/80 transition-all"
+                className="rounded-2xl border border-white/50 bg-slate-900/60 px-4 py-2.5 text-xs font-bold text-slate-200 outline-none backdrop-blur-xl cursor-pointer hover:bg-slate-800/80 transition-all"
               >
                 <option value="today">Today</option>
                 <option value="last7">Last 7 Days</option>
@@ -347,7 +347,7 @@ export default function Dashboard() {
                   <input
                     type="date" value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                      className="rounded-2xl border border-sky-500/20 bg-slate-900/80 px-4 py-2 text-xs text-white outline-none focus:border-sky-500"
+                      className="rounded-2xl border border-sky-500/20 bg-sky-500/80 px-4 py-2 text-xs text-white outline-none focus:border-sky-500"
                   />
                   {filter === 'range' && (
                     <>
@@ -355,7 +355,7 @@ export default function Dashboard() {
                       <input
                         type="date" value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
-                          className="rounded-2xl border border-sky-500/20 bg-slate-900/80 px-4 py-2 text-xs text-white outline-none focus:border-sky-500"
+                          className="rounded-2xl border border-sky-500/20 bg-sky-500/80 px-4 py-2 text-xs text-white outline-none focus:border-sky-500"
                       />
                     </>
                   )}

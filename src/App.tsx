@@ -6,6 +6,7 @@ import Layout from './component/layout/layout'
 // Styles
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
+import Skeleton from './component/components/Skeleton';
 
 // Lazy Loaded Components
 const Auth = lazy(() => import('./component/pages/Auth'));
@@ -25,19 +26,11 @@ const DeleteAccount = lazy(() => import('./component/pages/Setting/DeleteAccount
 const Terms = lazy(() => import('./component/pages/Setting/Term'));
 const DetailInfo = lazy(() => import('./component/pages/Setting/DetailInfo'));
 
-const LoadingFallback = () => (
-  <div className="flex h-screen w-full items-center justify-center bg-slate-950 text-white">
-    <div className="flex flex-col items-center gap-4">
-      <div className="h-10 w-10 animate-spin rounded-full border-4 border-sky-500 border-t-transparent" />
-      <p className="text-sm font-medium tracking-widest uppercase text-slate-400">Loading Cashflow...</p>
-    </div>
-  </div>
-);
 
 function App() {
   return (
     <BrowserRouter>
-      <Suspense fallback={<LoadingFallback />}>
+      <Suspense fallback={<Skeleton />}>
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Auth />} />
