@@ -22,8 +22,11 @@ export function useTransactions(userId: string | null, filterType: string, start
         filters.end = `${date}T23:59:59.999${tzOffset}`;
       } else if (filterType === 'last7') {
         filters.start = `${getLocalDate(7)}T00:00:00.000${tzOffset}`;
-      } else if (filterType === 'last30') {
-        filters.start = `${getLocalDate(30)}T00:00:00.000${tzOffset}`;
+      } else if (filterType === 'thisMonth') {
+        const now = new Date();
+        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const firstDayStr = firstDayOfMonth.toISOString().split('T')[0];
+        filters.start = `${firstDayStr}T00:00:00.000${tzOffset}`;
       } else if (filterType === 'specific' && startDate) {
         filters.start = `${startDate}T00:00:00.000${tzOffset}`;
         filters.end = `${startDate}T23:59:59.999${tzOffset}`;

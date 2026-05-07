@@ -1,25 +1,58 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { useTransactions } from '../hooks/useTransactions'
 import { useProducts } from '../hooks/useProducts'
 import { useTransactionForm } from '../hooks/useTransactionForm'
 import { TransactionForm } from './TransactionForm'
+import ChartComponent from '../components/Chart'
 import { createCurrencyFormatter, createNumberFormatter } from '../../lib/utils'
 import { supabase } from '../../lib/supabase'
 import type { Transaction as TransactionType } from './Dashboard' // Dashboard.tsx remains in pages for types
 
 export default function Transaction() {
-  const [filterType, setFilterType] = useState('all')
+  const [filterType, setFilterType] = useState('today')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [userId, setUserId] = useState<string | null>(null)
+  const firstInputRef = useRef<HTMLSelectElement | null>(null)
 
-  // Deklarasi hooks dipindah ke atas agar 'refresh' bisa diakses oleh useEffect di bawahnya
   const { transactions, isLoading, refresh, removeTransaction } = useTransactions(userId, filterType, startDate, endDate);
   const { products } = useProducts(userId);
-  const { form, setForm, handleSelectProduct, handleSubmit, isSubmitting, total, profit } = useTransactionForm(userId, products, refresh);
+  const handleFormSuccess = useCallback(() => {
+    refresh()
+    firstInputRef.current?.focus()
+  }, [refresh])
+  const { form, setForm, handleSelectProduct, handleSubmit, isSubmitting, total, profit } = useTransactionForm(userId, products, handleFormSuccess);
 
   const [currentPage, setCurrentPage] = useState(1)
+  const [bestSellingCurrentPage, setBestSellingCurrentPage] = useState(1)
   const itemsPerPage = 10
+  const itemsPerPageBestSelling = 5
+
+  const bestSelling = useMemo(() => {
+    const productSales = new Map<string, { name: string; qty: number; revenue: number; profit: number }>()
+    transactions.forEach(tx => {
+      const key = tx.product_name || 'Manual Sale'
+      const existing = productSales.get(key) || { name: key, qty: 0, revenue: 0, profit: 0 }
+      existing.qty += tx.qty
+      existing.revenue += tx.total
+      existing.profit += tx.profit || 0
+      productSales.set(key, existing)
+    })
+    return Array.from(productSales.values()).sort((a, b) => b.qty - a.qty)
+  }, [transactions])
+
+  const paginatedBestSelling = useMemo(() => {
+    return bestSelling.slice((bestSellingCurrentPage - 1) * itemsPerPageBestSelling, bestSellingCurrentPage * itemsPerPageBestSelling)
+  }, [bestSelling, bestSellingCurrentPage])
+
+  const bestSellingChartData = useMemo(() => {
+    return {
+      labels: bestSelling.map(p => p.name),
+      revenue: bestSelling.map(p => p.revenue),
+      expense: [],
+      netProfit: []
+    }
+  }, [bestSelling])
 
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout>
@@ -78,7 +111,7 @@ export default function Transaction() {
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="mb-10 rounded-[40px] border border-white/10 bg-slate-900/90 p-8 shadow-[0_30px_120px_-50px_rgba(15,23,42,0.85)] backdrop-blur-xl">
+        <div className="mb-10 rounded-[40px] border border-white/10 bg-gradient-to-br from-slate-900/90 to-slate-950/80 p-8 shadow-[0_30px_120px_-50px_rgba(15,23,42,0.85)] backdrop-blur-xl">
           <p className="text-sm uppercase tracking-[0.35em] text-sky-300/80">Sales Entry</p>
           <h1 className="mt-3 text-4xl font-semibold text-white">Record transaction</h1>
           <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-400">
@@ -96,9 +129,10 @@ export default function Transaction() {
             isSubmitting={isSubmitting}
             calculatedTotal={fmt.format(total)}
             expectedProfit={fmt.format(profit)}
+            initialFocusRef={firstInputRef}
           />
 
-          <aside className="rounded-[40px] border border-white/10 bg-slate-900/90 p-8 shadow-2xl shadow-slate-950/20">
+          <aside className="rounded-[40px] border border-white/10 bg-gradient-to-br from-slate-900/90 to-slate-950/80 p-8 shadow-2xl shadow-slate-950/20 backdrop-blur-xl">
             <h2 className="text-xl font-semibold text-white">Workflow Guide</h2>
             <ul className="mt-6 space-y-4 text-sm text-slate-400">
               <li className="flex gap-3">
@@ -114,13 +148,13 @@ export default function Transaction() {
                 <span>Deleting a transaction will automatically restore the product stock level.</span>
               </li>
             </ul>
-            <div className="mt-10 rounded-3xl border border-slate-800 bg-slate-950/90 p-5 text-sm text-slate-300">
+            <div className="mt-10 rounded-3xl border border-slate-800 bg-gradient-to-r from-slate-950/90 to-slate-900/80 p-5 text-sm text-slate-300">
               Manual transactions do not impact inventory levels but are included in financial reports.
             </div>
           </aside>
         </div>
 
-        <div className="mt-10 overflow-hidden rounded-[40px] border border-white/5 bg-slate-900/50 p-8 shadow-2xl backdrop-blur-xl">
+        <div className="mt-10 overflow-hidden rounded-[40px] border border-white/5 bg-gradient-to-br from-slate-900/50 to-slate-950/40 p-8 shadow-2xl backdrop-blur-xl">
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-sky-400/80">History</p>
@@ -128,7 +162,7 @@ export default function Transaction() {
                 {filterType === 'all' && 'Recent Activity'}
                 {filterType === 'today' && 'Today\'s Sales'}
                 {filterType === 'last7' && 'Last 7 Days'}
-                {filterType === 'last30' && 'Last 30 Days'}
+                {filterType === 'thisMonth' && 'This Month'}
                 {filterType === 'specific' && (startDate ? `Sales on ${new Date(startDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}` : 'Specific Date')}
                 {filterType === 'range' && (startDate && endDate ? `Sales from ${new Date(startDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })} to ${new Date(endDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}` : 'Date Range')}
               </h2>
@@ -144,12 +178,12 @@ export default function Transaction() {
                     setEndDate('')
                   }
                 }}
-                className="rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-2 text-xs text-white outline-none transition-all focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10 hover:bg-slate-900/80 cursor-pointer"
+                 className="rounded-2xl border border-white/10 bg-slate-900/80 px-4 py-2.5 text-xs font-bold text-slate-100 outline-none backdrop-blur-xl cursor-pointer hover:bg-slate-800/90 transition-all focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20 "
               >
                 <option value="all">Recent activity</option>
                 <option value="today">Today</option>
                 <option value="last7">Last 7 Days</option>
-                <option value="last30">Last 30 Days</option>
+                <option value="thisMonth">This Month</option>
                 <option value="specific">Pick a Date</option>
                 <option value="range">Date Range</option>
               </select>
@@ -160,8 +194,8 @@ export default function Transaction() {
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-2 text-xs text-white outline-none focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10"
-                  />
+                     className="rounded-2xl border border-white/10 bg-slate-900/60 px-4 py-2.5 text-xs font-medium text-white outline-none backdrop-blur-xl transition-all focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10 [color-scheme:dark] hover:bg-slate-800/80"
+                    />
                   {filterType === 'range' && (
                     <>
                       <span className="text-slate-500 text-xs">to</span>
@@ -169,7 +203,7 @@ export default function Transaction() {
                         type="date"
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
-                        className="rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-2 text-xs text-white outline-none focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10"
+                        className="rounded-2xl border border-white/10 bg-slate-900/60 px-4 py-2.5 text-xs font-medium text-white outline-none backdrop-blur-xl transition-all focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10 [color-scheme:dark] hover:bg-slate-800/80"
                       />
                     </>
                   )}
@@ -185,8 +219,10 @@ export default function Transaction() {
                   <th className="px-6 py-5 font-medium">Product</th>
                   <th className="px-6 py-5 font-medium text-center">Qty</th>
                   <th className="px-6 py-5 font-medium">Revenue</th>
+                  <th className="px-6 py-5 font-medium">Modal</th>
                   <th className="px-6 py-5 font-medium">Profit</th>
                   <th className="px-6 py-5 text-right">Action</th>
+                  
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/30 text-slate-300">
@@ -206,6 +242,7 @@ export default function Transaction() {
                       <td className="px-6 py-4 font-medium">{t.product_name || 'Manual Sale'}</td>
                       <td className="px-6 py-4 text-center font-mono">{num.format(t.qty)}</td>
                       <td className="px-6 py-4">{fmt.format(t.total)}</td>
+                      <td className="px-6 py-4">{fmt.format(t.harga_modal || 0)}</td>
                       <td className="px-6 py-4 text-emerald-400 font-semibold">{fmt.format(t.profit || 0)}</td>
                       <td className="px-6 py-4 text-right">
                         <button
@@ -226,6 +263,7 @@ export default function Transaction() {
                     <td className="px-6 py-4 font-bold">Total</td>
                     <td className="px-6 py-4 text-center font-bold font-mono">{num.format(summary.qty)}</td>
                     <td className="px-6 py-4 font-bold">{fmt.format(summary.rev)}</td>
+                    <td className="px-6 py-4 font-bold"></td>
                     <td className="px-6 py-4 font-bold text-emerald-400">{fmt.format(summary.pro)}</td>
                     <td className="px-6 py-4 text-right"></td>
                   </tr>
@@ -258,6 +296,82 @@ export default function Transaction() {
                   disabled={currentPage * itemsPerPage >= transactions.length}
                   onClick={() => setCurrentPage(p => p + 1)}
                   className="text-xs font-bold text-sky-400 disabled:text-slate-600 transition-colors">NEXT</button>
+            </div>
+          </div>
+        </div>
+
+        {/* Best Selling Performance */}
+        <div className="mt-10 grid gap-6 lg:grid-cols-2">
+          <div className="rounded-[40px] border border-white/10 bg-gradient-to-br from-slate-900/90 to-slate-950/80 p-8 shadow-2xl shadow-slate-950/20 backdrop-blur-xl">
+            <h3 className="text-xl font-semibold text-white mb-6">Best Selling Performance</h3>
+            <div className="max-h-[500px] overflow-y-auto rounded-[32px] border border-slate-800/50 bg-gradient-to-br from-slate-950/20 to-slate-900/40 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              <table className="w-full text-left text-xs sm:text-sm">
+                <thead className="border-b border-slate-800/50 text-[10px] uppercase tracking-widest text-slate-500">
+                  <tr>
+                    <th className="px-6 py-5 font-medium">Product</th>
+                    <th className="px-6 py-5 font-medium text-center">Qty Sold</th>
+                    <th className="px-6 py-5 font-medium">Revenue</th>
+                    <th className="px-6 py-5 font-medium">Profit</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/30 text-slate-300">
+                  {paginatedBestSelling.map((item, index) => (
+                    <tr key={item.name} className="hover:bg-white/[0.02] transition-colors group">
+                      <td className="px-6 py-4 font-medium flex items-center gap-3">
+                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-sky-500/20 to-indigo-500/20 text-[10px] font-bold text-sky-400 border border-sky-500/30 group-hover:scale-110 transition-transform">
+                          {index + 1}
+                        </span>
+                        {item.name}
+                      </td>
+                      <td className="px-6 py-4 text-center font-mono">{num.format(item.qty)}</td>
+                      <td className="px-6 py-4">{fmt.format(item.revenue)}</td>
+                      <td className="px-6 py-4 text-emerald-400 font-semibold">{fmt.format(item.profit)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+                {bestSelling.length > 0 && (
+                  <tfoot className="border-t border-slate-800/50 bg-slate-900/30 text-slate-200">
+                    <tr>
+                      <td colSpan={4} className="px-6 py-4">
+                        <div className="flex flex-wrap items-center justify-between gap-4">
+                          <button 
+                            disabled={bestSellingCurrentPage === 1}
+                            onClick={() => setBestSellingCurrentPage(p => p - 1)}
+                            className="text-xs font-bold text-sky-400 disabled:text-slate-600 transition-colors">PREV</button>
+                          <div className="flex items-center gap-1">
+                            {getPageRange(bestSellingCurrentPage, Math.ceil(bestSelling.length / itemsPerPage)).map((p, i) => (
+                              typeof p === 'number' ? (
+                                <button
+                                  key={i}
+                                  onClick={() => setBestSellingCurrentPage(p)}
+                                  className={`h-7 min-w-[28px] rounded-lg text-[10px] font-bold transition-all ${
+                                    bestSellingCurrentPage === p ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                                  }`}
+                                >
+                                  {p}
+                                </button>
+                              ) : (
+                                <span key={i} className="px-1 text-slate-600 font-bold">...</span>
+                              )
+                            ))}
+                          </div>
+                          <button 
+                            disabled={bestSellingCurrentPage * itemsPerPage >= bestSelling.length}
+                            onClick={() => setBestSellingCurrentPage(p => p + 1)}
+                            className="text-xs font-bold text-sky-400 disabled:text-slate-600 transition-colors">NEXT</button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tfoot>
+                )}
+              </table>
+            </div>
+          </div>
+
+          <div className="rounded-[40px] border border-white/10 bg-gradient-to-br from-slate-900/90 to-slate-950/80 p-8 shadow-2xl shadow-slate-950/20 backdrop-blur-xl">
+            <h3 className="text-xl font-semibold text-white mb-6">Sales Performance Chart</h3>
+            <div className="h-80">
+              <ChartComponent data={bestSellingChartData} />
             </div>
           </div>
         </div>

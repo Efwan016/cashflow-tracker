@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useCallback } from 'react'
+import { useMemo, useState, useEffect, useCallback, useRef } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { toast } from 'react-toastify'
@@ -15,13 +15,14 @@ export default function Expense() {
   const navigate = useNavigate()
   const [description, setDescription] = useState('')
   const [amount, setAmount] = useState('')
+  const descriptionInputRef = useRef<HTMLInputElement>(null)
 
   const [expenses, setExpenses] = useState<ExpenseRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
-  const [filterType, setFilterType] = useState('all') // all, today, last7, last30, specific, range
+  const [filterType, setFilterType] = useState('today') // today, last7, thisMonth, specific, range
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [sortBy, setSortBy] = useState('date-desc')
@@ -56,8 +57,11 @@ export default function Expense() {
         endStr = `${date}T23:59:59.999${tzOffset}`;
       } else if (filterType === 'last7') {
         startStr = `${getLocalDate(7)}T00:00:00.000${tzOffset}`;
-      } else if (filterType === 'last30') {
-        startStr = `${getLocalDate(30)}T00:00:00.000${tzOffset}`;
+      } else if (filterType === 'thisMonth') {
+        const now = new Date();
+        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const firstDayStr = firstDayOfMonth.toISOString().split('T')[0];
+        startStr = `${firstDayStr}T00:00:00.000${tzOffset}`;
       } else if (filterType === 'specific' && startDate) {
         startStr = `${startDate}T00:00:00.000${tzOffset}`;
         endStr = `${startDate}T23:59:59.999${tzOffset}`;
@@ -68,7 +72,6 @@ export default function Expense() {
 
       if (startStr) query = query.gte('created_at', startStr);
       if (endStr) query = query.lte('created_at', endStr);
-      if (filterType === 'all') query = query.limit(100);
 
       const { data, error } = await query
       if (error) throw error
@@ -78,7 +81,7 @@ export default function Expense() {
     } finally {
       setLoading(false)
     }
-  }, [userId, filterType, startDate, endDate])
+  }, [userId, filterType, startDate, endDate, tzOffset])
 
   // 🔥 INITIAL LOAD
   useEffect(() => {
@@ -189,6 +192,7 @@ export default function Expense() {
       toast.success('Pengeluaran berhasil dicatat 🚀')
       setDescription('')
       setAmount('')
+      descriptionInputRef.current?.focus()
       loadData()
     } catch  {
       toast.error('Gagal menyimpan: ')
@@ -228,9 +232,13 @@ export default function Expense() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100">
-      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="mb-10 rounded-[40px] border border-white/10 bg-slate-900/90 p-8 shadow-[0_30px_120px_-50px_rgba(15,23,42,0.85)] backdrop-blur-xl">
+    <main className="min-h-screen text-slate-900 dark:text-slate-100">
+      <div className="pointer-events-none fixed inset-0 overflow-hidden hidden dark:block" aria-hidden>
+        <div className="animate-[pulse_10s_ease-in-out_infinite] absolute rounded-full" style={{ width: 640, height: 640, top: -200, left: '12%', background: 'radial-gradient(circle, rgba(6,182,212,0.16) 0%, transparent 70%)', filter: 'blur(65px)' }} />
+        <div className="animate-[pulse_8s_ease-in-out_infinite_reverse] absolute rounded-full" style={{ width: 520, height: 520, bottom: -80, right: '8%', background: 'radial-gradient(circle, rgba(124,58,237,0.14) 0%, transparent 70%)', filter: 'blur(65px)' }} />
+      </div>
+      <div className="relative mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+        <div className="mb-10 rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-gradient-to-br dark:from-slate-900/90 dark:to-slate-950/80 p-8 shadow-xl dark:shadow-[0_30px_120px_-50px_rgba(15,23,42,0.85)] backdrop-blur-xl">
           <p className="text-sm uppercase tracking-[0.35em] text-sky-300/80">Add expense</p>
           <h1 className="mt-3 text-4xl font-semibold text-white">Record a new expense</h1>
           <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-400">
@@ -239,16 +247,17 @@ export default function Expense() {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
-          <section className="rounded-[40px] border border-white/10 bg-slate-900/90 p-8 shadow-2xl shadow-slate-950/20">
+          <section className="rounded-[40px] border border-white/10 bg-gradient-to-br from-slate-900/90 to-slate-950/80 p-8 shadow-2xl shadow-slate-950/20 backdrop-blur-xl">
             <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="space-y-6">
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="grid gap-3 text-left">
                   <span className="text-sm text-slate-400">Expense description</span>
                   <input
+                    ref={descriptionInputRef}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="e.g. Office supplies, utilities"
-                    className="rounded-3xl border border-slate-700 bg-slate-950/90 px-4 py-4 text-white outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20"
+                    className="rounded-3xl border border-slate-700 bg-gradient-to-r from-slate-950/90 to-slate-900/80 px-4 py-4 text-white outline-none transition-all focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20 hover:bg-slate-900/90"
                   />
                 </label>
 
@@ -260,14 +269,14 @@ export default function Expense() {
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     placeholder="0"
-                    className="rounded-3xl border border-slate-700 bg-slate-950/90 px-4 py-4 text-white outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20"
+                    className="rounded-3xl border border-slate-700 bg-gradient-to-r from-slate-950/90 to-slate-900/80 px-4 py-4 text-white outline-none transition-all focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20 hover:bg-slate-900/90"
                   />
                 </label>
               </div>
 
               <div className="grid gap-3 text-left">
                 <span className="text-sm text-slate-400">Calculated expense</span>
-                <div className="rounded-3xl border border-slate-700 bg-slate-950/90 px-4 py-4 text-white">
+                <div className="rounded-3xl border border-slate-700 bg-gradient-to-r from-slate-950/90 to-slate-900/80 px-4 py-4 text-white">
                   {fmt.format(formattedAmount)}
                 </div>
               </div>
@@ -287,7 +296,7 @@ export default function Expense() {
             </form>
           </section>
 
-          <aside className="rounded-[40px] border border-white/10 bg-slate-900/90 p-8 shadow-2xl shadow-slate-950/20">
+          <aside className="rounded-[40px] border border-white/10 bg-gradient-to-br from-slate-900/90 to-slate-950/80 p-8 shadow-2xl shadow-slate-950/20 backdrop-blur-xl">
             <div className="space-y-5">
               <div>
                 <p className="text-sm uppercase tracking-[0.35em] text-slate-400">Expense tracking</p>
@@ -295,7 +304,7 @@ export default function Expense() {
               </div>
               
               <div className="grid gap-4">
-                <div className="rounded-3xl border border-slate-800 bg-slate-950/90 p-5">
+                <div className="rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-950/50 to-slate-900/60 p-5 shadow-lg">
                   <p className="text-sm text-slate-400">Total period spend</p>
                   <p className="mt-3 text-3xl font-semibold text-white">{fmt.format(totalFilteredExpense)}</p>
                   <p className="mt-1 text-xs text-slate-500 uppercase tracking-wider">{filterType.replace('all', 'Recent items')}</p>
@@ -317,7 +326,7 @@ export default function Expense() {
         </div>
 
         {/* HISTORY SECTION */}
-        <div className="mt-10 overflow-hidden rounded-[40px] border border-white/5 bg-slate-900/50 p-8 shadow-2xl backdrop-blur-xl">
+        <div className="mt-10 overflow-hidden rounded-[40px] border border-white/5 bg-gradient-to-br from-slate-900/50 to-slate-950/40 p-8 shadow-2xl backdrop-blur-xl">
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-sky-400/80">History</p>
@@ -328,14 +337,14 @@ export default function Expense() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-2 text-xs text-white outline-none transition-all focus:border-sky-500/50 hover:bg-slate-900/80 cursor-pointer"
+                className="rounded-xl border border-white/10 bg-slate-900/80 px-4 py-2.5 text-xs font-bold text-slate-100 outline-none backdrop-blur-xl cursor-pointer hover:bg-slate-800/90 transition-all focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20"
               >
                 <option value="date-desc">Newest</option>
                 <option value="date-asc">Oldest</option>
                 <option value="name-asc">Alphabet (A-Z)</option>
                 <option value="name-desc">Alphabet (Z-A)</option>
-                <option value="amount-desc">Nominal (Besar-Kecil)</option>
-                <option value="amount-asc">Nominal (Kecil-Besar)</option>
+                <option value="amount-desc">Lowest Amount</option>
+                <option value="amount-asc">Highest Amount</option>
               </select>
               <select
                 value={filterType}
@@ -346,12 +355,11 @@ export default function Expense() {
                     setEndDate('')
                   }
                 }}
-                className="rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-2 text-xs text-white outline-none focus:border-sky-500/50 hover:bg-slate-900/80 cursor-pointer"
+                     className="rounded-2xl border border-white/10 bg-slate-900/60 px-4 py-2.5 text-xs font-medium text-white outline-none backdrop-blur-xl transition-all focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10 [color-scheme:dark] hover:bg-slate-800/80"
               >
-                <option value="all">Recent activity</option>
                 <option value="today">Today</option>
                 <option value="last7">Last 7 Days</option>
-                <option value="last30">Last 30 Days</option>
+                <option value="thisMonth">This Month</option>
                 <option value="specific">Pick a Date</option>
                 <option value="range">Date Range</option>
               </select>
@@ -362,24 +370,27 @@ export default function Expense() {
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-2 text-xs text-white outline-none focus:border-sky-500/50"
+                    className="rounded-xl border border-slate-800 bg-gradient-to-r from-slate-950/50 to-slate-900/80 px-4 py-2 text-xs text-white outline-none focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10"
                   />
                   {filterType === 'range' && (
-                    <input
-                      type="date"
-                      value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                      className="rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-2 text-xs text-white outline-none focus:border-sky-500/50"
-                    />
+                    <>
+                      <span className="text-slate-500 text-xs">to</span>
+                      <input
+                        type="date"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        className="rounded-xl border border-slate-800 bg-gradient-to-r from-slate-950/50 to-slate-900/80 px-4 py-2 text-xs text-white outline-none focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10"
+                      />
+                    </>
                   )}
                 </div>
               )}
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-[32px] border border-slate-800/50 bg-slate-950/20">
+          <div className="overflow-hidden rounded-[32px] border border-slate-800/50 bg-gradient-to-br from-slate-950/20 to-slate-900/40">
             <table className="w-full text-left text-xs sm:text-sm">
-              <thead className="border-b border-slate-800/50 text-[10px] uppercase tracking-widest text-slate-500">
+              <thead className="border-b border-slate-800/50 text-[10px] uppercase tracking-widest text-slate-500 bg-gradient-to-r from-slate-950/50 to-slate-900/50">
                 <tr>
                   <th className="px-6 py-5 font-medium">Description</th>
                   <th className="px-6 py-5 font-medium text-center">Date</th>

@@ -3,12 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { supabase } from '../../lib/supabase'
 
-const SearchIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-        <circle cx="11" cy="11" r="7" />
-        <path d="m21 21-4.3-4.3" />
-    </svg>
-)
 
 const MenuIcon = () => (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
@@ -57,7 +51,9 @@ export default function Topbar({ toggleSidebar }: { toggleSidebar: () => void })
     const [showResults, setShowResults] = useState(false)
     
     const [isDarkMode, setIsDarkMode] = useState(() => {
-        return localStorage.getItem('theme') !== 'light'
+        const savedTheme = localStorage.getItem('theme')
+        if (savedTheme) return savedTheme === 'dark'
+        return window.matchMedia('(prefers-color-scheme: dark)').matches
     })
     const searchRef = useRef<HTMLDivElement>(null)
     const searchInputRef = useRef<HTMLInputElement>(null)
@@ -195,9 +191,11 @@ export default function Topbar({ toggleSidebar }: { toggleSidebar: () => void })
     }
 
     return (
-      <div
+     <div
     className={`
-        relative flex flex-col gap-6 rounded-[32px] border border-white/10 bg-slate-900/60 p-5 shadow-[0_20px_50px_rgba(0,0,0,0.3)] backdrop-blur-2xl
+        relative flex flex-col gap-6 rounded-[32px] border border-black/5 dark:border-white/10
+        bg-white/90 dark:bg-slate-900/60 p-5 shadow-xl dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)]
+        backdrop-blur-2xl
         lg:flex-row lg:items-center lg:justify-between
 
         transition-all duration-300 ease-in-out will-change-transform
@@ -212,42 +210,26 @@ export default function Topbar({ toggleSidebar }: { toggleSidebar: () => void })
                 <button
                     type="button"
                     onClick={toggleSidebar}
-                    className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-slate-800/40 text-slate-100 transition-all hover:border-sky-500/50 hover:bg-sky-500/10 hover:text-sky-400 active:scale-95"
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-black/5 bg-slate-100 text-slate-900 transition-all hover:border-sky-500/50 hover:bg-slate-200 hover:text-slate-900 active:scale-95 dark:border-white/10 dark:bg-slate-800/40 dark:text-slate-100 dark:hover:bg-slate-800 dark:hover:text-sky-400"
                     aria-label="Toggle sidebar"
                 >
                     <MenuIcon />
                 </button>
 
                 <div className="min-w-0">
-                    <h1 className="truncate text-xl font-bold tracking-tight text-white sm:text-2xl">
-                        Hello, <span className="bg-gradient-to-r from-sky-400 to-indigo-400 bg-clip-text text-transparent">{name.split(' ')[0]}</span>
+                    <h1 className="truncate text-xl font-bold tracking-tight text-slate-900 sm:text-2xl dark:text-white">
+                        Have a nice day, <span className="bg-gradient-to-r from-sky-400 to-indigo-400 bg-clip-text text-transparent">{name.split(' ')[0]}</span>
                     </h1>
                 </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-4 lg:flex-nowrap">
                 <div ref={searchRef} className="group relative flex-1 lg:min-w-[320px]">
-                    <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-slate-500">
-                        <SearchIcon />
-                    </span>
-                    <input
-                        ref={searchInputRef}
-                        type="search"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        onFocus={() => setShowResults(true)}
-                        placeholder="Search anything..."
-                        className="w-full rounded-2xl border border-white/5 bg-slate-950/40 py-3 pr-14 pl-12 text-sm text-slate-200 placeholder-slate-600 outline-none transition-all group-hover:bg-slate-950/60 focus:border-sky-500/50 focus:bg-slate-950 focus:ring-4 focus:ring-sky-500/10"
-                    />
-                    <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center">
-                        <kbd className="hidden rounded border border-white/10 bg-slate-900 px-1.5 py-0.5 text-[10px] font-medium text-slate-500 sm:inline-block">
-                            ⌘K
-                        </kbd>
-                    </div>
+                    
 
                     {/* Search Results Dropdown */}
                     {showResults && searchQuery && (
-                        <div className="absolute top-full left-0 z-[60] mt-3 w-full overflow-hidden rounded-2xl border border-white/10 bg-slate-900/95 p-2 shadow-2xl backdrop-blur-2xl">
+                        <div className="absolute top-full left-0 z-[60] mt-3 w-full overflow-hidden rounded-2xl border border-black/5 bg-white/95 text-slate-900 p-2 shadow-2xl backdrop-blur-2xl dark:border-white/10 dark:bg-slate-900/95 dark:text-slate-200">
                             {filteredResults.length > 0 ? (
                                 <div className="max-h-[300px] overflow-y-auto">
                                     {filteredResults.map((item, idx) => (
@@ -258,10 +240,10 @@ export default function Topbar({ toggleSidebar }: { toggleSidebar: () => void })
                                                 setShowResults(false)
                                                 setSearchQuery('')
                                             }}
-                                            className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-left hover:bg-white/5 transition-colors"
+                                            className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-left hover:bg-slate-100 transition-colors dark:hover:bg-slate-800"
                                         >
-                                            <span className="text-sm font-medium text-slate-200">{item.title}</span>
-                                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{item.category}</span>
+                                            <span className="text-sm font-medium text-slate-900 dark:text-slate-200">{item.title}</span>
+                                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{item.category}</span>
                                         </button>
                                     ))}
                                 </div>
@@ -279,15 +261,15 @@ export default function Topbar({ toggleSidebar }: { toggleSidebar: () => void })
                     <button 
                         type="button"
                         onClick={() => setIsDarkMode(!isDarkMode)}
-                        className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/5 bg-slate-800/30 text-slate-400 transition-all hover:bg-slate-800 hover:text-sky-400"
+                        className="flex h-11 w-11 items-center justify-center rounded-2xl border border-black/5 bg-slate-100 text-slate-900 transition-all hover:bg-slate-200 hover:text-sky-600 dark:border-white/5 dark:bg-slate-800/30 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-sky-400"
                     >
-                        {isDarkMode ? <MoonIcon /> : <SunIcon />}
+                        {isDarkMode ? <SunIcon /> : <MoonIcon />}
                     </button>
 
                     <div className="relative">
                     <button
                         onClick={() => setOpenMenu(!openMenu)}
-                        className={`flex items-center gap-3 rounded-2xl border border-white/5 bg-slate-950/40 p-1.5 pr-4 transition-all hover:bg-slate-800 ${openMenu ? 'ring-2 ring-sky-500/50' : 'hover:border-white/10'}`}
+                        className={`flex items-center gap-3 rounded-2xl border border-black/5 bg-white/90 p-1.5 pr-4 transition-all hover:bg-slate-100 dark:border-white/5 dark:bg-slate-950/40 dark:hover:bg-slate-800 ${openMenu ? 'ring-2 ring-sky-500/50' : 'hover:border-black/10 dark:hover:border-white/10'}`}
                     >
                         <div className="h-10 w-10 rounded-xl overflow-hidden shadow-lg shadow-sky-500/20">
                             {avatarUrl ? (
@@ -309,13 +291,13 @@ export default function Topbar({ toggleSidebar }: { toggleSidebar: () => void })
                     </button>
 
                     {openMenu && (
-                        <div className="absolute right-0 mt-3 w-56 origin-top-right rounded-2xl border border-white/10 bg-slate-900/95 p-2 shadow-2xl ring-1 ring-black/5 backdrop-blur-2xl">
+                        <div className="absolute right-0 mt-3 w-56 origin-top-right rounded-2xl border border-black/5 bg-white/95 p-2 shadow-2xl ring-1 ring-black/5 backdrop-blur-2xl dark:border-white/10 dark:bg-slate-900/95 dark:ring-white/5">
                             <button
                                 onClick={() => {
                                     setOpenMenu(false)
                                     navigate('/profile')
                                 }}
-                                className="group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-300 transition-all hover:bg-white/5 hover:text-white"
+                                className="group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-900 transition-all hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white"
                             >
                                 <span className="text-slate-500 group-hover:text-sky-400 transition-colors"><UserIcon /></span>
                                 Profile
@@ -323,7 +305,7 @@ export default function Topbar({ toggleSidebar }: { toggleSidebar: () => void })
 
                             <button
                                 onClick={handleLogout}
-                                className="group mt-1 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-rose-400 transition-all hover:bg-rose-500/10 hover:text-rose-300"
+                                className="group mt-1 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-rose-600 transition-all hover:bg-rose-100 hover:text-rose-700 dark:text-rose-400 dark:hover:bg-rose-500/10 dark:hover:text-rose-300"
                             >
                                 <span className="text-rose-500/50 group-hover:text-rose-400 transition-colors"><LogoutIcon /></span>
                                 Logout

@@ -14,10 +14,10 @@ export type Transaction = {
   profit: number; total: number; mode: string | null; created_at: string; user_id?: string
 }
 export type Expense = { id: string; description: string | null; total: number; created_at: string }
-export type Stock   = { id: string; product_id: string; total: number; harga_modal: number | null; harga_jual: number | null; product?: Product }
+export type Stock = { id: string; product_id: string; total: number; harga_modal: number | null; harga_jual: number | null; product?: Product }
 export type StockLog = { id: string; product_id: string; type: string | null; qty: number; created_at: string; product?: Product }
-export type Profile  = { full_name: string | null; avatar_url: string | null }
-export type FilterType = 'today' | 'last7' | 'last30' | 'last3month' | 'specific' | 'range'
+export type Profile = { full_name: string | null; avatar_url: string | null }
+export type FilterType = 'today' | 'last7' | 'thisMonth' | 'last3month' | 'specific' | 'range'
 
 // ─── Hooks ─────────────────────────────────────────────────────────────────────
 
@@ -44,7 +44,12 @@ function useDashboardData(filter: FilterType, startDate: string, endDate: string
       let startStr = '', endStr = ''
       if (filter === 'today') { startStr = `${getLocalDate()}T00:00:00.000${tz}`; endStr = `${getLocalDate()}T23:59:59.999${tz}`; }
       else if (filter === 'last7') startStr = `${getLocalDate(7)}T00:00:00.000${tz}`;
-      else if (filter === 'last30') startStr = `${getLocalDate(30)}T00:00:00.000${tz}`;
+      else if (filter === 'thisMonth') {
+        const now = new Date();
+        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const firstDayStr = firstDayOfMonth.toISOString().split('T')[0];
+        startStr = `${firstDayStr}T00:00:00.000${tz}`;
+      }
       else if (filter === 'last3month') startStr = `${getLocalDate(90)}T00:00:00.000${tz}`;
       else if (filter === 'specific') { startStr = `${startDate}T00:00:00.000${tz}`; endStr = `${startDate}T23:59:59.999${tz}`; }
       else if (filter === 'range') { startStr = `${startDate}T00:00:00.000${tz}`; endStr = `${endDate}T23:59:59.999${tz}`; }
@@ -71,7 +76,7 @@ function useDashboardData(filter: FilterType, startDate: string, endDate: string
         profile: pr.data || null
       })
     } catch {
-      setError( 'Failed to fetch dashboard data')
+      setError('Failed to fetch dashboard data')
     } finally {
       setLoading(false)
     }
@@ -113,9 +118,9 @@ type Accent = 'emerald' | 'rose' | 'sky' | 'amber'
 
 const AccentMap: Record<Accent, { bg: string; text: string; ring: string; bar: string }> = {
   emerald: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', ring: 'ring-emerald-500/20', bar: 'from-emerald-600 to-emerald-400' },
-  rose:    { bg: 'bg-rose-500/10',    text: 'text-rose-400',    ring: 'ring-rose-500/20',    bar: 'from-rose-600 to-rose-400' },
-  sky:     { bg: 'bg-sky-500/10',     text: 'text-sky-400',     ring: 'ring-sky-500/20',     bar: 'from-sky-600 to-sky-400' },
-  amber:   { bg: 'bg-amber-500/10',   text: 'text-amber-400',   ring: 'ring-amber-500/20',   bar: 'from-amber-600 to-amber-400' },
+  rose: { bg: 'bg-rose-500/10', text: 'text-rose-400', ring: 'ring-rose-500/20', bar: 'from-rose-600 to-rose-400' },
+  sky: { bg: 'bg-sky-500/10', text: 'text-sky-400', ring: 'ring-sky-500/20', bar: 'from-sky-600 to-sky-400' },
+  amber: { bg: 'bg-amber-500/10', text: 'text-amber-400', ring: 'ring-amber-500/20', bar: 'from-amber-600 to-amber-400' },
 }
 
 function KpiCard({ label, value, sub, pct, accent, icon, delay = '' }: {
@@ -126,7 +131,7 @@ function KpiCard({ label, value, sub, pct, accent, icon, delay = '' }: {
   return (
     <div className={`group relative overflow-hidden rounded-[32px] border border-white/10 bg-slate-900/40 p-6 backdrop-blur-2xl transition-all duration-300 hover:bg-slate-800/60 hover:shadow-2xl hover:shadow-black/40 ${delay}`}>
       <div className={`absolute -right-4 -top-4 h-24 w-24 rounded-full opacity-10 blur-2xl transition-all duration-500 group-hover:scale-150 ${accent === 'emerald' ? 'bg-emerald-500' : accent === 'rose' ? 'bg-rose-500' : accent === 'sky' ? 'bg-sky-500' : 'bg-amber-500'}`} />
-      
+
       <div className="flex items-start justify-between mb-4">
         <div className={`rounded-2xl p-3 ring-1 ${a.bg} ${a.text} ${a.ring}`}>
           {icon}
@@ -147,7 +152,7 @@ function KpiCard({ label, value, sub, pct, accent, icon, delay = '' }: {
 // ─── Feed Row ──────────────────────────────────────────────────────────────────
 
 function FeedRow({ ibg, ic, icon, title, sub, val, vc, badge, bc, time }: {
-  ibg: string; ic: string; icon: React.ReactNode; 
+  ibg: string; ic: string; icon: React.ReactNode;
   title: string; sub?: string; val?: string; vc?: string
   badge?: string; bc?: string; time: string
 }) {
@@ -184,7 +189,7 @@ function Skel({ n = 4, h = 54 }: { n?: number; h?: number }) {
 // ─── Main ──────────────────────────────────────────────────────────────────────
 
 export default function Dashboard() {
-  const [filter, setFilter] = useState<FilterType>('last30')
+  const [filter, setFilter] = useState<FilterType>('today')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
 
@@ -194,17 +199,17 @@ export default function Dashboard() {
   const num = useMemo(() => createNumberFormatter(), [])
 
   const metrics = useMemo(() => {
-    const revenue      = transactions.reduce((s, t) => s + (t.total  ?? 0), 0)
-    const grossProfit  = transactions.reduce((s, t) => s + (t.profit ?? 0), 0)
-    const totalExpense = expenses.reduce    ((s, e) => s + (e.total  ?? 0), 0)
-    const netProfit    = grossProfit - totalExpense
-    const stockQty     = stocks.reduce((s, st) => s + (st.total ?? 0), 0)
-    const stockValue   = stocks.reduce((s, st) => {
+    const revenue = transactions.reduce((s, t) => s + (t.total ?? 0), 0)
+    const grossProfit = transactions.reduce((s, t) => s + (t.profit ?? 0), 0)
+    const totalExpense = expenses.reduce((s, e) => s + (e.total ?? 0), 0)
+    const netProfit = grossProfit - totalExpense
+    const stockQty = stocks.reduce((s, st) => s + (st.total ?? 0), 0)
+    const stockValue = stocks.reduce((s, st) => {
       const modal = st.harga_modal ?? st.product?.harga_modal ?? 0
       return s + (st.total ?? 0) * modal
     }, 0)
-    const marginPct    = revenue > 0 ? Math.round((grossProfit / revenue) * 100) : 0
-    const revSharePct  = revenue + totalExpense > 0 ? Math.round(revenue / (revenue + totalExpense) * 100) : 0
+    const marginPct = revenue > 0 ? Math.round((grossProfit / revenue) * 100) : 0
+    const revSharePct = revenue + totalExpense > 0 ? Math.round(revenue / (revenue + totalExpense) * 100) : 0
     return { revenue, grossProfit, totalExpense, netProfit, stockQty, stockValue, marginPct, revSharePct, skus: stocks.length, txCount: transactions.length }
   }, [transactions, expenses, stocks])
 
@@ -289,9 +294,9 @@ export default function Dashboard() {
   // ─── Feed ────────────────────────────────────────────────────────────────────
   type FeedEntry = { kind: 'tx' | 'exp' | 'log'; data: Transaction | Expense | StockLog; ts: string }
   const feed = useMemo<FeedEntry[]>(() => [
-    ...transactions.map(d => ({ kind: 'tx'  as const, data: d, ts: d.created_at })),
-    ...expenses    .map(d => ({ kind: 'exp' as const, data: d, ts: d.created_at })),
-    ...stockLogs   .map(d => ({ kind: 'log' as const, data: d, ts: d.created_at })),
+    ...transactions.map(d => ({ kind: 'tx' as const, data: d, ts: d.created_at })),
+    ...expenses.map(d => ({ kind: 'exp' as const, data: d, ts: d.created_at })),
+    ...stockLogs.map(d => ({ kind: 'log' as const, data: d, ts: d.created_at })),
   ].sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime()).slice(0, 12), [transactions, expenses, stockLogs])
 
   const pos = metrics.netProfit >= 0
@@ -327,36 +332,43 @@ export default function Dashboard() {
                 </span>{' '}👋
               </h1>
             </div>
-            
+
             <div className="flex flex-wrap items-center gap-3">
               <select
                 value={filter}
                 onChange={(e) => setFilter(e.target.value as FilterType)}
-                className="rounded-2xl border border-white/50 bg-slate-900/60 px-4 py-2.5 text-xs font-bold text-slate-200 outline-none backdrop-blur-xl cursor-pointer hover:bg-slate-800/80 transition-all"
+                className="rounded-xl border border-white/10 bg-slate-900/80 px-4 py-2.5 text-xs font-bold text-slate-100 outline-none backdrop-blur-xl cursor-pointer hover:bg-slate-800/90 transition-all focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20"
               >
-                <option value="today">Today</option>
-                <option value="last7">Last 7 Days</option>
-                <option value="last30">Last 30 Days</option>
-                <option value="last3month">Last 3 Months</option>
-                <option value="specific">Pick a Date</option>
-                <option value="range">Date Range</option>
+                <option value="today" className="bg-slate-900 text-white">Today</option>
+                <option value="last7" className="bg-slate-900 text-white">Last 7 Days</option>
+                <option value="thisMonth" className="bg-slate-900 text-white">This Month</option>
+                <option value="last3month" className="bg-slate-900 text-white">Last 3 Months</option>
+                <option value="specific" className="bg-slate-900 text-white">Pick a Date</option>
+                <option value="range" className="bg-slate-900 text-white">Date Range</option>
               </select>
 
               {(filter === 'specific' || filter === 'range') && (
-                <div className="flex items-center gap-2">
-                  <input
-                    type="date" value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                      className="rounded-2xl border border-sky-500/20 bg-sky-500/80 px-4 py-2 text-xs text-white outline-none focus:border-sky-500"
-                  />
+                <div className="flex items-center gap-3 animate-in fade-in slide-in-from-right-4 duration-300">
+                  <div className="relative group">
+                    <input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      className="rounded-2xl border border-white/10 bg-slate-900/60 px-4 py-2.5 text-xs font-medium text-white outline-none backdrop-blur-xl transition-all focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10 [color-scheme:dark] hover:bg-slate-800/80"
+                    />
+                  </div>
+
                   {filter === 'range' && (
                     <>
-                      <span className="text-slate-600 text-xs">to</span>
-                      <input
-                        type="date" value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                          className="rounded-2xl border border-sky-500/20 bg-sky-500/80 px-4 py-2 text-xs text-white outline-none focus:border-sky-500"
-                      />
+                      <span className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">to</span>
+                      <div className="relative group">
+                        <input
+                          type="date"
+                          value={endDate}
+                          onChange={(e) => setEndDate(e.target.value)}
+                          className="rounded-2xl border border-white/10 bg-slate-900/60 px-4 py-2.5 text-xs font-medium text-white outline-none backdrop-blur-xl transition-all focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10 [color-scheme:dark] hover:bg-slate-800/80"
+                        />
+                      </div>
                     </>
                   )}
                 </div>
@@ -410,10 +422,10 @@ export default function Dashboard() {
 
           {/* ── 4 KPI CARDS ── */}
           <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <KpiCard label="Revenue"       value={fmt.format(metrics.revenue)}      sub={`${metrics.txCount} transactions`}                           pct={metrics.revSharePct}        accent="emerald" icon={<IC.Revenue />} delay="d2" />
-            <KpiCard label="Expenses"      value={fmt.format(metrics.totalExpense)} sub={`${expenses.length} entries`}                         pct={100 - metrics.revSharePct}  accent="rose"    icon={<IC.Expense />} delay="d3" />
-            <KpiCard label="Gross Profit"  value={fmt.format(metrics.grossProfit)}  sub={`${metrics.marginPct}% of revenue`}                     pct={metrics.marginPct}          accent="sky"     icon={<IC.Profit />} delay="d4" />
-            <KpiCard label="Stock Value"   value={fmt.format(metrics.stockValue)}   sub={`${num.format(metrics.stockQty)} units · ${metrics.skus} SKUs`}                              accent="amber"   icon={<IC.Box />} delay="d5" />
+            <KpiCard label="Revenue" value={fmt.format(metrics.revenue)} sub={`${metrics.txCount} transactions`} pct={metrics.revSharePct} accent="emerald" icon={<IC.Revenue />} delay="d2" />
+            <KpiCard label="Expenses" value={fmt.format(metrics.totalExpense)} sub={`${expenses.length} entries`} pct={100 - metrics.revSharePct} accent="rose" icon={<IC.Expense />} delay="d3" />
+            <KpiCard label="Gross Profit" value={fmt.format(metrics.grossProfit)} sub={`${metrics.marginPct}% of revenue`} pct={metrics.marginPct} accent="sky" icon={<IC.Profit />} delay="d4" />
+            <KpiCard label="Stock Value" value={fmt.format(metrics.stockValue)} sub={`${num.format(metrics.stockQty)} units · ${metrics.skus} SKUs`} accent="amber" icon={<IC.Box />} delay="d5" />
           </div>
 
           {/* ── MAIN 2-COL GRID ── */}
@@ -431,9 +443,9 @@ export default function Dashboard() {
                 </div>
                 <div className="space-y-4">
                   {[
-                    { label: 'Revenue',       val: fmt.format(metrics.revenue),      pct: metrics.revSharePct,                      bar: 'linear-gradient(90deg,#059669,#34d399)', dot: '#34d399' },
-                    { label: 'Expenses',      val: fmt.format(metrics.totalExpense), pct: 100 - metrics.revSharePct,               bar: 'linear-gradient(90deg,#be123c,#fb7185)', dot: '#fb7185' },
-                    { label: 'Profit Margin', val: `${metrics.marginPct}%`,          pct: Math.min(100, Math.max(0, metrics.marginPct)), bar: 'linear-gradient(90deg,#0284c7,#38bdf8)', dot: '#38bdf8' },
+                    { label: 'Revenue', val: fmt.format(metrics.revenue), pct: metrics.revSharePct, bar: 'linear-gradient(90deg,#059669,#34d399)', dot: '#34d399' },
+                    { label: 'Expenses', val: fmt.format(metrics.totalExpense), pct: 100 - metrics.revSharePct, bar: 'linear-gradient(90deg,#be123c,#fb7185)', dot: '#fb7185' },
+                    { label: 'Profit Margin', val: `${metrics.marginPct}%`, pct: Math.min(100, Math.max(0, metrics.marginPct)), bar: 'linear-gradient(90deg,#0284c7,#38bdf8)', dot: '#38bdf8' },
                   ].map(r => (
                     <div key={r.label}>
                       <div className="flex items-center justify-between mb-1.5 text-xs">
@@ -575,10 +587,10 @@ export default function Dashboard() {
                 <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-600 mb-4 px-1">Quick Menu</p>
                 <div className="space-y-2">
                   {([
-                    { to: '/transactions', label: 'Transactions', icon: <IC.Tx />,      ic: '#34d399', ibg: 'rgba(52,211,153,0.1)' },
-                    { to: '/expenses',     label: 'Expenses',     icon: <IC.Expense />, ic: '#fb7185', ibg: 'rgba(251,113,133,0.1)' },
-                    { to: '/stock',        label: 'Stock',        icon: <IC.Box />,     ic: '#fbbf24', ibg: 'rgba(251,191,36,0.1)' },
-                    { to: '/stock-logs',   label: 'Stock Logs',   icon: <IC.Log />,     ic: '#a78bfa', ibg: 'rgba(167,139,250,0.1)' },
+                    { to: '/transactions', label: 'Transactions', icon: <IC.Tx />, ic: '#34d399', ibg: 'rgba(52,211,153,0.1)' },
+                    { to: '/expenses', label: 'Expenses', icon: <IC.Expense />, ic: '#fb7185', ibg: 'rgba(251,113,133,0.1)' },
+                    { to: '/stock', label: 'Stock', icon: <IC.Box />, ic: '#fbbf24', ibg: 'rgba(251,191,36,0.1)' },
+                    { to: '/stock-logs', label: 'Stock Logs', icon: <IC.Log />, ic: '#a78bfa', ibg: 'rgba(167,139,250,0.1)' },
                   ] as const).map(({ to, label, icon, ic, ibg }) => (
                     <NavLink key={to} to={to} className="flex items-center justify-between p-4 rounded-2xl border border-white/5 bg-slate-900/40 backdrop-blur-xl transition-all duration-200 hover:bg-slate-800/80 hover:border-white/10 hover:translate-x-1 group">
                       <span className="flex items-center gap-3">

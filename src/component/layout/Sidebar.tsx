@@ -88,12 +88,12 @@ export default function Sidebar({
 
   return (
     <div
-      className={`fixed top-0 left-0 z-50 flex h-full w-72 flex-col justify-between overflow-y-auto border-r border-white/10 bg-slate-900/95 p-6 shadow-2xl shadow-slate-950/20 transition-transform duration-300 ease-in-out backdrop-blur-xl [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden ${
+      className={`fixed top-0 left-0 z-50 flex h-full w-72 flex-col justify-between overflow-y-auto border-r border-black/5 dark:border-white/10 bg-white/95 dark:bg-slate-900/95 p-6 shadow-2xl shadow-slate-100/20 dark:shadow-slate-950/20 transition-transform duration-300 ease-in-out backdrop-blur-xl [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden ${
         isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} ${isDesktopSidebarOpen ? 'lg:translate-x-0' : 'lg:-translate-x-full'}`}
     >
       <div className="space-y-8">
-        <div className="rounded-[32px] border border-white/10 bg-slate-900/90 p-5 shadow-sm shadow-slate-950/20">
-          <p className="text-xs uppercase tracking-[0.35em] text-slate-500">Account</p>
+        <div className="rounded-[32px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 p-5 shadow-sm shadow-slate-100/20 dark:shadow-slate-950/20">
+          <p className="text-xs uppercase tracking-[0.35em] text-slate-500 dark:text-slate-500">Account</p>
           <div className="mt-4 flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-600 text-sm font-bold text-white shadow-lg shadow-sky-500/20">
               {avatarUrl ? (
@@ -107,12 +107,12 @@ export default function Sidebar({
               )}
             </div>
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-white">{name}</p>
-              <p className="truncate text-[10px] text-slate-500">{email || 'Premium Plan'}</p>
+              <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">{name}</p>
+              <p className="truncate text-[10px] text-slate-500 dark:text-slate-500">{email || 'Premium Plan'}</p>
             </div>
           </div>
-          <div className="mt-5 rounded-2xl bg-slate-950/50 border border-white/5 p-4 transition-colors hover:bg-slate-950/80">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Net Profit</p>
+          <div className="mt-5 rounded-2xl bg-slate-50 dark:bg-slate-950/50 border border-black/5 dark:border-white/5 p-4 transition-colors hover:bg-slate-100 dark:hover:bg-slate-950/80">
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-500 uppercase tracking-wider">Net Profit</p>
             <p className={`mt-1 text-xl font-bold tracking-tight ${netProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
               {netProfit >= 0 ? '+' : ''}{fmt.format(netProfit)}
             </p>
@@ -151,8 +151,8 @@ export default function Sidebar({
                   <button
                     type="button"
                     onClick={() => setIsOpen(!isOpen)}
-                    className={`block w-full rounded-2xl px-4 py-3 text-left text-sm transition-all duration-200 outline-none focus:ring-0 ${
-                      isOpen ? 'text-white bg-white/5' : 'text-slate-400 hover:bg-white/5 hover:text-white'
+                    className={`block w-full rounded-2xl px-4 py-3 text-left text-sm transition-all duration-200 outline-none focus:ring-0 ${isOpen
+                      ? 'text-slate-900 dark:text-white bg-slate-100 dark:bg-white/5' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
                     {content}
@@ -165,8 +165,7 @@ export default function Sidebar({
                           to={child.path}
                           className={({ isActive }) =>
                             `flex items-center gap-3 rounded-xl px-4 py-2 text-xs transition-all outline-none focus:ring-0 ${
-                              isActive
-                                ? 'bg-sky-500/20 text-sky-400 font-bold'
+                              isActive ? 'bg-sky-500/20 text-sky-400 font-bold'
                                 : 'text-slate-500 hover:bg-white/5 hover:text-slate-300'
                             }`
                           }
@@ -188,9 +187,8 @@ export default function Sidebar({
                 to={item.path || '#'}
                 className={({ isActive }) =>
                   `block w-full rounded-2xl px-4 py-3 text-left text-sm transition-all duration-200 outline-none focus:ring-0 ${
-                    isActive
-                      ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20'
-                      : 'text-slate-400 hover:bg-white/5 hover:text-white'
+                    isActive ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20'
+                      : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
                   }`
                 }
                 onClick={closeMobileSidebar}
@@ -202,10 +200,10 @@ export default function Sidebar({
         </nav>
       </div>
 
-      <div className="space-y-4">
-        <div className="rounded-[32px] border border-white/10 bg-gradient-to-b from-slate-900/90 to-slate-950/80 p-5 shadow-sm shadow-slate-950/20">
-          <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Tips</p>
-          <p className="mt-3 text-sm leading-6 text-slate-300">
+      <div className="space-y-4 text-slate-900 dark:text-slate-100">
+        <div className="rounded-[32px] border border-black/5 dark:border-white/10 bg-white dark:bg-gradient-to-b dark:from-slate-900/90 dark:to-slate-950/80 p-5 shadow-sm shadow-slate-100/20 dark:shadow-slate-950/20">
+          <p className="text-xs uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">Tips</p>
+          <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
             Get faster insights with live reports and automated budget controls.
           </p>
         </div>
@@ -213,7 +211,7 @@ export default function Sidebar({
         <button
           type="button"
           onClick={closeMobileSidebar}
-          className="inline-flex w-full items-center justify-center rounded-3xl border border-slate-700 bg-slate-950/95 px-4 py-3 text-sm font-semibold text-slate-100 transition hover:border-sky-400 hover:bg-slate-800 lg:hidden"
+          className="inline-flex w-full items-center justify-center rounded-3xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-800 transition hover:border-sky-400 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-950/95 dark:text-slate-100 dark:hover:border-sky-400 dark:hover:bg-slate-800 lg:hidden"
         >
           Close sidebar
         </button>

@@ -103,6 +103,15 @@ export default function Layout({ children }: { children: ReactNode }) {
           clearTimeout(timeout)
           timeout = setTimeout(() => fetchData(), 500) // Debounce for 500ms
         })
+        .on('postgres_changes', { 
+          event: '*', 
+          schema: 'public', 
+          table: 'profiles', 
+          filter: `id=eq.${user.id}` 
+        }, () => {
+          clearTimeout(timeout)
+          timeout = setTimeout(() => fetchData(), 500)
+        })
         .subscribe()
 
       // Setup Auth State Change Listener
@@ -137,8 +146,7 @@ export default function Layout({ children }: { children: ReactNode }) {
 
 
   return (
-    <div className="w-full min-h-screen bg-gray-900 text-white">
-
+    <div className="w-full min-h-screen bg-slate-50 dark:bg-gray-900 text-slate-900 dark:text-white transition-colors duration-300">
       {/* Sidebar */}
       <Sidebar
         isSidebarOpen={isSidebarOpen}
