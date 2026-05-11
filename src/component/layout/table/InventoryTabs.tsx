@@ -46,7 +46,7 @@ export function InventoryTabs({
       <nav
         role="tablist"
         aria-label="Inventory sections"
-        className="flex gap-1 rounded-2xl border border-slate-800 bg-slate-900/60 p-1"
+        className="flex gap-1 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900/60 p-1"
       >
         {tabs.map((tab) => (
           <button
@@ -59,8 +59,8 @@ export function InventoryTabs({
             onClick={() => onTabChange(tab.id)}
             className={`relative flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition-all duration-200 ${
               activeTab === tab.id
-                ? 'bg-slate-800 text-slate-100 shadow-sm'
-                : 'text-slate-500 hover:text-slate-300'
+                ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-sm'
+                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
             }`}
           >
             {tab.icon}
@@ -70,7 +70,7 @@ export function InventoryTabs({
                 className={`rounded-md px-1.5 py-0.5 text-[10px] font-bold tabular-nums transition-colors ${
                   activeTab === tab.id
                     ? 'bg-sky-500/20 text-sky-400'
-                    : 'bg-slate-800 text-slate-600'
+                    : 'bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-600'
                 }`}
               >
                 {tab.count}

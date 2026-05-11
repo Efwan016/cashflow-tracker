@@ -129,19 +129,19 @@ function KpiCard({ label, value, sub, pct, accent, icon, delay = '' }: {
 }) {
   const a = AccentMap[accent]
   return (
-    <div className={`group relative overflow-hidden rounded-[32px] border border-white/10 bg-slate-900/40 p-6 backdrop-blur-2xl transition-all duration-300 hover:bg-slate-800/60 hover:shadow-2xl hover:shadow-black/40 ${delay}`}>
+    <div className={`group relative overflow-hidden rounded-[32px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 p-6 backdrop-blur-2xl transition-all duration-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:shadow-xl dark:hover:shadow-black/40 ${delay}`}>
       <div className={`absolute -right-4 -top-4 h-24 w-24 rounded-full opacity-10 blur-2xl transition-all duration-500 group-hover:scale-150 ${accent === 'emerald' ? 'bg-emerald-500' : accent === 'rose' ? 'bg-rose-500' : accent === 'sky' ? 'bg-sky-500' : 'bg-amber-500'}`} />
 
       <div className="flex items-start justify-between mb-4">
-        <div className={`rounded-2xl p-3 ring-1 ${a.bg} ${a.text} ${a.ring}`}>
+        <div className={`rounded-2xl p-3 ring-1 ${a.bg} ${accent === 'sky' ? 'text-sky-600 dark:text-sky-400' : accent === 'emerald' ? 'text-emerald-600 dark:text-emerald-400' : accent === 'rose' ? 'text-rose-600 dark:text-rose-400' : 'text-amber-600 dark:text-amber-400'} ${a.ring}`}>
           {icon}
         </div>
         {sub && <span className="text-[10px] text-slate-500 font-medium mt-0.5 text-right leading-tight max-w-[100px]">{sub}</span>}
       </div>
       <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-500 mb-1">{label}</p>
-      <p className={`text-2xl font-bold leading-tight ${a.text}`}>{value}</p>
+      <p className={`text-2xl font-bold leading-tight ${accent === 'sky' ? 'text-sky-600 dark:text-sky-400' : accent === 'emerald' ? 'text-emerald-600 dark:text-emerald-400' : accent === 'rose' ? 'text-rose-600 dark:text-rose-400' : 'text-amber-600 dark:text-amber-400'}`}>{value}</p>
       {pct !== undefined && (
-        <div className="mt-4 h-1 rounded-full bg-white/5 overflow-hidden">
+        <div className="mt-4 h-1 rounded-full bg-slate-200 dark:bg-white/5 overflow-hidden">
           <div className={`h-full rounded-full bg-gradient-to-r transition-all duration-1000 ease-out ${a.bar}`} style={{ width: `${Math.min(100, Math.max(0, pct))}%` }} />
         </div>
       )}
@@ -157,13 +157,13 @@ function FeedRow({ ibg, ic, icon, title, sub, val, vc, badge, bc, time }: {
   badge?: string; bc?: string; time: string
 }) {
   return (
-    <div className="flex items-start gap-4 rounded-2xl border border-white/[0.03] bg-white/[0.01] p-4 transition-all duration-200 hover:bg-white/[0.04] hover:border-white/10 group cursor-default">
+    <div className="flex items-start gap-4 rounded-2xl border border-black/5 dark:border-white/[0.03] bg-slate-50/50 dark:bg-white/[0.01] p-4 transition-all duration-200 hover:bg-slate-100 dark:hover:bg-white/[0.04] hover:border-black/10 dark:hover:border-white/10 group cursor-default">
       <div className={`mt-0.5 flex-shrink-0 rounded-xl p-2.5 transition-transform group-hover:scale-110`} style={{ background: ibg }}>
         <span style={{ color: ic }}>{icon}</span>
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm font-semibold text-slate-100 truncate leading-snug">{title}</span>
+          <span className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate leading-snug">{title}</span>
           {badge && <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider" style={{ background: bc, color: ic }}>{badge}</span>}
         </div>
         {sub && <p className="text-xs text-slate-500 mt-0.5 truncate">{sub}</p>}
@@ -304,10 +304,10 @@ export default function Dashboard() {
 
   return (
     <>
-      <main className="min-h-screen font-sans selection:bg-sky-500/30 text-slate-200" style={{ background: 'radial-gradient(ellipse 80% 50% at 20% -5%, rgba(14,32,64,0.9) 0%, transparent 55%), radial-gradient(ellipse 60% 40% at 85% 105%, rgba(30,10,55,0.6) 0%, transparent 55%), #070b12' }}>
+      <main className="min-h-screen font-sans selection:bg-sky-500/30 bg-slate-50 dark:bg-slate-900/90 text-slate-900 dark:text-slate-200 transition-colors duration-300" style={{ backgroundImage: 'radial-gradient(ellipse 80% 50% at 20% -5%, rgba(14,32,64,0.05) 0%, transparent 55%), radial-gradient(ellipse 60% 40% at 85% 105%, rgba(30,10,55,0.05) 0%, transparent 55%)' }}>
 
         {/* Blobs */}
-        <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden>
+        <div className="pointer-events-none fixed inset-0 overflow-hidden hidden dark:block" aria-hidden>
           <div className="animate-[pulse_10s_ease-in-out_infinite] absolute rounded-full" style={{ width: 640, height: 640, top: -200, left: '12%', background: 'radial-gradient(circle, rgba(6,182,212,0.16) 0%, transparent 70%)', filter: 'blur(65px)' }} />
           <div className="animate-[pulse_8s_ease-in-out_infinite_reverse] absolute rounded-full" style={{ width: 520, height: 520, bottom: -80, right: '8%', background: 'radial-gradient(circle, rgba(124,58,237,0.14) 0%, transparent 70%)', filter: 'blur(65px)' }} />
           <div className="animate-[pulse_12s_ease-in-out_infinite] absolute rounded-full" style={{ width: 380, height: 380, top: '45%', left: -80, background: 'radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 70%)', filter: 'blur(55px)' }} />
@@ -325,7 +325,7 @@ export default function Dashboard() {
                   {loading ? 'Loading…' : 'Live'}
                 </span>
               </div>
-              <h1 className="text-3xl font-extrabold text-white tracking-tight sm:text-5xl">
+              <h1 className="text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight sm:text-5xl">
                 Hello,{' '}
                 <span style={{ background: 'linear-gradient(125deg, #38bdf8 20%, #a78bfa 80%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                   {firstName}
@@ -337,14 +337,14 @@ export default function Dashboard() {
               <select
                 value={filter}
                 onChange={(e) => setFilter(e.target.value as FilterType)}
-                className="rounded-xl border border-white/10 bg-slate-900/80 px-4 py-2.5 text-xs font-bold text-slate-100 outline-none backdrop-blur-xl cursor-pointer hover:bg-slate-800/90 transition-all focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20"
+                className="rounded-xl border border-slate-900/90 dark:border-slate-200 bg-slate-100 dark:bg-slate-900/90 px-4 py-2.5 text-xs font-bold text-slate-900/90 dark:text-slate-100  outline-none backdrop-blur-xl cursor-pointer hover:bg-slate-800/90 transition-all focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20"
               >
-                <option value="today" className="bg-slate-900 text-white">Today</option>
-                <option value="last7" className="bg-slate-900 text-white">Last 7 Days</option>
-                <option value="thisMonth" className="bg-slate-900 text-white">This Month</option>
-                <option value="last3month" className="bg-slate-900 text-white">Last 3 Months</option>
-                <option value="specific" className="bg-slate-900 text-white">Pick a Date</option>
-                <option value="range" className="bg-slate-900 text-white">Date Range</option>
+                <option value="today" className="bg-slate-900 text-slate-900/90 dark:text-slate-100">Today</option>
+                <option value="last7" className="bg-slate-900 text-slate-900/90 dark:text-slate-100">Last 7 Days</option>
+                <option value="thisMonth" className="bg-slate-900 text-slate-900/90 dark:text-slate-100">This Month</option>
+                <option value="last3month" className="bg-slate-900 text-slate-900/90 dark:text-slate-100">Last 3 Months</option>
+                <option value="specific" className="bg-slate-900 text-slate-900/90 dark:text-slate-100">Pick a Date</option>
+                <option value="range" className="bg-slate-900 text-slate-900/90 dark:text-slate-100">Date Range</option>
               </select>
 
               {(filter === 'specific' || filter === 'range') && (
@@ -354,7 +354,7 @@ export default function Dashboard() {
                       type="date"
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
-                      className="rounded-2xl border border-white/10 bg-slate-900/60 px-4 py-2.5 text-xs font-medium text-white outline-none backdrop-blur-xl transition-all focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10 [color-scheme:dark] hover:bg-slate-800/80"
+                      className="rounded-2xl border border-slate-900/90 dark:border-slate-200 bg-slate-100 dark:bg-slate-900/90 px-4 py-2.5 text-xs font-medium  text-slate-900/90 dark:text-slate-100 outline-none backdrop-blur-xl transition-all focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10 [color-scheme:dark] hover:bg-slate-800/80"
                     />
                   </div>
 
@@ -366,7 +366,7 @@ export default function Dashboard() {
                           type="date"
                           value={endDate}
                           onChange={(e) => setEndDate(e.target.value)}
-                          className="rounded-2xl border border-white/10 bg-slate-900/60 px-4 py-2.5 text-xs font-medium text-white outline-none backdrop-blur-xl transition-all focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10 [color-scheme:dark] hover:bg-slate-800/80"
+                          className="rounded-2xl border border-slate-900/90 dark:border-slate-200 bg-slate-100 dark:bg-slate-900/90 px-4 py-2.5 text-xs font-medium  text-slate-900/90 dark:text-slate-100 outline-none backdrop-blur-xl transition-all focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10 [color-scheme:dark] hover:bg-slate-800/80"
                         />
                       </div>
                     </>
@@ -376,7 +376,7 @@ export default function Dashboard() {
 
               <button
                 onClick={refetch} disabled={loading}
-                className="flex items-center gap-2 rounded-2xl border border-white/10 bg-slate-900/60 px-4 py-2.5 text-sm font-bold text-slate-300 backdrop-blur-xl transition-all hover:bg-slate-800 disabled:opacity-40"
+                className="flex items-center gap-2 rounded-2xl border border-slate-900/90 dark:border-slate-200 bg-slate-100 dark:bg-slate-900/90 px-4 py-2.5 text-sm font-bold  text-slate-900/90 dark:text-slate-100 backdrop-blur-xl transition-all hover:bg-slate-800 disabled:opacity-40"
               >
                 <span className={loading ? 'animate-spin' : ''}><IC.Refresh /></span>
               </button>
@@ -391,7 +391,7 @@ export default function Dashboard() {
           )}
 
           {/* ── NET PROFIT HERO BANNER ── */}
-          <div className={`mb-8 relative overflow-hidden rounded-[32px] border ${pos ? 'border-emerald-500/20 bg-emerald-500/[0.02]' : 'border-rose-500/20 bg-rose-500/[0.02]'} p-8 sm:p-10 backdrop-blur-md transition-all duration-500 shadow-xl`}>
+          <div className={`mb-8 relative overflow-hidden rounded-[32px] border ${pos ? 'border-emerald-500/20 bg-emerald-500/[0.02]' : 'border-rose-900/40 bg-rose-500/[0.02]'} p-8 sm:p-10 backdrop-blur-md transition-all duration-500 shadow-xl`}>
             <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-[11px] font-bold uppercase tracking-widest mb-2" style={{ color: pos ? '#34d399' : '#fb7185' }}>
@@ -408,13 +408,13 @@ export default function Dashboard() {
                 </p>
               </div>
               <div className="flex gap-4 sm:flex-col sm:items-end">
-                <div className="rounded-2xl border border-white/5 bg-slate-900/40 px-6 py-4 text-center min-w-[130px]">
-                  <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Margin</p>
-                  <p className="mt-1 text-3xl font-black text-white">{metrics.marginPct}%</p>
+                <div className="rounded-2xl border border-slate-900/40 dark:border-slate-200 bg-white dark:bg-slate-900/90 px-6 py-4 text-center min-w-[130px]">
+                  <p className="text-[10px] text-slate-900 dark:text-slate-100 uppercase tracking-widest font-bold">Margin</p>
+                  <p className="mt-1 text-3xl font-black text-slate-900/90 dark:text-slate-100">{metrics.marginPct}%</p>
                 </div>
-                <div className="rounded-2xl border border-white/5 bg-slate-900/40 px-6 py-4 text-center min-w-[130px]">
-                  <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Transactions</p>
-                  <p className="mt-1 text-3xl font-black text-white">{metrics.txCount}</p>
+                <div className="rounded-2xl border border-slate-900/40 dark:border-slate-200 bg-white dark:bg-slate-900/90 px-6 py-4 text-center min-w-[130px]">
+                  <p className="text-[10px] text-slate-900 dark:text-slate-100 uppercase tracking-widest font-bold">Transactions</p>
+                  <p className="mt-1 text-3xl font-black text-slate-900/90 dark:text-slate-100">{metrics.txCount}</p>
                 </div>
               </div>
             </div>
@@ -435,7 +435,7 @@ export default function Dashboard() {
             <div className="space-y-5">
 
               {/* Cashflow Breakdown */}
-              <div className="rounded-[32px] border border-white/10 bg-slate-900/40 p-8 backdrop-blur-2xl">
+              <div className="rounded-[32px] border border-white/10 dark:border-slate-900/40 bg-white dark:bg-slate-900/90 p-8 backdrop-blur-2xl">
                 <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-500 mb-1">Overview</p>
                 <h2 className="text-xl font-bold text-white mb-6">Cashflow Breakdown</h2>
                 <div className="h-[300px] mb-8">
@@ -465,11 +465,11 @@ export default function Dashboard() {
 
               {/* Visual Analytics Sections (Replacing Lists) */}
               <div className="grid gap-5 md:grid-cols-2">
-                <NavLink to="/transactions" className="rounded-[32px] border border-white/10 bg-slate-900/40 p-8 backdrop-blur-2xl transition-all hover:bg-slate-800/60 group">
+                <NavLink to="/transactions" className="rounded-[32px] border border-slate-900/40 bg-white dark:bg-slate-900/90 p-8 backdrop-blur-2xl transition-all duration-300 hover:border-slate-900/50 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:shadow-2xl dark:hover:shadow-slate-900/50 group">
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-500 mb-1">Sales</p>
-                      <h2 className="text-xl font-bold text-white group-hover:text-emerald-400 transition-colors">Daily Sales Volume</h2>
+                      <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-500 group-hover:text-emerald-400 group-hover:font-bold mb-1">Sales</p>
+                      <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 group-hover:text-emerald-400 transition-colors">Daily Sales Volume</h2>
                     </div>
                     <IC.Arrow />
                   </div>
@@ -478,11 +478,11 @@ export default function Dashboard() {
                   </div>
                 </NavLink>
 
-                <NavLink to="/reports" className="rounded-[32px] border border-white/10 bg-slate-900/40 p-8 backdrop-blur-2xl transition-all hover:bg-slate-800/60 group">
+                <NavLink to="/reports" className="rounded-[32px] border border-slate-900/40 bg-white dark:bg-slate-900/90 p-8 backdrop-blur-2xl transition-all duration-300 hover:border-slate-900/50 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:shadow-2xl dark:hover:shadow-slate-900/50 group">
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-500 mb-1">Performance</p>
-                      <h2 className="text-xl font-bold text-white group-hover:text-amber-400 transition-colors">Best Sellers Revenue</h2>
+                      <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-500 group-hover:text-amber-400 group-hover:font-bold mb-1">Performance</p>
+                      <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 group-hover:text-amber-400 transition-colors">Best Sellers Revenue</h2>
                     </div>
                     <IC.Arrow />
                   </div>
@@ -491,11 +491,11 @@ export default function Dashboard() {
                   </div>
                 </NavLink>
 
-                <NavLink to="/inventory" className="md:col-span-2 rounded-[32px] border border-white/10 bg-slate-900/40 p-8 backdrop-blur-2xl transition-all hover:bg-slate-800/60 group">
+                <NavLink to="/inventory" className="md:col-span-2 rounded-[32px] border border-slate-900/40 bg-white dark:bg-slate-900/90 p-8 backdrop-blur-2xl transition-all duration-300 hover:border-slate-900/50 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:shadow-2xl dark:hover:shadow-slate-900/50 group">
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-500 mb-1">Inventory</p>
-                      <h2 className="text-xl font-bold text-white group-hover:text-sky-400 transition-colors">Live Stock Distribution</h2>
+                      <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-500 group-hover:text-sky-400 group-hover:font-bold mb-1">Inventory</p>
+                      <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 group-hover:text-sky-400 transition-colors">Live Stock Distribution</h2>
                     </div>
                     <IC.Arrow />
                   </div>
@@ -511,7 +511,7 @@ export default function Dashboard() {
             <div className="space-y-5">
 
               {/* Net Profit Breakdown card */}
-              <div className="rounded-[32px] border border-white/10 bg-slate-900/40 p-6 backdrop-blur-2xl">
+              <div className="rounded-[32px] border border-slate-900/40 bg-white dark:bg-slate-900/90 p-6 backdrop-blur-2xl">
                 <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-500 mb-4">Profit Calculation</p>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between rounded-2xl px-5 py-4 bg-sky-500/5 border border-sky-500/10">
@@ -523,12 +523,12 @@ export default function Dashboard() {
                     <span className="text-sm font-bold text-rose-400">−{fmt.format(metrics.totalExpense)}</span>
                   </div>
                   {/* divider */}
-                  <div className="border-t border-white/[0.06] my-1" />
+                  <div className="border-t border-slate-900/40 my-1" />
                   <div className="flex items-center justify-between rounded-2xl px-5 py-5 transition-colors duration-500" style={{
                     background: pos ? 'rgba(52,211,153,0.1)' : 'rgba(251,113,133,0.1)',
                     border: `1px solid ${pos ? 'rgba(52,211,153,0.15)' : 'rgba(251,113,133,0.15)'}`,
                   }}>
-                    <span className="text-sm font-bold text-white">Net Profit</span>
+                    <span className="text-sm font-bold text-white dark:text-slate-100">Net Profit</span>
                     <span className="text-xl font-bold" style={{ color: pos ? '#34d399' : '#fb7185' }}>
                       {pos ? '+' : ''}{fmt.format(metrics.netProfit)}
                     </span>
@@ -537,11 +537,11 @@ export default function Dashboard() {
               </div>
 
               {/* Live Feed */}
-              <div className="rounded-[32px] border border-white/10 bg-slate-900/40 p-8 backdrop-blur-2xl">
+              <div className="rounded-[32px] border border-white/10 bg-white dark:bg-slate-900/90 p-8 backdrop-blur-2xl">
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-500 mb-1">Activities</p>
-                    <h2 className="text-xl font-bold text-white">Live Feed</h2>
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Live Feed</h2>
                   </div>
                   <span className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[10px] font-bold bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20">
                     <span className="h-1 w-1 rounded-full bg-emerald-400 animate-pulse" />
@@ -592,7 +592,7 @@ export default function Dashboard() {
                     { to: '/inventory', label: 'Stock', icon: <IC.Box />, ic: '#fbbf24', ibg: 'rgba(251,191,36,0.1)' },
                     { to: '/reports', label: 'Reports', icon: <IC.Report />, ic: '#a78bfa', ibg: 'rgba(167,139,250,0.1)' },
                   ] as const).map(({ to, label, icon, ic, ibg }) => (
-                    <NavLink key={to} to={to} className="flex items-center justify-between p-4 rounded-2xl border border-white/5 bg-slate-900/40 backdrop-blur-xl transition-all duration-200 hover:bg-slate-800/80 hover:border-white/10 hover:translate-x-1 group">
+                    <NavLink key={to} to={to} className="flex items-center justify-between p-4 rounded-2xl border border-white/5 bg-white dark:bg-slate-900/90 backdrop-blur-xl transition-all duration-200  hover:border-slate-900/50 dark:hover:border-slate-200/50 hover:bg-slate-50 dark:hover:bg-slate-800/60translate-x-1 group">
                       <span className="flex items-center gap-3">
                         <span className="flex h-9 w-9 items-center justify-center rounded-xl transition-transform group-hover:rotate-12" style={{ background: ibg, color: ic }}>{icon}</span>
                         {label}

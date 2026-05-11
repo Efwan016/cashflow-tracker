@@ -37,38 +37,38 @@ export default function Settings() {
     }
 
     return (
-        <main className="min-h-screen bg-gradient-to-br from-[#020617] via-slate-900 to-black text-white px-6 py-10">
+        <main className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 px-6 py-10">
             <div className="max-w-4xl mx-auto space-y-8">
 
                 {/* HEADER */}
                 <div>
-                    <h1 className="text-3xl font-semibold tracking-tight">
+                    <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
                         Settings
                     </h1>
-                    <p className="text-slate-400 text-sm mt-1">
+                    <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
                         Manage your account, privacy, and application preferences
                     </p>
                 </div>
 
                 {/* ACCOUNT */}
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl transition hover:bg-white/10">
-                    <h2 className="text-lg font-semibold">Account Info</h2>
-                    <p className="text-sm text-slate-400 mt-2 leading-relaxed">
+                <div className="rounded-2xl border border-black/5 dark:border-white/10 bg-white dark:bg-white/5 p-6 backdrop-blur-xl transition hover:bg-slate-50 dark:hover:bg-white/10 shadow-sm">
+                    <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Account Info</h2>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
                         View your account details including email, username, and membership info.
                     </p>
 
                     <button
                         onClick={() => navigate('/detailinfo')}
-                        className="mt-5 inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-medium transition hover:bg-white/10"
+                        className="mt-5 inline-flex items-center justify-center rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 px-5 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 transition hover:bg-slate-50 dark:hover:bg-white/10"
                     >
                         View Account Details →
                     </button>
                 </div>
 
                 {/* TERMS */}
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
-                    <h2 className="text-lg font-semibold">Legal</h2>
-                    <p className="text-sm text-slate-400 mt-2 leading-relaxed">
+                <div className="rounded-2xl border border-black/5 dark:border-white/10 bg-white dark:bg-white/5 p-6 backdrop-blur-xl shadow-sm">
+                    <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Legal</h2>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
                         By using this application, you agree to our terms and privacy policy.
                         This app is designed for personal finance tracking only.
                     </p>
@@ -76,14 +76,14 @@ export default function Settings() {
                     <div className="flex flex-col sm:flex-row gap-3 mt-5">
                         <button
                             onClick={() => navigate('/privacy')}
-                            className="flex-1 rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-sm transition hover:bg-white/10"
+                            className="flex-1 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 px-5 py-2.5 text-sm text-slate-700 dark:text-slate-200 transition hover:bg-slate-50 dark:hover:bg-white/10"
                         >
                             Privacy Policy
                         </button>
 
                         <button
                             onClick={() => navigate('/terms')}
-                            className="flex-1 rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-sm transition hover:bg-white/10"
+                            className="flex-1 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 px-5 py-2.5 text-sm text-slate-700 dark:text-slate-200 transition hover:bg-slate-50 dark:hover:bg-white/10"
                         >
                             Terms of Service
                         </button>

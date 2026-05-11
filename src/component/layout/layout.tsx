@@ -67,14 +67,16 @@ export default function Layout({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
+    let isMounted = true
     let timeout: ReturnType<typeof setTimeout>
-    let txChannel: ReturnType<typeof supabase.channel> | null = null
-    let expChannel: ReturnType<typeof supabase.channel> | null = null
-    let profileChannel: ReturnType<typeof supabase.channel> | null = null
+    let realtimeChannel: ReturnType<typeof supabase.channel> | null = null
     let authListener: { data: { subscription: { unsubscribe: () => void } } } | null = null;
 
     const setupRealtimeAndAuthListener = async () => {
       const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!isMounted) return
+
       if (!user) {
         // If no user, redirect to login page
         window.location.href = '/'
@@ -84,61 +86,44 @@ export default function Layout({ children }: { children: ReactNode }) {
       // Initial data fetch
       await fetchData();
 
-      // Subscribe to changes in Transactions and expenses tables for the current user
-      txChannel = supabase
-        .channel(`transactions-${user.id}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'Transactions',
-            filter: `user_id=eq.${user.id}`,
-          },
-          () => {
-            clearTimeout(timeout)
-            timeout = setTimeout(() => fetchData(), 500)
-          }
-        )
-        .subscribe()
+      if (!isMounted) return
 
-      expChannel = supabase
-        .channel(`expenses-${user.id}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'expenses',
-            filter: `user_id=eq.${user.id}`,
-          },
-          () => {
-            clearTimeout(timeout)
-            timeout = setTimeout(() => fetchData(), 500)
-          }
-        )
-        .subscribe()
-
-      profileChannel = supabase
-        .channel(`profile-${user.id}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'profiles',
-            filter: `id=eq.${user.id}`,
-          },
-          () => {
-            clearTimeout(timeout)
-            timeout = setTimeout(() => fetchData(), 500)
-          }
-        )
+      // Consolidate into a single channel and use a unique ID to avoid Strict Mode collisions
+      const channelId = Math.random().toString(36).substring(7)
+      realtimeChannel = supabase
+        .channel(`layout-updates-${user.id}-${channelId}`)
+        .on('postgres_changes', { 
+          event: '*', 
+          schema: 'public', 
+          table: 'Transactions', 
+          filter: `user_id=eq.${user.id}` 
+        }, () => {
+          clearTimeout(timeout)
+          timeout = setTimeout(() => fetchData(), 500)
+        })
+        .on('postgres_changes', { 
+          event: '*', 
+          schema: 'public', 
+          table: 'expenses', 
+          filter: `user_id=eq.${user.id}` 
+        }, () => {
+          clearTimeout(timeout)
+          timeout = setTimeout(() => fetchData(), 500)
+        })
+        .on('postgres_changes', { 
+          event: '*', 
+          schema: 'public', 
+          table: 'profiles', 
+          filter: `id=eq.${user.id}` 
+        }, () => {
+          clearTimeout(timeout)
+          timeout = setTimeout(() => fetchData(), 500)
+        })
         .subscribe()
 
       // Setup Auth State Change Listener
       authListener = supabase.auth.onAuthStateChange((_event, session) => {
-        if (!session) {
+        if (!session && isMounted) {
           // User logged out or session expired
           window.location.href = '/';
         }
@@ -149,9 +134,8 @@ export default function Layout({ children }: { children: ReactNode }) {
 
     // Cleanup function
     return () => {
-      if (txChannel) supabase.removeChannel(txChannel)
-      if (expChannel) supabase.removeChannel(expChannel)
-      if (profileChannel) supabase.removeChannel(profileChannel)
+      isMounted = false
+      if (realtimeChannel) supabase.removeChannel(realtimeChannel)
       if (authListener) authListener.data.subscription.unsubscribe();
       clearTimeout(timeout)
     }

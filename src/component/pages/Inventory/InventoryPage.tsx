@@ -58,7 +58,7 @@ export default function InventoryPage() {
   }, [inventory, logs])
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100">
+    <main className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
       <div className="mx-auto max-w-7xl space-y-5 px-4 py-8 sm:px-6 lg:px-8">
 
         {/* ── Header ─────────────────────────────────────────────────────────── */}

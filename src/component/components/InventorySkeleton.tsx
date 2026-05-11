@@ -5,7 +5,7 @@ function ShimmerRow({ cols }: { cols: number }) {
     <tr>
       {Array.from({ length: cols }).map((_, i) => (
         <td key={i} className="px-5 py-4">
-          <div className="h-3.5 animate-pulse rounded-lg bg-slate-800" />
+          <div className="h-3.5 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-800" />
         </td>
       ))}
     </tr>

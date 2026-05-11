@@ -45,8 +45,8 @@ export function StockLogsForm({
   success,
 }: StockLogsFormProps) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
-      <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+    <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 p-4">
+      <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
         Record Movement
       </p>
 
@@ -71,7 +71,7 @@ export function StockLogsForm({
             id="log-product"
             value={form.productId}
             onChange={(e) => onFormChange({ ...form, productId: e.target.value })}
-            className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-100 outline-none transition-all focus:border-sky-500/60 focus:ring-2 focus:ring-sky-500/15"
+            className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 outline-none transition-all focus:border-sky-500/60 focus:ring-2 focus:ring-sky-500/15"
           >
             <option value="">Select product…</option>
             {products.map((p) => (
@@ -92,7 +92,7 @@ export function StockLogsForm({
             value={form.qty}
             onChange={(e) => onFormChange({ ...form, qty: e.target.value })}
             placeholder="0"
-            className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-100 outline-none placeholder:text-slate-600 transition-all focus:border-sky-500/60 focus:ring-2 focus:ring-sky-500/15"
+            className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 outline-none placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all focus:border-sky-500/60 focus:ring-2 focus:ring-sky-500/15"
           />
         </div>
 
@@ -106,7 +106,7 @@ export function StockLogsForm({
               id="log-type"
               value={form.type}
               onChange={(e) => onFormChange({ ...form, type: e.target.value as 'IN' | 'OUT' })}
-              className="flex-1 rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-100 outline-none transition-all focus:border-sky-500/60 focus:ring-2 focus:ring-sky-500/15"
+              className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 outline-none transition-all focus:border-sky-500/60 focus:ring-2 focus:ring-sky-500/15"
             >
               <option value="IN">IN</option>
               <option value="OUT">OUT</option>
@@ -192,7 +192,7 @@ export function StockLogsTable({
       {/* Table Controls */}
       <div className="flex flex-wrap items-center justify-between gap-2">
         {/* Filter Tabs */}
-        <div className="flex rounded-xl border border-slate-800 bg-slate-950/60 p-0.5">
+        <div className="flex rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950/60 p-0.5">
           {(['ALL', 'IN', 'OUT'] as const).map((t) => (
             <button
               key={t}
@@ -202,11 +202,11 @@ export function StockLogsTable({
               className={`rounded-lg px-3 py-1.5 text-[11px] font-bold transition-all ${
                 filterType === t
                   ? t === 'IN'
-                    ? 'bg-emerald-500/15 text-emerald-400'
+                    ? 'bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
                     : t === 'OUT'
-                    ? 'bg-rose-500/15 text-rose-400'
-                    : 'bg-slate-800 text-slate-200'
-                  : 'text-slate-500 hover:text-slate-300'
+                    ? 'bg-rose-500/10 dark:bg-rose-500/15 text-rose-600 dark:text-rose-400'
+                    : 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-200 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
               }`}
             >
               {t === 'ALL' ? 'All' : t}
@@ -219,7 +219,7 @@ export function StockLogsTable({
           <select
             value={sortBy}
             onChange={(e) => onSortChange(e.target.value as SortOption)}
-            className="rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-1.5 text-[11px] text-slate-300 outline-none transition-all hover:border-slate-700 focus:border-sky-500/50"
+            className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/60 px-3 py-1.5 text-[11px] text-slate-600 dark:text-slate-300 outline-none transition-all hover:border-slate-300 dark:hover:border-slate-700 focus:border-sky-500/50"
           >
             <option value="date-desc">Newest first</option>
             <option value="date-asc">Oldest first</option>
@@ -232,10 +232,10 @@ export function StockLogsTable({
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/80">
+      <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/80">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm" aria-label="Stock movement logs">
-            <thead className="border-b border-slate-800 bg-slate-900/60">
+            <thead className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60">
               <tr>
                 <th className="px-5 py-3.5 text-[10px] font-bold uppercase tracking-widest text-slate-500">
                   Product
@@ -254,7 +254,7 @@ export function StockLogsTable({
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/40">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/40">
               {loading ? (
                 <TableSkeleton rows={6} cols={5} />
               ) : logs.length === 0 ? (
@@ -266,17 +266,17 @@ export function StockLogsTable({
                 paginatedLogs.map((log, idx) => (
                   <tr
                     key={log.id}
-                    className={`group transition-colors duration-100 hover:bg-white/[0.02] ${
-                      idx % 2 === 1 ? 'bg-slate-900/20' : ''
+                    className={`group transition-colors duration-100 hover:bg-slate-50 dark:hover:bg-white/[0.02] ${
+                      idx % 2 === 1 ? 'bg-slate-50/50 dark:bg-slate-900/20' : ''
                     }`}
                   >
-                    <td className="px-5 py-3.5 font-medium text-slate-100">
+                    <td className="px-5 py-3.5 font-medium text-slate-900 dark:text-slate-100">
                       {productMap.get(log.product_id) ?? log.product_id}
                     </td>
                     <td className="px-5 py-3.5">
                       <TypeBadge type={log.type} />
                     </td>
-                    <td className="px-5 py-3.5 font-mono text-sm font-semibold text-slate-100">
+                    <td className="px-5 py-3.5 font-mono text-sm font-semibold text-slate-900 dark:text-slate-100">
                       {formatter.format(log.qty)}
                     </td>
                     <td className="px-5 py-3.5 text-xs text-slate-500">

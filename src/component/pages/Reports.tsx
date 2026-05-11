@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { createCurrencyFormatter, createNumberFormatter, toDateKey } from '../../lib/utils'
 import ChartComponent from '../components/Chart'
+import { Pagination } from '../components/Pagination'
 import type { Product } from '../../types/types'
 
 type ReportTransaction = {
@@ -242,61 +243,45 @@ export default function Reports() {
     stocks.slice((stockPage - 1) * itemsPerPage, stockPage * itemsPerPage)
   , [stocks, stockPage])
 
-  const getPageRange = (current: number, total: number) => {
-    const range: (number | string)[] = []
-    if (total <= 7) {
-      for (let i = 1; i <= total; i++) range.push(i)
-    } else {
-      if (current <= 4) {
-        range.push(1, 2, 3, 4, 5, '...', total)
-      } else if (current >= total - 3) {
-        range.push(1, '...', total - 4, total - 3, total - 2, total - 1, total)
-      } else {
-        range.push(1, '...', current - 1, current, current + 1, '...', total)
-      }
-    }
-    return range
-  }
-
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100">
+    <main className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="mb-10 rounded-[40px] border border-white/10 bg-slate-900/90 p-8 shadow-[0_30px_120px_-50px_rgba(15,23,42,0.85)] backdrop-blur-xl">
-          <p className="text-sm uppercase tracking-[0.35em] text-sky-300/80">Reports</p>
-          <h1 className="mt-3 text-4xl font-semibold text-white">Financial insights and inventory reports</h1>
-          <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-400">
+        <div className="mb-10 rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-gradient-to-br dark:from-slate-900/90 dark:to-slate-950/80 p-8 shadow-xl dark:shadow-[0_30px_120px_-50px_rgba(15,23,42,0.85)] backdrop-blur-xl transition-colors">
+          <p className="text-sm uppercase tracking-[0.35em] text-sky-600 dark:text-sky-300/80">Reports</p>
+          <h1 className="mt-3 text-4xl font-semibold text-slate-900 dark:text-white">Financial insights and inventory reports</h1>
+          <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">
             Explore live revenue, expense, stock, and stock movement metrics pulled directly from Supabase.
           </p>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-4">
-          <div className="rounded-[32px] border border-slate-700 bg-slate-950/80 p-6 shadow-sm shadow-slate-950/30">
-            <p className="text-sm uppercase tracking-[0.35em] text-slate-400">Total revenue</p>
-            <p className="mt-4 text-3xl font-semibold text-white">{fmt.format(overview.totalRevenue)}</p>
-            <p className="mt-2 text-sm text-slate-400">Recent transaction total</p>
+          <div className="rounded-[32px] border border-black/5 dark:border-slate-700 bg-white dark:bg-slate-950/80 p-6 shadow-sm dark:shadow-slate-950/30 transition-colors">
+            <p className="text-sm uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">Total revenue</p>
+            <p className="mt-4 text-3xl font-semibold text-slate-900 dark:text-white">{fmt.format(overview.totalRevenue)}</p>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Recent transaction total</p>
           </div>
-          <div className="rounded-[32px] border border-slate-700 bg-slate-950/80 p-6 shadow-sm shadow-slate-950/30">
-            <p className="text-sm uppercase tracking-[0.35em] text-slate-400">Net profit</p>
-            <p className="mt-4 text-3xl font-semibold text-white">{fmt.format(overview.netProfit)}</p>
-            <p className="mt-2 text-sm text-slate-400">Revenue minus spend</p>
+          <div className="rounded-[32px] border border-black/5 dark:border-slate-700 bg-white dark:bg-slate-950/80 p-6 shadow-sm dark:shadow-slate-950/30 transition-colors">
+            <p className="text-sm uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">Net profit</p>
+            <p className="mt-4 text-3xl font-semibold text-emerald-600 dark:text-white">{fmt.format(overview.netProfit)}</p>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Revenue minus spend</p>
           </div>
-          <div className="rounded-[32px] border border-slate-700 bg-slate-950/80 p-6 shadow-sm shadow-slate-950/30">
-            <p className="text-sm uppercase tracking-[0.35em] text-slate-400">Stock quantity</p>
-            <p className="mt-4 text-3xl font-semibold text-white">{num.format(overview.totalStockQuantity)}</p>
-            <p className="mt-2 text-sm text-slate-400">Available inventory</p>
+          <div className="rounded-[32px] border border-black/5 dark:border-slate-700 bg-white dark:bg-slate-950/80 p-6 shadow-sm dark:shadow-slate-950/30 transition-colors">
+            <p className="text-sm uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">Stock quantity</p>
+            <p className="mt-4 text-3xl font-semibold text-slate-900 dark:text-white">{num.format(overview.totalStockQuantity)}</p>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Available inventory</p>
           </div>
-          <div className="rounded-[32px] border border-slate-700 bg-slate-950/80 p-6 shadow-sm shadow-slate-950/30">
-            <p className="text-sm uppercase tracking-[0.35em] text-slate-400">Stock logs</p>
-            <p className="mt-4 text-3xl font-semibold text-white">{overview.totalStockLogs}</p>
-            <p className="mt-2 text-sm text-slate-400">Movements recorded</p>
+          <div className="rounded-[32px] border border-black/5 dark:border-slate-700 bg-white dark:bg-slate-950/80 p-6 shadow-sm dark:shadow-slate-950/30 transition-colors">
+            <p className="text-sm uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">Stock logs</p>
+            <p className="mt-4 text-3xl font-semibold text-slate-900 dark:text-white">{overview.totalStockLogs}</p>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Movements recorded</p>
           </div>
         </div>
 
         {/* Financial Chart Section */}
-        <div className="mt-10 rounded-[40px] border border-white/10 bg-slate-900/90 p-8 shadow-2xl shadow-slate-950/20">
+        <div className="mt-10 rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 p-8 shadow-2xl dark:shadow-slate-950/20 transition-colors">
           <div className="mb-6">
-            <p className="text-sm uppercase tracking-[0.35em] text-slate-400">Analytics</p>
-            <h2 className="mt-3 text-2xl font-semibold text-white">Cashflow trend</h2>
+            <p className="text-sm uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">Analytics</p>
+            <h2 className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">Cashflow trend</h2>
           </div>
           <div className="h-[350px]">
             <ChartComponent data={chartData} />
@@ -305,10 +290,10 @@ export default function Reports() {
 
         {/* Best Selling Section */}
         <div className="mt-10 grid gap-6 lg:grid-cols-2">
-          <div className="rounded-[40px] border border-white/10 bg-slate-900/90 p-8 shadow-2xl shadow-slate-950/20">
+          <div className="rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 p-8 shadow-2xl dark:shadow-slate-950/20 transition-colors">
             <div className="mb-6">
-              <p className="text-sm uppercase tracking-[0.35em] text-slate-400">Inventory Insights</p>
-              <h2 className="mt-3 text-2xl font-semibold text-white">Top 5 Products by Revenue</h2>
+              <p className="text-sm uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">Inventory Insights</p>
+              <h2 className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">Top 5 Products by Revenue</h2>
             </div>
             <div className="h-[300px]">
               {/* Menggunakan ChartComponent untuk visualisasi perbandingan revenue produk */}
@@ -316,10 +301,10 @@ export default function Reports() {
             </div>
           </div>
 
-          <div className="rounded-[40px] border border-white/10 bg-slate-900/90 p-8 shadow-2xl shadow-slate-950/20">
+          <div className="rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 p-8 shadow-2xl dark:shadow-slate-950/20 transition-colors">
             <div className="mb-6">
-              <p className="text-sm uppercase tracking-[0.35em] text-slate-400">Sales Performance</p>
-              <h2 className="mt-3 text-2xl font-semibold text-white">Best Selling List</h2>
+              <p className="text-sm uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">Sales Performance</p>
+              <h2 className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">Best Selling List</h2>
             </div>
             <div className="space-y-6">
               {bestSelling.length === 0 ? (
@@ -332,10 +317,10 @@ export default function Reports() {
                   return (
                     <div key={idx} className="group">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-slate-200">{product.name}</span>
+                        <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{product.name}</span>
                         <span className="text-sm font-bold text-sky-400">{num.format(product.qty)} units</span>
                       </div>
-                      <div className="h-2 w-full rounded-full bg-slate-800 overflow-hidden">
+                      <div className="h-2 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                         <div 
                           className="h-full bg-gradient-to-r from-sky-500 to-indigo-500 transition-all duration-1000"
                           style={{ width: `${percentage}%` }}
@@ -351,18 +336,18 @@ export default function Reports() {
         </div>
 
         <div className="mt-10 grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
-          <section className="rounded-[40px] border border-white/10 bg-slate-900/90 p-8 shadow-2xl shadow-slate-950/20">
+          <section className="rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 p-8 shadow-2xl dark:shadow-slate-950/20 transition-colors">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-sm uppercase tracking-[0.35em] text-slate-400">Revenue report</p>
-                <h2 className="mt-3 text-2xl font-semibold text-white">Recent transactions</h2>
+                <p className="text-sm uppercase tracking-[0.35em] text-sky-600 dark:text-sky-300/80">Revenue report</p>
+                <h2 className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">Recent transactions</h2>
               </div>
-              <p className="text-sm text-slate-400">Loaded from the transactions table.</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Loaded from the transactions table.</p>
             </div>
 
-            <div className="mt-6 overflow-hidden rounded-[32px] border border-slate-800 bg-slate-950/90">
-              <table className="w-full text-left text-sm text-slate-200">
-                <thead className="border-b border-slate-800 bg-slate-900/90 text-slate-400">
+            <div className="mt-6 overflow-hidden rounded-[32px] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/90 transition-colors">
+              <table className="w-full text-left text-sm text-slate-600 dark:text-slate-200">
+                <thead className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/90 text-slate-500 dark:text-slate-400">
                   <tr>
                     <th className="px-4 py-4">Product</th>
                     <th className="px-4 py-4">Qty</th>
@@ -386,98 +371,79 @@ export default function Reports() {
                     </tr>
                   ) : (
                     paginatedTx.map((item) => (
-                      <tr key={item.id} className="border-b border-slate-800 last:border-none">
-                        <td className="px-4 py-4 text-slate-100">{(item.product_id ? productMap.get(item.product_id) : null) ?? item.product_name ?? 'Manual Sale'}</td>
-                        <td className="px-4 py-4 text-slate-100">{item.qty}</td>
-                        <td className="px-4 py-4 text-slate-100">{fmt.format(item.harga_jual)}</td>
-                        <td className="px-4 py-4 text-slate-100">{fmt.format(item.total)}</td>
-                        <td className="px-4 py-4 text-slate-400">{new Date(item.created_at).toLocaleDateString()}</td>
+                      <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors">
+                        <td className="px-4 py-4 font-medium text-slate-900 dark:text-slate-100">{(item.product_id ? productMap.get(item.product_id) : null) ?? item.product_name ?? 'Manual Sale'}</td>
+                        <td className="px-4 py-4 text-slate-700 dark:text-slate-100">{item.qty}</td>
+                        <td className="px-4 py-4 text-slate-700 dark:text-slate-100">{fmt.format(item.harga_jual)}</td>
+                        <td className="px-4 py-4 text-slate-700 dark:text-slate-100">{fmt.format(item.total)}</td>
+                        <td className="px-4 py-4 text-right text-slate-500">{new Date(item.created_at).toLocaleDateString()}</td>
                       </tr>
                     ))
                   )}
                 </tbody>
               </table>
               {/* Pagination Controls */}
-              <div className="flex flex-wrap items-center justify-between gap-4 px-6 py-4 bg-slate-900/50">
-                <button 
-                  disabled={txPage === 1}
-                  onClick={() => setTxPage(p => p - 1)}
-                  className="text-xs font-bold text-sky-400 disabled:text-slate-600 transition-colors">PREV</button>
-                <div className="flex items-center gap-1">
-                  {getPageRange(txPage, Math.ceil(transactions.length / itemsPerPage)).map((p, i) => (
-                    typeof p === 'number' ? (
-                      <button
-                        key={i}
-                        onClick={() => setTxPage(p)}
-                        className={`h-7 min-w-[28px] rounded-lg text-[10px] font-bold transition-all ${
-                          txPage === p ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
-                        }`}
-                      >
-                        {p}
-                      </button>
-                    ) : (
-                      <span key={i} className="px-1 text-slate-600 font-bold">...</span>
-                    )
-                  ))}
-                </div>
-                <button 
-                  disabled={txPage * itemsPerPage >= transactions.length}
-                  onClick={() => setTxPage(p => p + 1)}
-                  className="text-xs font-bold text-sky-400 disabled:text-slate-600 transition-colors">NEXT</button>
-              </div>
+              {!loading && transactions.length > itemsPerPage && (
+                <Pagination
+                  currentPage={txPage}
+                  totalItems={transactions.length}
+                  itemsPerPage={itemsPerPage}
+                  onPageChange={setTxPage}
+                />
+              )}
             </div>
           </section>
 
-          <aside className="rounded-[40px] border border-white/10 bg-slate-900/90 p-8 shadow-2xl shadow-slate-950/20">
+          <aside className="rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-8 shadow-2xl dark:shadow-slate-950/20 transition-colors">
             <div>
-              <p className="text-sm uppercase tracking-[0.35em] text-slate-400">Stock report</p>
-              <h2 className="mt-3 text-2xl font-semibold text-white">Stock movement summary</h2>
+              <p className="text-sm uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">Stock report</p>
+              <h2 className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">Stock movement summary</h2>
             </div>
 
             <div className="mt-6 space-y-4">
-              <div className="rounded-[28px] border border-slate-700 bg-slate-950/80 p-5">
-                <p className="text-sm text-slate-400">Total stock flow in</p>
-                <p className="mt-3 text-2xl font-semibold text-white">{num.format(overview.totalIn)}</p>
+              <div className="rounded-[28px] border border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/80 p-5 transition-colors">
+                <p className="text-sm text-slate-500 dark:text-slate-400">Total stock flow in</p>
+                <p className="mt-3 text-2xl font-semibold text-emerald-600 dark:text-white">{num.format(overview.totalIn)}</p>
               </div>
-              <div className="rounded-[28px] border border-slate-700 bg-slate-950/80 p-5">
-                <p className="text-sm text-slate-400">Total stock flow out</p>
-                <p className="mt-3 text-2xl font-semibold text-white">{num.format(overview.totalOut)}</p>
+              <div className="rounded-[28px] border border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/80 p-5 transition-colors">
+                <p className="text-sm text-slate-500 dark:text-slate-400">Total stock flow out</p>
+                <p className="mt-3 text-2xl font-semibold text-rose-600 dark:text-white">{num.format(overview.totalOut)}</p>
               </div>
-              <div className="rounded-[28px] border border-slate-700 bg-slate-900/90 p-5 text-sm text-slate-300">
+              <div className="rounded-[28px] border border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/90 p-5 text-sm text-slate-600 dark:text-slate-300 transition-colors">
                 Stock logs and inventory records are synchronized for consistent stock reporting.
               </div>
             </div>
 
             <NavLink
               to="/stock-logs"
-              className="mt-6 inline-flex w-full items-center justify-center rounded-3xl border border-slate-700 bg-slate-900/90 px-4 py-3 text-sm font-semibold text-slate-200 transition hover:border-sky-400 hover:bg-slate-800"
+              className="mt-6 inline-flex w-full items-center justify-center rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/90 px-4 py-3 text-sm font-semibold text-slate-700 dark:text-slate-200 transition hover:border-sky-400 hover:bg-slate-50 dark:hover:bg-slate-800"
             >
               View stock logs
             </NavLink>
           </aside>
         </div>
 
-        <div className="mt-10 rounded-[40px] border border-white/10 bg-slate-900/90 p-8 shadow-2xl shadow-slate-950/20">
+        <div className="mt-10 rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 p-8 shadow-2xl dark:shadow-slate-950/20 transition-colors">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm uppercase tracking-[0.35em] text-slate-400">Inventory</p>
-              <h2 className="mt-3 text-2xl font-semibold text-white">Current stock overview</h2>
+              <p className="text-sm uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">Inventory</p>
+              <h2 className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">Current stock overview</h2>
             </div>
-            <p className="text-sm text-slate-400">Loaded from the stocks table.</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Loaded from the stocks table.</p>
           </div>
 
-          <div className="mt-6 overflow-hidden rounded-[32px] border border-slate-800 bg-slate-950/90">
-            <table className="w-full text-left text-sm text-slate-200">
-              <thead className="border-b border-slate-800 bg-slate-900/90 text-slate-400">
+          <div className="mt-6 overflow-hidden rounded-[32px] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/90 transition-colors">
+            <table className="w-full text-left text-sm text-slate-600 dark:text-slate-200">
+              <thead className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/90 text-slate-500 dark:text-slate-400">
                 <tr>
                   <th className="px-4 py-4">Product ID</th>
                   <th className="px-4 py-4">Quantity</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {loading ? (
                   <tr>
-                    <td colSpan={2} className="px-4 py-6 text-slate-400">Loading stock data...</td>
+                    <td colSpan={2} className="px-4 py-6 text-slate-500 dark:text-slate-400">Loading stock data...</td>
                   </tr>
                 ) : error ? (
                   <tr>
@@ -485,45 +451,26 @@ export default function Reports() {
                   </tr>
                 ) : stocks.length === 0 ? (
                   <tr>
-                    <td colSpan={2} className="px-4 py-6 text-slate-400">No stock records found.</td>
+                    <td colSpan={2} className="px-4 py-6 text-slate-500 dark:text-slate-400">No stock records found.</td>
                   </tr>
                 ) : (
                   paginatedStocks.map((item) => (
-                    <tr key={item.id} className="border-b border-slate-800 last:border-none">
-                      <td className="px-4 py-4 text-slate-100">{productMap.get(item.product_id) ?? item.product_id}</td>
-                      <td className="px-4 py-4 text-slate-100">{num.format(item.total)}</td>
+                    <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors">
+                      <td className="px-4 py-4 font-medium text-slate-900 dark:text-slate-100">{productMap.get(item.product_id) ?? item.product_id}</td>
+                      <td className="px-4 py-4 font-mono font-semibold text-slate-700 dark:text-slate-100">{num.format(item.total)}</td>
                     </tr>
                   ))
                 )}
               </tbody>
             </table>
-            <div className="flex flex-wrap items-center justify-between gap-4 px-6 py-4 bg-slate-900/50">
-                <button 
-                  disabled={stockPage === 1}
-                  onClick={() => setStockPage(p => p - 1)}
-                  className="text-xs font-bold text-sky-400 disabled:text-slate-600 transition-colors">PREV</button>
-                <div className="flex items-center gap-1">
-                  {getPageRange(stockPage, Math.ceil(stocks.length / itemsPerPage)).map((p, i) => (
-                    typeof p === 'number' ? (
-                      <button
-                        key={i}
-                        onClick={() => setStockPage(p)}
-                        className={`h-7 min-w-[28px] rounded-lg text-[10px] font-bold transition-all ${
-                          stockPage === p ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
-                        }`}
-                      >
-                        {p}
-                      </button>
-                    ) : (
-                      <span key={i} className="px-1 text-slate-600 font-bold">...</span>
-                    )
-                  ))}
-                </div>
-                <button 
-                  disabled={stockPage * itemsPerPage >= stocks.length}
-                  onClick={() => setStockPage(p => p + 1)}
-                  className="text-xs font-bold text-sky-400 disabled:text-slate-600 transition-colors">NEXT</button>
-            </div>
+            {!loading && stocks.length > itemsPerPage && (
+              <Pagination
+                currentPage={stockPage}
+                totalItems={stocks.length}
+                itemsPerPage={itemsPerPage}
+                onPageChange={setStockPage}
+              />
+            )}
           </div>
         </div>
       </div>

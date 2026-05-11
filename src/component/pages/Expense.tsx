@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect, useCallback, useRef } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { toast } from 'react-toastify'
+import { Pagination } from '../components/Pagination'
 import { createCurrencyFormatter, getTzOffset, getLocalDate, formatDateTimeLocal } from '../../lib/utils'
 
 type ExpenseRecord = {
@@ -83,7 +84,7 @@ export default function Expense() {
     }
   }, [userId, filterType, startDate, endDate, tzOffset])
 
-  // 🔥 INITIAL LOAD
+  // INITIAL LOAD
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) {
@@ -137,22 +138,6 @@ export default function Expense() {
   const paginatedExpenses = useMemo(() => {
     return sortedExpenses.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
   }, [sortedExpenses, currentPage])
-
-  const getPageRange = (current: number, total: number) => {
-    const range: (number | string)[] = []
-    if (total <= 7) {
-      for (let i = 1; i <= total; i++) range.push(i)
-    } else {
-      if (current <= 4) {
-        range.push(1, 2, 3, 4, 5, '...', total)
-      } else if (current >= total - 3) {
-        range.push(1, '...', total - 4, total - 3, total - 2, total - 1, total)
-      } else {
-        range.push(1, '...', current - 1, current, current + 1, '...', total)
-      }
-    }
-    return range
-  }
 
   const totalFilteredExpense = useMemo(() => {
     return expenses.reduce((sum, exp) => sum + exp.total, 0)
@@ -232,58 +217,58 @@ export default function Expense() {
   }
 
   return (
-    <main className="min-h-screen text-slate-900 dark:text-slate-100">
+    <main className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
       <div className="pointer-events-none fixed inset-0 overflow-hidden hidden dark:block" aria-hidden>
         <div className="animate-[pulse_10s_ease-in-out_infinite] absolute rounded-full" style={{ width: 640, height: 640, top: -200, left: '12%', background: 'radial-gradient(circle, rgba(6,182,212,0.16) 0%, transparent 70%)', filter: 'blur(65px)' }} />
         <div className="animate-[pulse_8s_ease-in-out_infinite_reverse] absolute rounded-full" style={{ width: 520, height: 520, bottom: -80, right: '8%', background: 'radial-gradient(circle, rgba(124,58,237,0.14) 0%, transparent 70%)', filter: 'blur(65px)' }} />
       </div>
       <div className="relative mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="mb-10 rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-gradient-to-br dark:from-slate-900/90 dark:to-slate-950/80 p-8 shadow-xl dark:shadow-[0_30px_120px_-50px_rgba(15,23,42,0.85)] backdrop-blur-xl">
-          <p className="text-sm uppercase tracking-[0.35em] text-sky-300/80">Add expense</p>
-          <h1 className="mt-3 text-4xl font-semibold text-white">Record a new expense</h1>
-          <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-400">
+        <div className="mb-10 rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-8 shadow-xl dark:shadow-[0_30px_120px_-50px_rgba(15,23,42,0.85)] backdrop-blur-xl transition-colors">
+          <p className="text-sm uppercase tracking-[0.35em] text-sky-600 dark:text-sky-300/80">Add expense</p>
+          <h1 className="mt-3 text-4xl font-semibold text-slate-900 dark:text-white">Record a new expense</h1>
+          <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">
             Store expense entries in Supabase so the app can report total spend, net cashflow, and expense trends.
           </p>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
-          <section className="rounded-[40px] border border-white/10 bg-gradient-to-br from-slate-900/90 to-slate-950/80 p-8 shadow-2xl shadow-slate-950/20 backdrop-blur-xl">
+          <section className="rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-8 shadow-2xl dark:shadow-slate-950/20 backdrop-blur-xl transition-colors">
             <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="space-y-6">
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="grid gap-3 text-left">
-                  <span className="text-sm text-slate-400">Expense description</span>
+                  <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">Expense description</span>
                   <input
                     ref={descriptionInputRef}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="e.g. Office supplies, utilities"
-                    className="rounded-3xl border border-slate-700 bg-gradient-to-r from-slate-950/90 to-slate-900/80 px-4 py-4 text-white outline-none transition-all focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20 hover:bg-slate-900/90"
+                    className="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/90 dark:from-slate-950/90 dark:to-slate-900/80 px-4 py-4 text-slate-900 dark:text-white outline-none transition-all focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20 hover:bg-slate-100 dark:hover:bg-slate-900/90"
                   />
                 </label>
 
                 <label className="grid gap-3 text-left">
-                  <span className="text-sm text-slate-400">Expense amount</span>
+                  <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">Expense amount</span>
                   <input
                     type="number"
                     min="0"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     placeholder="0"
-                    className="rounded-3xl border border-slate-700 bg-gradient-to-r from-slate-950/90 to-slate-900/80 px-4 py-4 text-white outline-none transition-all focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20 hover:bg-slate-900/90"
+                    className="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/90 dark:from-slate-950/90 dark:to-slate-900/80 px-4 py-4 text-slate-900 dark:text-white outline-none transition-all focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20 hover:bg-slate-100 dark:hover:bg-slate-900/90"
                   />
                 </label>
               </div>
 
               <div className="grid gap-3 text-left">
-                <span className="text-sm text-slate-400">Calculated expense</span>
-                <div className="rounded-3xl border border-slate-700 bg-gradient-to-r from-slate-950/90 to-slate-900/80 px-4 py-4 text-white">
+                <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">Calculated expense</span>
+                <div className="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/90 dark:from-slate-950/90 dark:to-slate-900/80 px-4 py-4 text-slate-900 dark:text-white">
                   {fmt.format(formattedAmount)}
                 </div>
               </div>
 
               <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm text-slate-400">
-                  This expense entry is stored in the <span className="font-semibold text-white">expenses</span> table and will be reflected in both dashboard and report totals.
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  This expense entry is stored in the <span className="font-semibold text-slate-900 dark:text-white">expenses</span> table.
                 </p>
                 <button
                   type="submit"
@@ -296,28 +281,28 @@ export default function Expense() {
             </form>
           </section>
 
-          <aside className="rounded-[40px] border border-white/10 bg-gradient-to-br from-slate-900/90 to-slate-950/80 p-8 shadow-2xl shadow-slate-950/20 backdrop-blur-xl">
+          <aside className="rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-8 shadow-2xl dark:shadow-slate-950/20 backdrop-blur-xl transition-colors">
             <div className="space-y-5">
               <div>
-                <p className="text-sm uppercase tracking-[0.35em] text-slate-400">Expense tracking</p>
-                <h2 className="mt-3 text-2xl font-semibold text-white">Capture spend instantly</h2>
+                <p className="text-sm uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">Expense tracking</p>
+                <h2 className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">Capture spend instantly</h2>
               </div>
               
               <div className="grid gap-4">
-                <div className="rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-950/50 to-slate-900/60 p-5 shadow-lg">
-                  <p className="text-sm text-slate-400">Total period spend</p>
-                  <p className="mt-3 text-3xl font-semibold text-white">{fmt.format(totalFilteredExpense)}</p>
-                  <p className="mt-1 text-xs text-slate-500 uppercase tracking-wider">{filterType.replace('all', 'Recent items')}</p>
+                <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 dark:from-slate-950/50 dark:to-slate-900/60 p-5 shadow-lg transition-colors">
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Total period spend</p>
+                  <p className="mt-3 text-3xl font-semibold text-rose-600 dark:text-rose-400">{fmt.format(totalFilteredExpense)}</p>
+                  <p className="mt-1 text-[10px] text-slate-500 uppercase tracking-wider">{filterType.replace('all', 'Recent items')}</p>
                 </div>
               </div>
 
-              <div className="rounded-3xl border border-slate-800 bg-slate-950/90 p-5 shadow-sm shadow-slate-950/20">
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-500">Why it matters</p>
-                <p className="mt-3 text-sm text-slate-400">Expenses are essential for accurate cashflow reporting and help you understand real net profit after spend.</p>
+              <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 p-5 shadow-sm transition-colors">
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400 dark:text-slate-500">Why it matters</p>
+                <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">Expenses are essential for accurate cashflow reporting and real net profit calculation.</p>
               </div>
               <NavLink
                 to="/reports"
-                className="inline-flex w-full items-center justify-center rounded-3xl border border-slate-700 bg-slate-900/90 px-4 py-3 text-sm font-semibold text-slate-200 transition hover:border-sky-400 hover:bg-slate-800"
+                className="inline-flex w-full items-center justify-center rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/90 px-4 py-3 text-sm font-semibold text-slate-700 dark:text-slate-200 transition hover:border-sky-400 hover:bg-slate-50 dark:hover:bg-slate-800"
               >
                 Review reports
               </NavLink>
@@ -326,20 +311,20 @@ export default function Expense() {
         </div>
 
         {/* HISTORY SECTION */}
-        <div className="mt-10 overflow-hidden rounded-[40px] border border-white/5 bg-gradient-to-br from-slate-900/50 to-slate-950/40 p-8 shadow-2xl backdrop-blur-xl">
+        <div className="mt-10 overflow-hidden rounded-[40px] border border-black/5 dark:border-white/5 bg-white dark:bg-slate-900/90 dark:from-slate-900/50 dark:to-slate-950/40 p-8 shadow-2xl backdrop-blur-xl transition-colors">
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-sky-400/80">History</p>
-              <h2 className="mt-2 text-2xl font-semibold text-white">Expense Log</h2>
+              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-sky-600 dark:text-sky-400/80">History</p>
+              <h2 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">Expense Log</h2>
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="rounded-xl border border-white/10 bg-slate-900/80 px-4 py-2.5 text-xs font-bold text-slate-100 outline-none backdrop-blur-xl cursor-pointer hover:bg-slate-800/90 transition-all focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20"
+                className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/90 px-4 py-2.5 text-xs font-bold text-slate-900 dark:text-slate-100 outline-none backdrop-blur-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/90 focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20 transition-colors"
               >
-                <option value="date-desc">Newest</option>
+                <option value="date-desc" className="text-slate-900 dark:text-white">Newest</option>
                 <option value="date-asc">Oldest</option>
                 <option value="name-asc">Alphabet (A-Z)</option>
                 <option value="name-desc">Alphabet (Z-A)</option>
@@ -355,7 +340,7 @@ export default function Expense() {
                     setEndDate('')
                   }
                 }}
-                     className="rounded-2xl border border-white/10 bg-slate-900/60 px-4 py-2.5 text-xs font-medium text-white outline-none backdrop-blur-xl transition-all focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10 [color-scheme:dark] hover:bg-slate-800/80"
+                     className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/90 px-4 py-2.5 text-xs font-medium text-slate-900 dark:text-white outline-none backdrop-blur-xl transition-all focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10 dark:[color-scheme:dark] hover:bg-slate-50 dark:hover:bg-slate-800/80"
               >
                 <option value="today">Today</option>
                 <option value="last7">Last 7 Days</option>
@@ -370,7 +355,7 @@ export default function Expense() {
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="rounded-xl border border-slate-800 bg-gradient-to-r from-slate-950/50 to-slate-900/80 px-4 py-2 text-xs text-white outline-none focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10"
+                    className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 dark:from-slate-950/50 dark:to-slate-900/80 px-4 py-2 text-xs text-slate-900 dark:text-white outline-none focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10 dark:[color-scheme:dark]"
                   />
                   {filterType === 'range' && (
                     <>
@@ -379,7 +364,7 @@ export default function Expense() {
                         type="date"
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
-                        className="rounded-xl border border-slate-800 bg-gradient-to-r from-slate-950/50 to-slate-900/80 px-4 py-2 text-xs text-white outline-none focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10"
+                        className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 dark:from-slate-950/50 dark:to-slate-900/80 px-4 py-2 text-xs text-slate-900 dark:text-white outline-none focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10 dark:[color-scheme:dark]"
                       />
                     </>
                   )}
@@ -388,9 +373,9 @@ export default function Expense() {
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-[32px] border border-slate-800/50 bg-gradient-to-br from-slate-950/20 to-slate-900/40">
-            <table className="w-full text-left text-xs sm:text-sm">
-              <thead className="border-b border-slate-800/50 text-[10px] uppercase tracking-widest text-slate-500 bg-gradient-to-r from-slate-950/50 to-slate-900/50">
+          <div className="overflow-hidden rounded-[32px]  border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 dark:from-slate-950/20 dark:to-slate-900/40 transition-colors">
+            <table className="w-full text-left text-xs sm:text-sm text-white dark:text-slate-300">
+              <thead className="border-b border-slate-200 dark:border-slate-800 text-[10px] uppercase tracking-widest text-slate-900/90 dark:text-white/80 bg-slate-50 dark:white dark:bg-slate-900/90 dark:from-slate-950/50 dark:to-slate-900/50">
                 <tr>
                   <th className="px-6 py-5 font-medium">Description</th>
                   <th className="px-6 py-5 font-medium text-center">Date</th>
@@ -398,24 +383,24 @@ export default function Expense() {
                   <th className="px-6 py-5 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/30 text-slate-300">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/30">
                 {loading ? (
                   <tr><td colSpan={4} className="px-6 py-10 text-center text-slate-500">Loading expenses...</td></tr>
                 ) : expenses.length === 0 ? (
                   <tr><td colSpan={4} className="px-6 py-10 text-center text-slate-500">No expenses recorded for this period.</td></tr>
                 ) : (
                   paginatedExpenses.map((exp) => (
-                    <tr key={exp.id} className="hover:bg-white/[0.02] transition-colors group">
-                      <td className="px-6 py-4 font-medium">{exp.description}</td>
+                    <tr key={exp.id} className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors group">
+                      <td className="px-6 py-4 font-medium text-slate-900 dark:text-slate-100">{exp.description}</td>
                       <td className="px-6 py-4 text-center text-slate-500">
                         {new Date(exp.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </td>
-                      <td className="px-6 py-4 text-rose-400 font-semibold">{fmt.format(exp.total)}</td>
+                      <td className="px-6 py-4 text-rose-600 dark:text-rose-400 font-semibold">{fmt.format(exp.total)}</td>
                       <td className="px-6 py-4 text-right">
                         <button
                           onClick={() => handleDelete(exp.id)}
                           disabled={isDeleting}
-                          className="rounded-xl border border-rose-500/10 bg-rose-500/5 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-rose-400 transition hover:bg-rose-500/20 disabled:opacity-50"
+                          className="rounded-xl border border-rose-500/10 bg-rose-500/5 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 transition hover:bg-rose-500/20 disabled:opacity-50"
                         >
                           Delete
                         </button>
@@ -425,43 +410,24 @@ export default function Expense() {
                 )}
               </tbody>
               {expenses.length > 0 && (
-                <tfoot className="border-t border-slate-800/50 bg-slate-900/30 text-slate-200">
+                <tfoot className="border-t border-slate-200 dark:border-slate-800/50 bg-slate-50 dark:bg-slate-900/90 text-slate-900 dark:text-slate-200 transition-colors">
                   <tr>
                     <td className="px-6 py-4 font-bold">Total Period Spend</td>
                     <td></td>
-                    <td className="px-6 py-4 font-bold text-rose-400">{fmt.format(totalFilteredExpense)}</td>
+                    <td className="px-6 py-4 font-bold text-rose-600 dark:text-rose-400">{fmt.format(totalFilteredExpense)}</td>
                     <td></td>
                   </tr>
                 </tfoot>
               )}
             </table>
-            <div className="flex flex-wrap items-center justify-between gap-4 px-6 py-4 bg-slate-900/60">
-                <button 
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage(p => p - 1)}
-                  className="text-xs font-bold text-sky-400 disabled:text-slate-600 transition-colors">PREV</button>
-                <div className="flex items-center gap-1">
-                  {getPageRange(currentPage, Math.ceil(sortedExpenses.length / itemsPerPage)).map((p, i) => (
-                    typeof p === 'number' ? (
-                      <button
-                        key={i}
-                        onClick={() => setCurrentPage(p)}
-                        className={`h-7 min-w-[28px] rounded-lg text-[10px] font-bold transition-all ${
-                          currentPage === p ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
-                        }`}
-                      >
-                        {p}
-                      </button>
-                    ) : (
-                      <span key={i} className="px-1 text-slate-600 font-bold">...</span>
-                    )
-                  ))}
-                </div>
-                <button 
-                  disabled={currentPage * itemsPerPage >= sortedExpenses.length}
-                  onClick={() => setCurrentPage(p => p + 1)}
-                  className="text-xs font-bold text-sky-400 disabled:text-slate-600 transition-colors">NEXT</button>
-            </div>
+            {!loading && sortedExpenses.length > itemsPerPage && (
+              <Pagination
+                currentPage={currentPage}
+                totalItems={sortedExpenses.length}
+                itemsPerPage={itemsPerPage}
+                onPageChange={setCurrentPage}
+              />
+            )}
           </div>
         </div>
       </div>

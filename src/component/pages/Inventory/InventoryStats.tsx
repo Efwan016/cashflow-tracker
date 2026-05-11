@@ -26,12 +26,12 @@ function StatCard({
 
   return (
     <div
-      className={`group relative overflow-hidden rounded-2xl border bg-slate-900/70 p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl ${borderClass}`}
+      className={`group relative overflow-hidden rounded-2xl border bg-white dark:bg-slate-900/70 p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl dark:shadow-none ${borderClass}`}
     >
       {/* Icon */}
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-500">
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">
             {label}
           </p>
           <p className={`mt-2.5 text-3xl font-bold tabular-nums ${accentClass}`}>
@@ -42,7 +42,7 @@ function StatCard({
           )}
         </div>
         <div
-          className={`flex h-10 w-10 items-center justify-center rounded-xl border bg-slate-950/60 ${borderClass} ${accentClass} transition-transform duration-200 group-hover:scale-110`}
+          className={`flex h-10 w-10 items-center justify-center rounded-xl border bg-slate-50 dark:bg-slate-950/60 ${borderClass} ${accentClass} transition-transform duration-200 group-hover:scale-110`}
         >
           {icon}
         </div>

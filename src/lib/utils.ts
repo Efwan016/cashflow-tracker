@@ -56,7 +56,7 @@ export function getPageRange(current: number, total: number): (number | '...')[]
 }
 
 export function getStockStatus(total: number): 'critical' | 'warning' | 'healthy' {
-  if (total <= 5) return 'critical'
-  if (total <= 15) return 'warning'
+  if (total <= 3) return 'critical'
+  if (total <= 9) return 'warning'
   return 'healthy'
 }

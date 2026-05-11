@@ -29,15 +29,15 @@ export function StockControlPanel({
   return (
     <aside
       aria-label="Stock control panel"
-      className="flex flex-col gap-5 rounded-2xl border border-slate-800 bg-slate-900/70 p-5 shadow-xl shadow-slate-950/30"
+      className="flex flex-col gap-5 rounded-2xl border border-black/5 dark:border-slate-800 bg-white dark:bg-slate-900/70 p-5 shadow-xl dark:shadow-slate-950/30 transition-colors"
     >
       {/* Panel Header */}
-      <div className="border-b border-slate-800 pb-4">
-        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-500">
+      <div className="border-b border-slate-100 dark:border-slate-800 pb-4">
+        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500">
           Control Panel
         </p>
-        <h2 className="mt-1 text-base font-bold text-slate-100">Stock Update</h2>
-        <p className="mt-0.5 text-xs text-slate-500">
+        <h2 className="mt-1 text-base font-bold text-slate-900 dark:text-slate-100">Stock Update</h2>
+        <p className="mt-0.5 text-xs text-slate-400 dark:text-slate-500">
           Adjust inventory levels per product.
         </p>
       </div>
@@ -71,7 +71,7 @@ export function StockControlPanel({
             id="stock-product"
             value={form.productId}
             onChange={(e) => onFormChange({ ...form, productId: e.target.value })}
-            className="w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3.5 py-2.5 text-sm text-slate-100 outline-none transition-all focus:border-sky-500/70 focus:ring-2 focus:ring-sky-500/15 hover:border-slate-600"
+            className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/80 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 outline-none transition-all focus:border-sky-500/70 focus:ring-2 focus:ring-sky-500/15 hover:border-slate-300 dark:hover:border-slate-600 cursor-pointer"
           >
             <option value="">Select a product…</option>
             {products.map((p) => (
@@ -85,15 +85,15 @@ export function StockControlPanel({
         {/* Movement Type Toggle */}
         <div className="space-y-1.5">
           <span className="block text-xs font-semibold text-slate-400">Type</span>
-          <div className="grid grid-cols-2 gap-1.5 rounded-xl border border-slate-800 bg-slate-950/60 p-1">
+          <div className="grid grid-cols-2 gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 p-1">
             <button
               type="button"
               onClick={() => onFormChange({ ...form, movementType: 'add' })}
               aria-pressed={isAdd}
               className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-bold transition-all ${
                 isAdd
-                  ? 'bg-emerald-500/15 text-emerald-400 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-300'
+                  ? 'bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 shadow-sm'
+                  : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
               }`}
             >
               <TrendingUp className="h-3.5 w-3.5" />
@@ -105,8 +105,8 @@ export function StockControlPanel({
               aria-pressed={!isAdd}
               className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-bold transition-all ${
                 !isAdd
-                  ? 'bg-rose-500/15 text-rose-400 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-300'
+                  ? 'bg-rose-500/10 dark:bg-rose-500/15 text-rose-600 dark:text-rose-400 shadow-sm'
+                  : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
               }`}
             >
               <TrendingDown className="h-3.5 w-3.5" />
@@ -128,7 +128,7 @@ export function StockControlPanel({
             onChange={(e) => onFormChange({ ...form, quantity: e.target.value })}
             onKeyDown={(e) => e.key === 'Enter' && onSubmit()}
             placeholder="Enter amount…"
-            className="w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3.5 py-2.5 text-sm text-slate-100 outline-none placeholder:text-slate-600 transition-all focus:border-sky-500/70 focus:ring-2 focus:ring-sky-500/15 hover:border-slate-600"
+            className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/80 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 outline-none placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all focus:border-sky-500/70 focus:ring-2 focus:ring-sky-500/15 hover:border-slate-300 dark:hover:border-slate-600"
           />
         </div>
 

@@ -58,7 +58,7 @@ export function InventoryTable({
           <select
             value={sortBy}
             onChange={(e) => onSortChange(e.target.value as SortOption)}
-            className="rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-1.5 text-[11px] text-slate-300 outline-none transition-all hover:border-slate-700 focus:border-sky-500/50"
+            className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/60 px-3 py-1.5 text-[11px] text-slate-600 dark:text-slate-300 outline-none focus:border-sky-500/50"
           >
             <option value="name-asc">Name (A → Z)</option>
             <option value="name-desc">Name (Z → A)</option>
@@ -69,10 +69,10 @@ export function InventoryTable({
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/80">
+      <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/80">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm" aria-label="Current inventory">
-            <thead className="border-b border-slate-800 bg-slate-900/60">
+            <thead className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60">
               <tr>
                 <th className="px-5 py-3.5 text-[10px] font-bold uppercase tracking-widest text-slate-500">
                   Product
@@ -88,7 +88,7 @@ export function InventoryTable({
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/40">
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-800/40">
               {loading ? (
                 <TableSkeleton rows={6} cols={4} />
               ) : items.length === 0 ? (
@@ -100,8 +100,8 @@ export function InventoryTable({
                 paginatedItems.map((item, idx) => (
                   <tr
                     key={item.id}
-                    className={`group transition-colors duration-100 hover:bg-white/[0.02] ${
-                      idx % 2 === 1 ? 'bg-slate-900/20' : ''
+                    className={`group transition-colors duration-100 hover:bg-slate-50 dark:hover:bg-white/[0.02] ${
+                      idx % 2 === 1 ? 'bg-slate-50/50 dark:bg-slate-900/20' : ''
                     }`}
                   >
                     {/* Product Name */}
@@ -113,10 +113,10 @@ export function InventoryTable({
                           onChange={(e) => onEditNameChange(e.target.value)}
                           autoFocus
                           aria-label="Edit product name"
-                          className="w-full rounded-lg border border-sky-500/50 bg-slate-900 px-3 py-1.5 text-xs text-white outline-none focus:ring-2 focus:ring-sky-500/20"
+                          className="w-full rounded-lg border border-sky-500/50 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-sky-500/20"
                         />
                       ) : (
-                        <span className="font-medium text-slate-100">
+                        <span className="font-medium text-slate-900 dark:text-slate-100">
                           {item.product_name ?? item.product_id}
                         </span>
                       )}
@@ -130,10 +130,10 @@ export function InventoryTable({
                           value={editQty}
                           onChange={(e) => onEditQtyChange(e.target.value)}
                           aria-label="Edit quantity"
-                          className="w-20 rounded-lg border border-sky-500/50 bg-slate-900 px-2 py-1.5 text-center text-xs text-white outline-none focus:ring-2 focus:ring-sky-500/20"
+                          className="w-20 rounded-lg border border-sky-500/50 bg-white dark:bg-slate-900 px-2 py-1.5 text-center text-xs text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-sky-500/20"
                         />
                       ) : (
-                        <span className="font-mono text-sm font-semibold text-slate-100">
+                        <span className="font-mono text-sm font-semibold text-slate-900 dark:text-slate-100">
                           {formatter.format(item.total)}
                         </span>
                       )}

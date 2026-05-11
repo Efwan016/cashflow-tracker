@@ -4,6 +4,7 @@ import { useProducts } from '../hooks/useProducts'
 import { useTransactionForm } from '../hooks/useTransactionForm'
 import { TransactionForm } from './TransactionForm'
 import ChartComponent from '../components/Chart'
+import { Pagination } from '../components/Pagination'
 import { createCurrencyFormatter, createNumberFormatter } from '../../lib/utils'
 import { supabase } from '../../lib/supabase'
 import type { Transaction as TransactionType } from './Dashboard' // Dashboard.tsx remains in pages for types
@@ -85,22 +86,6 @@ export default function Transaction() {
     return transactions.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
   }, [transactions, currentPage])
 
-  const getPageRange = (current: number, total: number) => {
-    const range: (number | string)[] = []
-    if (total <= 7) {
-      for (let i = 1; i <= total; i++) range.push(i)
-    } else {
-      if (current <= 4) {
-        range.push(1, 2, 3, 4, 5, '...', total)
-      } else if (current >= total - 3) {
-        range.push(1, '...', total - 4, total - 3, total - 2, total - 1, total)
-      } else {
-        range.push(1, '...', current - 1, current, current + 1, '...', total)
-      }
-    }
-    return range
-  }
-
   const summary = useMemo(() => {
     const qty = transactions.reduce((s: number, t: TransactionType) => s + t.qty, 0);
     const rev = transactions.reduce((s: number, t: TransactionType) => s + t.total, 0);
@@ -109,11 +94,11 @@ export default function Transaction() {
   }, [transactions]);
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100">
+    <main className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="mb-10 rounded-[40px] border border-white/10 bg-gradient-to-br from-slate-900/90 to-slate-950/80 p-8 shadow-[0_30px_120px_-50px_rgba(15,23,42,0.85)] backdrop-blur-xl">
-          <p className="text-sm uppercase tracking-[0.35em] text-sky-300/80">Sales Entry</p>
-          <h1 className="mt-3 text-4xl font-semibold text-white">Record transaction</h1>
+        <div className="mb-10 rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-8 shadow-xl dark:shadow-[0_30px_120px_-50px_rgba(15,23,42,0.85)] backdrop-blur-xl transition-colors">
+          <p className="text-sm uppercase tracking-[0.35em] text-sky-600 dark:text-sky-300/80">Sales Entry</p>
+          <h1 className="mt-3 text-4xl font-semibold text-slate-900 dark:text-white">Record transaction</h1>
           <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-400">
             Log your sales to automatically track revenue, profit, and inventory changes. Use manual mode for items not tracked in the product catalog.
           </p>
@@ -132,33 +117,33 @@ export default function Transaction() {
             initialFocusRef={firstInputRef}
           />
 
-          <aside className="rounded-[40px] border border-white/10 bg-gradient-to-br from-slate-900/90 to-slate-950/80 p-8 shadow-2xl shadow-slate-950/20 backdrop-blur-xl">
-            <h2 className="text-xl font-semibold text-white">Workflow Guide</h2>
-            <ul className="mt-6 space-y-4 text-sm text-slate-400">
+          <aside className="rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-8 shadow-2xl dark:shadow-slate-950/20 backdrop-blur-xl transition-colors">
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Workflow Guide</h2>
+            <ul className="mt-6 space-y-4 text-sm text-slate-500 dark:text-slate-400">
               <li className="flex gap-3">
-                <span className="text-sky-400 font-bold">01</span>
-                <span>Select a product to auto-fill prices and link to inventory counts.</span>
+                <span className="text-sky-600 dark:text-sky-400 font-bold">01</span>
+                <span className="text-slate-600 dark:text-slate-400">Select a product to auto-fill prices and link to inventory counts.</span>
               </li>
               <li className="flex gap-3">
-                <span className="text-sky-400 font-bold">02</span>
-                <span>Profit is calculated as <code>(Sale - Cost) * Qty</code>.</span>
+                <span className="text-sky-600 dark:text-sky-400 font-bold">02</span>
+                <span className="text-slate-600 dark:text-slate-400">Profit is calculated as <code>(Sale - Cost) * Qty</code>.</span>
               </li>
               <li className="flex gap-3">
-                <span className="text-sky-400 font-bold">03</span>
-                <span>Deleting a transaction will automatically restore the product stock level.</span>
+                <span className="text-sky-600 dark:text-sky-400 font-bold">03</span>
+                <span className="text-slate-600 dark:text-slate-400">Deleting a transaction will automatically restore the product stock level.</span>
               </li>
             </ul>
-            <div className="mt-10 rounded-3xl border border-slate-800 bg-gradient-to-r from-slate-950/90 to-slate-900/80 p-5 text-sm text-slate-300">
+            <div className="mt-10 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 dark:from-slate-950/90 dark:to-slate-900/80 p-5 text-sm text-slate-600 dark:text-slate-300">
               Manual transactions do not impact inventory levels but are included in financial reports.
             </div>
           </aside>
         </div>
 
-        <div className="mt-10 overflow-hidden rounded-[40px] border border-white/5 bg-gradient-to-br from-slate-900/50 to-slate-950/40 p-8 shadow-2xl backdrop-blur-xl">
+        <div className="mt-10 overflow-hidden rounded-[40px] border border-black/5 dark:border-white/5 bg-white dark:bg-slate-900/90 dark:from-slate-900/50 dark:to-slate-950/40 p-8 shadow-2xl backdrop-blur-xl transition-colors">
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-sky-400/80">History</p>
-              <h2 className="mt-2 text-2xl font-semibold text-white">
+              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-sky-600 dark:text-sky-400/80">History</p>
+              <h2 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
                 {filterType === 'all' && 'Recent Activity'}
                 {filterType === 'today' && 'Today\'s Sales'}
                 {filterType === 'last7' && 'Last 7 Days'}
@@ -178,7 +163,7 @@ export default function Transaction() {
                     setEndDate('')
                   }
                 }}
-                 className="rounded-2xl border border-white/10 bg-slate-900/80 px-4 py-2.5 text-xs font-bold text-slate-100 outline-none backdrop-blur-xl cursor-pointer hover:bg-slate-800/90 transition-all focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20 "
+                 className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/90 px-4 py-2.5 text-xs font-bold text-slate-900 dark:text-slate-100 outline-none backdrop-blur-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/90  focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20 transition-colors"
               >
                 <option value="all">Recent activity</option>
                 <option value="today">Today</option>
@@ -194,7 +179,7 @@ export default function Transaction() {
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                     className="rounded-2xl border border-white/10 bg-slate-900/60 px-4 py-2.5 text-xs font-medium text-white outline-none backdrop-blur-xl transition-all focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10 [color-scheme:dark] hover:bg-slate-800/80"
+                     className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/90 px-4 py-2.5 text-xs font-medium text-slate-900 dark:text-white outline-none backdrop-blur-xl transition-all focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10 dark:[color-scheme:dark] hover:bg-slate-50 dark:hover:bg-slate-800/80"
                     />
                   {filterType === 'range' && (
                     <>
@@ -203,7 +188,7 @@ export default function Transaction() {
                         type="date"
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
-                        className="rounded-2xl border border-white/10 bg-slate-900/60 px-4 py-2.5 text-xs font-medium text-white outline-none backdrop-blur-xl transition-all focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10 [color-scheme:dark] hover:bg-slate-800/80"
+                        className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/80 px-4 py-2.5 text-xs font-medium text-slate-900 dark:text-white outline-none backdrop-blur-xl transition-all focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10 dark:[color-scheme:dark] hover:bg-slate-50 dark:hover:bg-slate-800/80"
                       />
                     </>
                   )}
@@ -212,9 +197,9 @@ export default function Transaction() {
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-[32px] border border-slate-800/50 bg-slate-950/20">
-            <table className="w-full text-left text-xs sm:text-sm">
-              <thead className="border-b border-slate-800/50 text-[10px] uppercase tracking-widest text-slate-500">
+          <div className="overflow-hidden rounded-[32px] border border-slate-200 dark:border-slate-800/50 bg-white dark:bg-slate-900/90">
+            <table className="w-full text-left text-xs sm:text-sm text-slate-600 dark:text-slate-300">
+              <thead className="border-b border-slate-200 dark:border-slate-800/50 bg-slate-50 dark:bg-slate-900 text-[10px] uppercase tracking-widest text-slate-500">
                 <tr>
                   <th className="px-6 py-5 font-medium">Product</th>
                   <th className="px-6 py-5 font-medium text-center">Qty</th>
@@ -225,7 +210,7 @@ export default function Transaction() {
                   
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/30 text-slate-300">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/30">
                 {isLoading ? (
                   <tr>
                     <td colSpan={5} className="px-6 py-10 text-center text-slate-500">Memuat data...</td>
@@ -238,12 +223,12 @@ export default function Transaction() {
                   </tr>
                 ) : (
                   paginatedTransactions.map((t) => (
-                    <tr key={t.id} className="hover:bg-white/[0.02] transition-colors group">
-                      <td className="px-6 py-4 font-medium">{t.product_name || 'Manual Sale'}</td>
+                    <tr key={t.id} className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors group">
+                      <td className="px-6 py-4 font-medium text-slate-900 dark:text-slate-100">{t.product_name || 'Manual Sale'}</td>
                       <td className="px-6 py-4 text-center font-mono">{num.format(t.qty)}</td>
                       <td className="px-6 py-4">{fmt.format(t.total)}</td>
                       <td className="px-6 py-4">{fmt.format(t.harga_modal || 0)}</td>
-                      <td className="px-6 py-4 text-emerald-400 font-semibold">{fmt.format(t.profit || 0)}</td>
+                      <td className="px-6 py-4 text-emerald-600 dark:text-emerald-400 font-semibold">{fmt.format(t.profit || 0)}</td>
                       <td className="px-6 py-4 text-right">
                         <button
                           onClick={() => removeTransaction(t)}
@@ -258,55 +243,36 @@ export default function Transaction() {
                 )}
               </tbody>
               {transactions.length > 0 && (
-                <tfoot className="border-t border-slate-800/50 bg-sky-900/50 text-slate-200">
+                <tfoot className="border-t border-slate-200 dark:border-slate-800/50 bg-slate-50 dark:bg-sky-900/50 text-slate-900 dark:text-slate-200 transition-colors font-bold">
                   <tr>
-                    <td className="px-6 py-4 font-bold">Total</td>
-                    <td className="px-6 py-4 text-center font-bold font-mono">{num.format(summary.qty)}</td>
-                    <td className="px-6 py-4 font-bold">{fmt.format(summary.rev)}</td>
-                    <td className="px-6 py-4 font-bold"></td>
-                    <td className="px-6 py-4 font-bold text-emerald-400">{fmt.format(summary.pro)}</td>
+                    <td className="px-6 py-4">Total</td>
+                    <td className="px-6 py-4 text-center font-mono">{num.format(summary.qty)}</td>
+                    <td className="px-6 py-4">{fmt.format(summary.rev)}</td>
+                    <td className="px-6 py-4"></td>
+                    <td className="px-6 py-4 text-emerald-600 dark:text-emerald-400">{fmt.format(summary.pro)}</td>
                     <td className="px-6 py-4 text-right"></td>
                   </tr>
                 </tfoot>
               )}
             </table>
-            <div className="flex flex-wrap items-center justify-between gap-4 px-6 py-4 bg-sky-900/20">
-                <button 
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage(p => p - 1)}
-                  className="text-xs font-bold text-sky-400 disabled:text-slate-600 transition-colors">PREV</button>
-                <div className="flex items-center gap-1">
-                  {getPageRange(currentPage, Math.ceil(transactions.length / itemsPerPage)).map((p, i) => (
-                    typeof p === 'number' ? (
-                      <button
-                        key={i}
-                        onClick={() => setCurrentPage(p)}
-                        className={`h-7 min-w-[28px] rounded-lg text-[10px] font-bold transition-all ${
-                          currentPage === p ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
-                        }`}
-                      >
-                        {p}
-                      </button>
-                    ) : (
-                      <span key={i} className="px-1 text-slate-600 font-bold">...</span>
-                    )
-                  ))}
-                </div>
-                <button 
-                  disabled={currentPage * itemsPerPage >= transactions.length}
-                  onClick={() => setCurrentPage(p => p + 1)}
-                  className="text-xs font-bold text-sky-400 disabled:text-slate-600 transition-colors">NEXT</button>
-            </div>
+            {!isLoading && transactions.length > itemsPerPage && (
+              <Pagination
+                currentPage={currentPage}
+                totalItems={transactions.length}
+                itemsPerPage={itemsPerPage}
+                onPageChange={setCurrentPage}
+              />
+            )}
           </div>
         </div>
 
         {/* Best Selling Performance */}
         <div className="mt-10 grid gap-6 lg:grid-cols-2">
-          <div className="rounded-[40px] border border-white/10 bg-gradient-to-br from-slate-900/90 to-slate-950/80 p-8 shadow-2xl shadow-slate-950/20 backdrop-blur-xl">
-            <h3 className="text-xl font-semibold text-white mb-6">Best Selling Performance</h3>
-            <div className="max-h-[500px] overflow-y-auto rounded-[32px] border border-slate-800/50 bg-gradient-to-br from-slate-950/20 to-slate-900/40 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-              <table className="w-full text-left text-xs sm:text-sm">
-                <thead className="border-b border-slate-800/50 text-[10px] uppercase tracking-widest text-slate-500">
+          <div className="rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-8 shadow-2xl dark:shadow-slate-950/20 backdrop-blur-xl transition-colors">
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-6">Best Selling Performance</h3>
+            <div className="max-h-[500px] overflow-y-auto rounded-[32px] border border-slate-200 dark:border-slate-800/50 bg-slate-50 dark:bg-gradient-to-br dark:from-slate-950/20 dark:to-slate-900/40 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden transition-colors">
+              <table className="w-full text-left text-xs sm:text-sm text-slate-600 dark:text-slate-300">
+                <thead className="border-b border-slate-200 dark:border-slate-800/50 bg-white dark:bg-slate-950 text-[10px] uppercase tracking-widest text-slate-500">
                   <tr>
                     <th className="px-6 py-5 font-medium">Product</th>
                     <th className="px-6 py-5 font-medium text-center">Qty Sold</th>
@@ -314,52 +280,31 @@ export default function Transaction() {
                     <th className="px-6 py-5 font-medium">Profit</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/30 text-slate-300">
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/30">
                   {paginatedBestSelling.map((item, index) => (
-                    <tr key={item.name} className="hover:bg-white/[0.02] transition-colors group">
-                      <td className="px-6 py-4 font-medium flex items-center gap-3">
-                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-sky-500/20 to-indigo-500/20 text-[10px] font-bold text-sky-400 border border-sky-500/30 group-hover:scale-110 transition-transform">
+                    <tr key={item.name} className="hover:bg-slate-100 dark:hover:bg-white/[0.02] transition-colors group">
+                      <td className="px-6 py-4 font-medium text-slate-900 dark:text-slate-100 flex items-center gap-3">
+                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-sky-500/10 dark:from-sky-500/20 to-indigo-500/10 dark:to-indigo-500/20 text-[10px] font-bold text-sky-600 dark:text-sky-400 border border-sky-500/30 group-hover:scale-110 transition-transform">
                           {index + 1}
                         </span>
                         {item.name}
                       </td>
                       <td className="px-6 py-4 text-center font-mono">{num.format(item.qty)}</td>
                       <td className="px-6 py-4">{fmt.format(item.revenue)}</td>
-                      <td className="px-6 py-4 text-emerald-400 font-semibold">{fmt.format(item.profit)}</td>
+                      <td className="px-6 py-4 text-emerald-600 dark:text-emerald-400 font-semibold">{fmt.format(item.profit)}</td>
                     </tr>
                   ))}
                 </tbody>
-                {bestSelling.length > 0 && (
-                  <tfoot className="border-t border-slate-800/50 bg-slate-900/30 text-slate-200">
+                {bestSelling.length > itemsPerPageBestSelling && (
+                  <tfoot className="border-t border-slate-200 dark:border-slate-800/50 bg-slate-100 dark:bg-slate-900/30 text-slate-900 dark:text-slate-200 transition-colors">
                     <tr>
                       <td colSpan={4} className="px-6 py-4">
-                        <div className="flex flex-wrap items-center justify-between gap-4">
-                          <button 
-                            disabled={bestSellingCurrentPage === 1}
-                            onClick={() => setBestSellingCurrentPage(p => p - 1)}
-                            className="text-xs font-bold text-sky-400 disabled:text-slate-600 transition-colors">PREV</button>
-                          <div className="flex items-center gap-1">
-                            {getPageRange(bestSellingCurrentPage, Math.ceil(bestSelling.length / itemsPerPage)).map((p, i) => (
-                              typeof p === 'number' ? (
-                                <button
-                                  key={i}
-                                  onClick={() => setBestSellingCurrentPage(p)}
-                                  className={`h-7 min-w-[28px] rounded-lg text-[10px] font-bold transition-all ${
-                                    bestSellingCurrentPage === p ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
-                                  }`}
-                                >
-                                  {p}
-                                </button>
-                              ) : (
-                                <span key={i} className="px-1 text-slate-600 font-bold">...</span>
-                              )
-                            ))}
-                          </div>
-                          <button 
-                            disabled={bestSellingCurrentPage * itemsPerPage >= bestSelling.length}
-                            onClick={() => setBestSellingCurrentPage(p => p + 1)}
-                            className="text-xs font-bold text-sky-400 disabled:text-slate-600 transition-colors">NEXT</button>
-                        </div>
+                        <Pagination
+                          currentPage={bestSellingCurrentPage}
+                          totalItems={bestSelling.length}
+                          itemsPerPage={itemsPerPageBestSelling}
+                          onPageChange={setBestSellingCurrentPage}
+                        />
                       </td>
                     </tr>
                   </tfoot>
@@ -368,8 +313,8 @@ export default function Transaction() {
             </div>
           </div>
 
-          <div className="rounded-[40px] border border-white/10 bg-gradient-to-br from-slate-900/90 to-slate-950/80 p-8 shadow-2xl shadow-slate-950/20 backdrop-blur-xl">
-            <h3 className="text-xl font-semibold text-white mb-6">Sales Performance Chart</h3>
+          <div className="rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-8 shadow-2xl dark:shadow-slate-950/20 backdrop-blur-xl transition-colors">
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-6">Sales Performance Chart</h3>
             <div className="h-80">
               <ChartComponent data={bestSellingChartData} />
             </div>

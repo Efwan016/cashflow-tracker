@@ -73,7 +73,7 @@ export default function Auth() {
 }
 
     return (
-        <main className="relative min-h-screen overflow-hidden bg-slate-950 text-slate-100">
+        <main className="relative min-h-screen overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
             <div className="pointer-events-none absolute inset-x-0 top-0 h-72">
                 <div className="absolute left-8 top-[-8rem] h-72 w-72 rounded-full bg-sky-500/12 blur-3xl" />
                 <div className="absolute right-8 top-[-6rem] h-80 w-80 rounded-full bg-indigo-500/15 blur-3xl" />
@@ -85,7 +85,7 @@ export default function Auth() {
             </div>
 
             <div className="relative mx-auto flex min-h-screen w-full max-w-7xl items-center px-4 py-20 sm:px-6 lg:px-8">
-                <div className="grid w-full gap-8 rounded-[40px] border border-white/10 bg-slate-900/90 p-6 shadow-[0_40px_120px_-50px_rgba(15,23,42,0.85)] backdrop-blur-xl lg:grid-cols-[0.95fr_1.05fr] lg:p-0">
+                <div className="grid w-full gap-8 rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 p-6 shadow-xl dark:shadow-[0_40px_120px_-50px_rgba(15,23,42,0.85)] backdrop-blur-xl lg:grid-cols-[0.95fr_1.05fr] lg:p-0 transition-colors">
                     <aside className="hidden rounded-[40px] bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 p-10 lg:flex lg:flex-col lg:justify-center">
                         <img src="/IconCashflow.png" alt="Hero Image" className="mb-10 w-32 rounded-lg object-cover" />
                         <h1 className="text-4xl font-bold tracking-tight text-white">Manage your cash flow effortlessly</h1>
@@ -115,17 +115,17 @@ export default function Auth() {
                         </div>
                     </aside>
 
-                    <section className="rounded-[40px] border border-white/10 bg-slate-900/95 p-8 shadow-2xl shadow-slate-950/30 sm:p-10">
+                    <section className="rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/95 p-8 shadow-2xl dark:shadow-slate-950/30 sm:p-10 transition-colors">
                         <div className="mb-8 text-center lg:text-left">
-                            <span className="inline-flex rounded-full bg-sky-500/10 px-3 py-1 text-xs uppercase tracking-[0.35em] text-sky-300">
+                            <span className="inline-flex rounded-full bg-sky-500/10 px-3 py-1 text-xs uppercase tracking-[0.35em] text-sky-600 dark:text-sky-300">
                                 {isLogin ? 'Login' : 'Register'}
                             </span>
 
-                            <h2 className="mt-5 text-3xl font-semibold text-white sm:text-4xl">
+                            <h2 className="mt-5 text-3xl font-semibold text-slate-900 dark:text-white sm:text-4xl">
                                 {isLogin ? 'Welcome back' : 'Create your account'}
                             </h2>
 
-                            <p className="mt-4 max-w-xl text-sm leading-6 text-slate-400 sm:text-base">
+                            <p className="mt-4 max-w-xl text-sm leading-6 text-slate-500 dark:text-slate-400 sm:text-base">
                                 {isLogin
                                     ? 'Sign in to continue managing your finances with a clean and intuitive experience.'
                                     : 'Start tracking your income and expenses with a simple and powerful system.'}
@@ -145,9 +145,9 @@ export default function Auth() {
                                         placeholder=" "
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className="peer w-full rounded-[28px] border border-slate-700 bg-slate-900/85 px-5 py-4 pl-12 text-slate-100 shadow-inner shadow-slate-950/10 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"
+                                        className="peer w-full rounded-[28px] border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/85 px-5 py-4 pl-12 text-slate-900 dark:text-slate-100 shadow-inner outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"
                                     />
-                                    <span className="pointer-events-none absolute left-12 -top-2 z-10 rounded-xl bg-slate-900/95 px-2 text-sm text-slate-500 transition-all duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-500 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-sky-300 peer-focus:-translate-y-0">
+                                    <span className="pointer-events-none absolute left-12 -top-2 z-10 rounded-xl bg-white dark:bg-slate-900 px-2 text-sm text-slate-500 transition-all duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-500 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-sky-600 dark:peer-focus:text-sky-300 peer-focus:-translate-y-0">
                                         Email
                                     </span>
                                 </div>
@@ -163,12 +163,12 @@ export default function Auth() {
                                         name="password"
                                         autoComplete={isLogin ? 'current-password' : 'new-password'}
                                         placeholder=" "
-                                        className="peer w-full rounded-[28px] border border-slate-700 bg-slate-900/85 px-5 py-4 pl-12 pr-12 text-slate-100 shadow-inner shadow-slate-950/10 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"
+                                        className="peer w-full rounded-[28px] border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/85 px-5 py-4 pl-12 pr-12 text-slate-900 dark:text-slate-100 shadow-inner outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                     />
 
-                                    <span className="pointer-events-none absolute left-12 -top-2 z-10 rounded-xl bg-slate-900/95 px-2 text-sm text-slate-500 transition-all duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-500 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-sky-300 peer-focus:-translate-y-0">
+                                    <span className="pointer-events-none absolute left-12 -top-2 z-10 rounded-xl bg-white dark:bg-slate-900 px-2 text-sm text-slate-500 transition-all duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-500 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-sky-600 dark:peer-focus:text-sky-300 peer-focus:-translate-y-0">
                                         Password
                                     </span>
 
@@ -196,12 +196,12 @@ export default function Auth() {
                                             name="confirmPassword"
                                             autoComplete="new-password"
                                             placeholder=" "
-                                            className="peer w-full rounded-[28px] border border-slate-700 bg-slate-900/85 px-5 py-4 pl-12 pr-12 text-slate-100 shadow-inner shadow-slate-950/10 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"
+                                            className="peer w-full rounded-[28px] border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/85 px-5 py-4 pl-12 pr-12 text-slate-900 dark:text-slate-100 shadow-inner outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"
                                             value={confirmPassword}
                                             onChange={(e) => setConfirmPassword(e.target.value)}
                                         />
 
-                                        <span className="pointer-events-none absolute left-12 -top-2 z-10 rounded-xl bg-slate-900/95 px-2 text-sm text-slate-500 transition-all duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-500 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-sky-300 peer-focus:-translate-y-0">
+                                        <span className="pointer-events-none absolute left-12 -top-2 z-10 rounded-xl bg-white dark:bg-slate-900 px-2 text-sm text-slate-500 transition-all duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-500 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-sky-600 dark:peer-focus:text-sky-300 peer-focus:-translate-y-0">
                                             Confirm Password
                                         </span>
 
@@ -244,7 +244,7 @@ export default function Auth() {
                                     <button
                                         type="button"
                                         onClick={() => handleOAuthSignIn('google')}
-                                        className="w-full flex items-center justify-center gap-3 rounded-[28px] border border-slate-700 bg-slate-800 text-white px-5 py-4 text-sm font-semibold shadow-sm transition hover:bg-slate-700 hover:scale-[1.01] active:scale-[0.98]"
+                                        className="w-full flex items-center justify-center gap-3 rounded-[28px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white px-5 py-4 text-sm font-semibold shadow-sm transition hover:bg-slate-50 dark:hover:bg-slate-700 hover:scale-[1.01] active:scale-[0.98]"
                                     >
                                         <span className="flex items-center justify-center w-5 h-5">
                                             <GoogleIcon />
@@ -255,19 +255,19 @@ export default function Auth() {
                             )}
                         </div>
 
-                        <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between text-sm text-slate-400">
+                        <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between text-sm text-slate-500 dark:text-slate-400">
                             <span>{isLogin ? "Don't have an account?" : 'Already have an account?'}</span>
                             <button
                                 type="button"
                                 onClick={() => setIsLogin(!isLogin)}
-                                className="text-sky-300 transition hover:text-sky-100"
+                                className="text-sky-600 dark:text-sky-300 transition hover:text-sky-400 dark:hover:text-sky-100"
                             >
                                 {isLogin ? 'Sign up' : 'Sign in'}
                             </button>
                         </div>
 
-                        <div className="mt-10 rounded-[28px] border border-slate-700 bg-slate-950/75 p-5 text-sm text-slate-400 shadow-sm shadow-slate-950/20">
-                            <p className="font-medium text-slate-100">Pro tip</p>
+                        <div className="mt-10 rounded-[28px] border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/75 p-5 text-sm text-slate-500 dark:text-slate-400 shadow-sm transition-colors">
+                            <p className="font-medium text-slate-900 dark:text-slate-100">Pro tip</p>
                             <p className="mt-3 leading-6">
                                 Use a secure email and a strong password to protect your account, then monitor your daily financial activity through your dashboard.
                             </p>

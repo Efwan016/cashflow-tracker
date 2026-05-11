@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useMemo } from 'react'
 import { toast } from 'react-toastify'
 import { supabase } from '../../lib/supabase'
 import { createCurrencyFormatter } from '../../lib/utils'
+import { Pagination } from '../components/Pagination'
 import type { Product } from '../../types/types'
 
 export default function ProductPage() {
@@ -49,22 +50,6 @@ export default function ProductPage() {
   const paginatedProducts = useMemo(() => {
     return sortedProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
   }, [sortedProducts, currentPage])
-
-  const getPageRange = (current: number, total: number) => {
-    const range: (number | string)[] = []
-    if (total <= 7) {
-      for (let i = 1; i <= total; i++) range.push(i)
-    } else {
-      if (current <= 4) {
-        range.push(1, 2, 3, 4, 5, '...', total)
-      } else if (current >= total - 3) {
-        range.push(1, '...', total - 4, total - 3, total - 2, total - 1, total)
-      } else {
-        range.push(1, '...', current - 1, current, current + 1, '...', total)
-      }
-    }
-    return range
-  }
 
   const fetchProducts = useCallback(async () => {
     const userId = await getUserId()
@@ -256,18 +241,18 @@ export default function ProductPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100">
+    <main className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="mb-10 rounded-[40px] border border-white/10 bg-slate-900/90 p-8 shadow-[0_30px_120px_-50px_rgba(15,23,42,0.85)] backdrop-blur-xl">
-          <p className="text-sm uppercase tracking-[0.35em] text-sky-300/80">Product catalog</p>
-          <h1 className="mt-3 text-4xl font-semibold text-white">Manage your products</h1>
-          <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-400">
+        <div className="mb-10 rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-gradient-to-br dark:from-slate-900/90 dark:to-slate-950/80 p-8 shadow-xl dark:shadow-[0_30px_120px_-50px_rgba(15,23,42,0.85)] backdrop-blur-xl transition-colors">
+          <p className="text-sm uppercase tracking-[0.35em] text-sky-600 dark:text-sky-300/80">Product catalog</p>
+          <h1 className="mt-3 text-4xl font-semibold text-slate-900 dark:text-white">Manage your products</h1>
+          <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">
             Add or update product records with cost and sale prices. All pages will use this product catalog for stock and transaction workflows.
           </p>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
-          <section className="rounded-[40px] border border-white/10 bg-slate-900/90 p-8 shadow-2xl shadow-slate-950/20">
+          <section className="rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 p-8 shadow-2xl dark:shadow-slate-950/20 transition-colors">
             <div className="space-y-6">
               {error && (
                 <div className="rounded-3xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-100">{error}</div>
@@ -278,40 +263,40 @@ export default function ProductPage() {
 
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="grid gap-3 text-left">
-                  <span className="text-sm text-slate-400">Product name</span>
+                  <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">Product name</span>
                   <input
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Product name"
-                    className="rounded-3xl border border-slate-700 bg-slate-950/90 px-4 py-4 text-white outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20"
+                    className="rounded-3xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/90 px-4 py-4 text-slate-900 dark:text-white outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20"
                   />
                 </label>
                 <label className="grid gap-3 text-left">
-                  <span className="text-sm text-slate-400">Harga modal</span>
+                  <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">Harga modal</span>
                   <input
                     type="number"
                     min="0"
                     value={costPrice}
                     onChange={(e) => setCostPrice(e.target.value)}
                     placeholder="0"
-                    className="rounded-3xl border border-slate-700 bg-slate-950/90 px-4 py-4 text-white outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20"
+                    className="rounded-3xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/90 px-4 py-4 text-slate-900 dark:text-white outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20"
                   />
                 </label>
                 <label className="grid gap-3 text-left">
-                  <span className="text-sm text-slate-400">Harga jual</span>
+                  <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">Harga jual</span>
                   <input
                     type="number"
                     min="0"
                     value={salePrice}
                     onChange={(e) => setSalePrice(e.target.value)}
                     placeholder="0"
-                    className="rounded-3xl border border-slate-700 bg-slate-950/90 px-4 py-4 text-white outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20"
+                    className="rounded-3xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/90 px-4 py-4 text-slate-900 dark:text-white outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20"
                   />
                 </label>
               </div>
 
               <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm text-slate-400">Product catalog uses <span className="font-semibold text-white">Product</span> table so all modules can access the same product data.</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Product catalog uses <span className="font-semibold text-slate-900 dark:text-white">Product</span> table.</p>
                 <button
                   type="button"
                   onClick={handleSubmit}
@@ -324,82 +309,82 @@ export default function ProductPage() {
             </div>
           </section>
 
-          <aside className="rounded-[40px] border border-white/10 bg-slate-900/90 p-8 shadow-2xl shadow-slate-950/20">
+          <aside className="rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 p-8 shadow-2xl dark:shadow-slate-950/20 transition-colors">
             <div className="space-y-5">
               <div>
-                <p className="text-sm uppercase tracking-[0.35em] text-slate-400">Catalog tips</p>
-                <h2 className="mt-3 text-2xl font-semibold text-white">Product-driven workflow</h2>
+                <p className="text-sm uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">Catalog tips</p>
+                <h2 className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">Product-driven workflow</h2>
               </div>
-              <div className="space-y-4 text-sm leading-6 text-slate-300">
+              <div className="space-y-4 text-sm leading-6 text-slate-600 dark:text-slate-300">
                 <p>Use products to standardize stock, transactions, and reporting across the app.</p>
                 <p>When product data is available, stock and transaction pages can auto-fill prices.</p>
               </div>
-              <div className="rounded-3xl border border-slate-800 bg-slate-950/90 p-5 text-sm text-slate-300">
+              <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/90 p-5 text-sm text-slate-600 dark:text-slate-300 transition-colors">
                 Product IDs should be unique. Updating an existing ID will overwrite its name and prices.
               </div>
             </div>
           </aside>
         </div>
 
-        <div className="mt-10 overflow-hidden rounded-[40px] border border-white/10 bg-slate-900/90 p-8 shadow-2xl shadow-slate-950/20">
+        <div className="mt-10 overflow-hidden rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 p-8 shadow-2xl dark:shadow-slate-950/20 transition-colors">
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm uppercase tracking-[0.35em] text-slate-400">Product list</p>
-              <h2 className="mt-3 text-2xl font-semibold text-white">Current catalog</h2>
+              <p className="text-sm uppercase tracking-[0.35em] text-sky-600 dark:text-sky-300/80">Product list</p>
+              <h2 className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">Current catalog</h2>
             </div>
             <div className="flex items-center gap-3">
-               <span className="text-xs text-slate-500">Sort:</span>
-               <select
-                 value={sortBy}
-                 onChange={(e) => setSortBy(e.target.value)}
-                 className="rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-2 text-xs text-white outline-none focus:border-sky-500/50 hover:bg-slate-900/80 cursor-pointer"
-               >
-                 <option value="name-asc">Alphabet (A-Z)</option>
-                 <option value="name-desc">Alphabet (Z-A)</option>
-                 <option value="modal-desc">Modal (High-Low)</option>
-                 <option value="modal-asc">Modal (Low-High)</option>
-                 <option value="sale-desc">Jual (High-Low)</option>
-                 <option value="sale-asc">Jual (Low-High)</option>
-               </select>
+              <span className="text-xs text-slate-500">Sort:</span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/50 px-4 py-2 text-xs text-slate-900 dark:text-white outline-none focus:border-sky-500/50 hover:bg-slate-50 dark:hover:bg-slate-900/80 cursor-pointer transition-colors"
+              >
+                <option value="name-asc">Alphabet (A-Z)</option>
+                <option value="name-desc">Alphabet (Z-A)</option>
+                <option value="modal-desc">Modal (High-Low)</option>
+                <option value="modal-asc">Modal (Low-High)</option>
+                <option value="sale-desc">Jual (High-Low)</option>
+                <option value="sale-asc">Jual (Low-High)</option>
+              </select>
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-[32px] border border-slate-800 bg-slate-950/90">
-            <table className="w-full text-left text-sm text-slate-200">
-              <thead className="border-b border-slate-800 bg-slate-900/90 text-slate-400">
+          <div className="overflow-hidden rounded-[32px] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/90 transition-colors">
+            <table className="w-full text-left text-sm text-slate-600 dark:text-slate-200">
+              <thead className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/90 text-slate-500 dark:text-slate-400">
                 <tr>
                   <th className="px-4 py-4">Product ID</th>
                   <th className="px-4 py-4">Name</th>
                   <th className="px-4 py-4">Harga modal</th>
                   <th className="px-4 py-4">Harga jual</th>
-                  <th className="px-4 py-4">Action</th>
+                  <th className="px-4 py-4 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {loading ? (
                   <tr>
-                    <td colSpan={4} className="px-4 py-6 text-slate-400">
+                    <td colSpan={5} className="px-4 py-6 text-sm text-slate-500 dark:text-slate-400">
                       Loading product catalog...
                     </td>
                   </tr>
                 ) : products.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="px-4 py-6 text-slate-400">
+                    <td colSpan={5} className="px-4 py-6 text-sm text-slate-500 dark:text-slate-400">
                       No products found.
                     </td>
                   </tr>
                 ) : (
                   paginatedProducts.map((product) => (
-                    <tr key={product.id} className="border-b border-slate-800 last:border-none">
-                      <td className="px-4 py-4 text-slate-100">{product.id}</td>
-                      <td className="px-4 py-4 text-slate-100">{product.name}</td>
-                      <td className="px-4 py-4 text-slate-100">{fmt.format(product.harga_modal)}</td>
-                      <td className="px-4 py-4 text-slate-100">{fmt.format(product.harga_jual)}</td>
-                      <td className="px-4 py-4">
+                    <tr key={product.id} className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors">
+                      <td className="px-4 py-4 text-slate-500 dark:text-slate-400 font-mono text-xs">{product.id}</td>
+                      <td className="px-4 py-4 font-medium text-slate-900 dark:text-slate-100">{product.name}</td>
+                      <td className="px-4 py-4 text-slate-700 dark:text-slate-100">{fmt.format(product.harga_modal)}</td>
+                      <td className="px-4 py-4 text-slate-700 dark:text-slate-100">{fmt.format(product.harga_jual)}</td>
+                      <td className="px-4 py-4 text-right">
                         <button
                           type="button" onClick={() => handleDelete(product.id)}
                           disabled={submitting}
-                          className="rounded-xl bg-rose-500/20 px-3 py-1 text-sm text-rose-300 hover:bg-rose-500/30 disabled:opacity-50"
+                          className="rounded-xl bg-rose-500/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 transition-colors disabled:opacity-50"
                         >
                           Delete
                         </button>
@@ -410,33 +395,14 @@ export default function ProductPage() {
                 )}
               </tbody>
             </table>
-            <div className="flex flex-wrap items-center justify-between gap-4 px-6 py-4 bg-slate-900/60">
-                <button 
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage(p => p - 1)}
-                  className="text-xs font-bold text-sky-400 disabled:text-slate-600 transition-colors">PREV</button>
-                <div className="flex items-center gap-1">
-                  {getPageRange(currentPage, Math.ceil(sortedProducts.length / itemsPerPage)).map((p, i) => (
-                    typeof p === 'number' ? (
-                      <button
-                        key={i}
-                        onClick={() => setCurrentPage(p)}
-                        className={`h-7 min-w-[28px] rounded-lg text-[10px] font-bold transition-all ${
-                          currentPage === p ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
-                        }`}
-                      >
-                        {p}
-                      </button>
-                    ) : (
-                      <span key={i} className="px-1 text-slate-600 font-bold">...</span>
-                    )
-                  ))}
-                </div>
-                <button 
-                  disabled={currentPage * itemsPerPage >= sortedProducts.length}
-                  onClick={() => setCurrentPage(p => p + 1)}
-                  className="text-xs font-bold text-sky-400 disabled:text-slate-600 transition-colors">NEXT</button>
-            </div>
+            {!loading && sortedProducts.length > itemsPerPage && (
+              <Pagination
+                currentPage={currentPage}
+                totalItems={sortedProducts.length}
+                itemsPerPage={itemsPerPage}
+                onPageChange={setCurrentPage}
+              />
+            )}
           </div>
         </div>
       </div>

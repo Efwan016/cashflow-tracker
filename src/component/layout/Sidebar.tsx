@@ -44,7 +44,6 @@ const navItems = [
     children: [
       { label: 'All Products', path: '/products', icon: Icons.Products },
       { label: 'Stock Inventory', path: '/inventory', icon: Icons.Stock },
-      { label: 'Movement Logs', path: '/stock-logs', icon: Icons.Logs },
     ] 
   },
   { label: 'Reports', path: '/reports', icon: Icons.Reports, badge: 'Live' },

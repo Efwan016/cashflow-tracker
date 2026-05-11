@@ -4,6 +4,13 @@ import { toast } from 'react-toastify'
 import { supabase } from '../../lib/supabase'
 
 
+const SearchIcon = () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" x2="16.65" y1="21" y2="16.65" />
+    </svg>
+)
+
 const MenuIcon = () => (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
         <line x1="4" x2="20" y1="12" y2="12" />
@@ -218,14 +225,30 @@ export default function Topbar({ toggleSidebar }: { toggleSidebar: () => void })
 
                 <div className="min-w-0">
                     <h1 className="truncate text-xl font-bold tracking-tight text-slate-900 sm:text-2xl dark:text-white">
-                        Have a nice day, <span className="bg-gradient-to-r from-sky-400 to-indigo-400 bg-clip-text text-transparent">{name.split(' ')[0]}</span>
+                       Let’s check your progress, <span className="bg-gradient-to-r from-sky-400 to-indigo-400 bg-clip-text text-transparent">{name.split(' ')[0]}</span>
                     </h1>
                 </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-4 lg:flex-nowrap">
                 <div ref={searchRef} className="group relative flex-1 lg:min-w-[320px]">
-                    
+                    <div className="relative">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-sky-500 transition-colors">
+                            <SearchIcon />
+                        </span>
+                        <input
+                            ref={searchInputRef}
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => {
+                                setSearchQuery(e.target.value)
+                                setShowResults(true)
+                            }}
+                            onFocus={() => setShowResults(true)}
+                            placeholder="Search pages... (Ctrl+K)"
+                            className="h-11 w-full rounded-2xl border border-black/5 bg-slate-100 pl-11 pr-4 text-sm text-slate-900 outline-none transition-all focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10 dark:border-white/5 dark:bg-slate-800/30 dark:text-slate-100 dark:placeholder-slate-500"
+                        />
+                    </div>
 
                     {/* Search Results Dropdown */}
                     {showResults && searchQuery && (
@@ -285,7 +308,7 @@ export default function Topbar({ toggleSidebar }: { toggleSidebar: () => void })
                             )}
                         </div>
                         <div className="min-w-0 text-left">
-                            <p className="max-w-[100px] truncate text-xs font-bold text-white">{name}</p>
+                            <p className="max-w-[100px] truncate text-xs font-bold text-slate-900 dark:text-white">{name}</p>
                             <p className="max-w-[100px] truncate text-[10px] font-medium text-slate-500">{email || 'Premium Plan'}</p>
                         </div>
                     </button>

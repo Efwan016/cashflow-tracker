@@ -59,11 +59,20 @@ export function useInventory() {
       const prods = (productsRes.data ?? []) as ProductName[]
       setProducts(prods)
 
-      const productMap = new Map(prods.map((p) => [p.id, p]))
-      const merged: StockRecord[] = (stockRes.data ?? []).map((stock) => ({
-        ...stock,
-        product_name: productMap.get(stock.product_id)?.name,
-      }))
+      const stockMap = new Map(
+        (stockRes.data ?? []).map((s) => [s.product_id, s])
+      )
+
+      const merged: StockRecord[] = prods.map((product) => {
+        const stock = stockMap.get(product.id)
+
+        return {
+          id: stock?.id ?? product.id,
+          product_id: product.id,
+          product_name: product.name,
+          total: stock?.total ?? 0,
+        }
+      })
 
       setStockItems(merged)
     } catch {
@@ -131,11 +140,11 @@ export function useInventory() {
       const nameA = a.product_name ?? a.product_id
       const nameB = b.product_name ?? b.product_id
       switch (sortBy) {
-        case 'name-asc':  return nameA.localeCompare(nameB)
+        case 'name-asc': return nameA.localeCompare(nameB)
         case 'name-desc': return nameB.localeCompare(nameA)
-        case 'qty-desc':  return b.total - a.total
-        case 'qty-asc':   return a.total - b.total
-        default:          return 0
+        case 'qty-desc': return b.total - a.total
+        case 'qty-asc': return a.total - b.total
+        default: return 0
       }
     })
 
@@ -157,7 +166,7 @@ export function useInventory() {
     [stockItems]
   )
   const lowStockCount = useMemo(
-    () => stockItems.filter((item) => item.total <= 5).length,
+    () => stockItems.filter((item) => item.total <= 3).length,
     [stockItems]
   )
 
@@ -196,8 +205,14 @@ export function useInventory() {
 
       setSuccess(`Stock ${movementType === 'add' ? 'added' : 'reduced'} successfully.`)
       setForm({ productId: '', quantity: '', movementType: 'add' })
-    } catch {
-      setError('Failed to update stock. Please try again.')
+    } catch (err) {
+      console.error('UPDATE STOCK ERROR:', err)
+
+      if (err instanceof Error) {
+        setError(err.message)
+      } else {
+        setError('Failed to update stock.')
+      }
     } finally {
       setSubmitting(false)
     }
@@ -252,8 +267,16 @@ export function useInventory() {
         setEditQty('')
         setEditName('')
         await loadStock()
-      } catch {
-        setError('Failed to update product or stock.')
+      } catch (err) {
+        console.error('EDIT ERROR:', err)
+
+        if (err instanceof Error) {
+          setError(err.message)
+        } else {
+          setError('Failed to update product or stock.')
+        }
+      } finally {
+        setSubmitting(false)
       }
     },
     [editQty, editName, loadStock]

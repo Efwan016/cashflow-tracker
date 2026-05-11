@@ -139,28 +139,28 @@ export default function Profile() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#020617] via-slate-900 to-black text-white p-6">
+    <main className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 p-6">
       <div className="max-w-6xl mx-auto space-y-8">
 
         {/* HEADER */}
-        <div className="card-glass flex justify-between items-center">
+        <div className="flex justify-between items-center rounded-3xl border border-black/5 dark:border-white/10 bg-white dark:bg-white/5 p-6 backdrop-blur-xl shadow-sm">
           <div>
-            <h1 className="text-3xl font-semibold">Profile</h1>
-            <p className="text-slate-400 text-sm mt-1">
+            <h1 className="text-3xl font-semibold text-slate-900 dark:text-white">Profile</h1>
+            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
               Manage your account
             </p>
           </div>
         </div>
 
         {/* PROFILE */}
-        <div className="card-glass flex gap-6 items-center">
+        <div className="flex gap-6 items-center rounded-3xl border border-black/5 dark:border-white/10 bg-white dark:bg-white/5 p-6 backdrop-blur-xl shadow-sm">
 
           {/* AVATAR */}
           <div
             className="relative cursor-pointer group"
             onClick={() => fileInputRef.current?.click()}
           >
-            <div className="avatar">
+            <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center font-bold text-2xl text-white overflow-hidden shadow-lg shadow-sky-500/20">
               {avatarUrl ? (
                 <img src={avatarUrl} className="w-full h-full object-cover" />
               ) : (
@@ -168,7 +168,7 @@ export default function Profile() {
               )}
             </div>
 
-            <div className="avatar-overlay">
+            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center rounded-3xl transition-opacity text-white text-xs font-bold">
               Change
             </div>
 
@@ -185,14 +185,14 @@ export default function Profile() {
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="input"
+              className="w-full h-12 rounded-xl px-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 outline-none focus:ring-2 focus:ring-sky-500/20"
               placeholder="Full name"
             />
 
             <button
               onClick={handleSave}
               disabled={saving || uploading}
-              className="btn-primary"
+              className="h-12 px-8 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-500 text-white font-semibold shadow-lg shadow-sky-500/20 hover:from-sky-400 transition-all"
             >
               {saving ? 'Saving...' : 'Save'}
             </button>
@@ -201,92 +201,19 @@ export default function Profile() {
 
         {/* INFO */}
         <div className="grid md:grid-cols-2 gap-6">
-          <div className="card-glass">
-            <p className="label">Email</p>
-            <p className="value">{email}</p>
+          <div className="rounded-3xl border border-black/5 dark:border-white/10 bg-white dark:bg-white/5 p-6 backdrop-blur-xl shadow-sm">
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest">Email</p>
+            <p className="text-lg mt-1 font-medium text-slate-900 dark:text-slate-100">{email}</p>
           </div>
 
-          <div className="card-glass">
-            <p className="label">Member since</p>
-            <p className="value">
+          <div className="rounded-3xl border border-black/5 dark:border-white/10 bg-white dark:bg-white/5 p-6 backdrop-blur-xl shadow-sm">
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest">Member since</p>
+            <p className="text-lg mt-1 font-medium text-slate-900 dark:text-slate-100">
               {new Date(createdAt).toLocaleDateString()}
             </p>
           </div>
         </div>
       </div>
-
-      {/* 🔥 STYLE */}
-      <style>{`
-        .card-glass {
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.08);
-          padding: 24px;
-          border-radius: 24px;
-          backdrop-filter: blur(20px);
-        }
-
-        .input {
-          width: 100%;
-          height: 48px;
-          border-radius: 12px;
-          padding: 0 12px;
-          background: #0f172a;
-          border: 1px solid #1e293b;
-        }
-
-        .btn-primary {
-          height: 48px;
-          padding: 0 20px;
-          border-radius: 14px;
-          background: linear-gradient(to right, #0ea5e9, #6366f1);
-          font-weight: 600;
-        }
-
-        .btn-outline {
-          border: 1px solid #334155;
-          padding: 10px 16px;
-          border-radius: 12px;
-        }
-
-        .avatar {
-          width: 96px;
-          height: 96px;
-          border-radius: 24px;
-          background: linear-gradient(to bottom right, #0ea5e9, #6366f1);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-weight: bold;
-          font-size: 24px;
-          overflow: hidden;
-        }
-
-        .avatar-overlay {
-          position: absolute;
-          inset: 0;
-          background: rgba(0,0,0,0.5);
-          opacity: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 24px;
-          transition: 0.2s;
-        }
-
-        .group:hover .avatar-overlay {
-          opacity: 1;
-        }
-
-        .label {
-          font-size: 12px;
-          color: #94a3b8;
-        }
-
-        .value {
-          font-size: 18px;
-          margin-top: 4px;
-        }
-      `}</style>
     </main>
   )
 }
