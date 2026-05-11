@@ -34,3 +34,49 @@ export type Stock_Logs = {
     qty: number
     created_at: string
 }
+
+// ─── Inventory Module — Shared Types ──────────────────────────────────────────
+
+export type StockRecord = {
+  id: string
+  product_id: string
+  total: number
+  product_name?: string
+}
+
+export type StockLogRecord = {
+  id: string
+  product_id: string
+  type: 'IN' | 'OUT'
+  qty: number
+  created_at: string
+}
+
+export type ProductName = {
+  id: string
+  name: string
+}
+
+export type StockMovementType = 'add' | 'reduce'
+
+export type StockUpdateForm = {
+  productId: string
+  quantity: string
+  movementType: StockMovementType
+}
+
+export type StockLogForm = {
+  productId: string
+  qty: string
+  type: 'IN' | 'OUT'
+}
+
+export type SortOption =
+  | 'name-asc'
+  | 'name-desc'
+  | 'qty-asc'
+  | 'qty-desc'
+  | 'date-asc'
+  | 'date-desc'
+
+export type ActiveTab = 'inventory' | 'logs'

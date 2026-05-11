@@ -491,7 +491,7 @@ export default function Dashboard() {
                   </div>
                 </NavLink>
 
-                <NavLink to="/stock" className="md:col-span-2 rounded-[32px] border border-white/10 bg-slate-900/40 p-8 backdrop-blur-2xl transition-all hover:bg-slate-800/60 group">
+                <NavLink to="/inventory" className="md:col-span-2 rounded-[32px] border border-white/10 bg-slate-900/40 p-8 backdrop-blur-2xl transition-all hover:bg-slate-800/60 group">
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-500 mb-1">Inventory</p>
@@ -589,8 +589,8 @@ export default function Dashboard() {
                   {([
                     { to: '/transactions', label: 'Transactions', icon: <IC.Tx />, ic: '#34d399', ibg: 'rgba(52,211,153,0.1)' },
                     { to: '/expenses', label: 'Expenses', icon: <IC.Expense />, ic: '#fb7185', ibg: 'rgba(251,113,133,0.1)' },
-                    { to: '/stock', label: 'Stock', icon: <IC.Box />, ic: '#fbbf24', ibg: 'rgba(251,191,36,0.1)' },
-                    { to: '/stock-logs', label: 'Stock Logs', icon: <IC.Log />, ic: '#a78bfa', ibg: 'rgba(167,139,250,0.1)' },
+                    { to: '/inventory', label: 'Stock', icon: <IC.Box />, ic: '#fbbf24', ibg: 'rgba(251,191,36,0.1)' },
+                    { to: '/reports', label: 'Reports', icon: <IC.Report />, ic: '#a78bfa', ibg: 'rgba(167,139,250,0.1)' },
                   ] as const).map(({ to, label, icon, ic, ibg }) => (
                     <NavLink key={to} to={to} className="flex items-center justify-between p-4 rounded-2xl border border-white/5 bg-slate-900/40 backdrop-blur-xl transition-all duration-200 hover:bg-slate-800/80 hover:border-white/10 hover:translate-x-1 group">
                       <span className="flex items-center gap-3">

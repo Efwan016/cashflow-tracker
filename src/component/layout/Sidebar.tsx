@@ -43,7 +43,7 @@ const navItems = [
     icon: Icons.Products, 
     children: [
       { label: 'All Products', path: '/products', icon: Icons.Products },
-      { label: 'Stock Inventory', path: '/stock', icon: Icons.Stock },
+      { label: 'Stock Inventory', path: '/inventory', icon: Icons.Stock },
       { label: 'Movement Logs', path: '/stock-logs', icon: Icons.Logs },
     ] 
   },
@@ -65,8 +65,7 @@ export default function Sidebar({
   const [isProductsOpen, setIsProductsOpen] = useState(() => {
     return (
       location.pathname.startsWith('/products') ||
-      location.pathname.startsWith('/stock') ||
-      location.pathname.startsWith('/stock-logs')
+      location.pathname.startsWith('/inventory') 
     )
   })
 

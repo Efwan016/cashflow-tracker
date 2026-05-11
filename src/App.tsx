@@ -8,14 +8,14 @@ import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
 import Skeleton from './component/components/Skeleton';
 
+
 // Lazy Loaded Components
 const Auth = lazy(() => import('./component/pages/Auth'));
 const Dashboard = lazy(() => import('./component/pages/Dashboard'));
 const Transaction = lazy(() => import('./component/pages/Transaction'));
 const Expense = lazy(() => import('./component/pages/Expense'));
 const Product = lazy(() => import('./component/pages/Product'));
-const Stock = lazy(() => import('./component/pages/Stock'));
-const StockLogs = lazy(() => import('./component/pages/StockLogs'));
+const Inventory = lazy(() => import('./component/pages/Inventory/InventoryPage'));
 const Reports = lazy(() => import('./component/pages/Reports'));
 const Profile = lazy(() => import('./component/pages/Profile'));
 
@@ -41,8 +41,7 @@ function App() {
             { path: '/transactions', element: <Transaction /> },
             { path: '/products', element: <Product /> },
             { path: '/expenses', element: <Expense /> },
-            { path: '/stock', element: <Stock /> },
-            { path: '/stock-logs', element: <StockLogs /> },
+            { path: '/inventory', element: <Inventory /> },
             { path: '/reports', element: <Reports /> },
             { path: '/profile', element: <Profile /> },
             { path: '/settings', element: <Settings /> },

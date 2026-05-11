@@ -61,14 +61,16 @@ export default function Layout({ children }: { children: ReactNode }) {
 
       const grossProfit = (transactions ?? []).reduce((sum, t) => sum + (t.profit || 0), 0)
       const totalExpenses = (expenses ?? []).reduce((sum, e) => sum + (e.total || 0), 0)
-      
+
       setNetProfit(grossProfit - totalExpenses)
     }
   }, [])
 
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout>
-    let channel: ReturnType<typeof supabase.channel> | null = null
+    let txChannel: ReturnType<typeof supabase.channel> | null = null
+    let expChannel: ReturnType<typeof supabase.channel> | null = null
+    let profileChannel: ReturnType<typeof supabase.channel> | null = null
     let authListener: { data: { subscription: { unsubscribe: () => void } } } | null = null;
 
     const setupRealtimeAndAuthListener = async () => {
@@ -83,35 +85,55 @@ export default function Layout({ children }: { children: ReactNode }) {
       await fetchData();
 
       // Subscribe to changes in Transactions and expenses tables for the current user
-      channel = supabase
-        .channel(`net-profit-realtime-${user.id}`)
-        .on('postgres_changes', { 
-          event: '*', 
-          schema: 'public', 
-          table: 'Transactions', 
-          filter: `user_id=eq.${user.id}` 
-        }, () => {
-          clearTimeout(timeout)
-          timeout = setTimeout(() => fetchData(), 500) // Debounce for 500ms
-        })
-        .on('postgres_changes', { 
-          event: '*', 
-          schema: 'public', 
-          table: 'expenses', 
-          filter: `user_id=eq.${user.id}` 
-        }, () => {
-          clearTimeout(timeout)
-          timeout = setTimeout(() => fetchData(), 500) // Debounce for 500ms
-        })
-        .on('postgres_changes', { 
-          event: '*', 
-          schema: 'public', 
-          table: 'profiles', 
-          filter: `id=eq.${user.id}` 
-        }, () => {
-          clearTimeout(timeout)
-          timeout = setTimeout(() => fetchData(), 500)
-        })
+      txChannel = supabase
+        .channel(`transactions-${user.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'Transactions',
+            filter: `user_id=eq.${user.id}`,
+          },
+          () => {
+            clearTimeout(timeout)
+            timeout = setTimeout(() => fetchData(), 500)
+          }
+        )
+        .subscribe()
+
+      expChannel = supabase
+        .channel(`expenses-${user.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'expenses',
+            filter: `user_id=eq.${user.id}`,
+          },
+          () => {
+            clearTimeout(timeout)
+            timeout = setTimeout(() => fetchData(), 500)
+          }
+        )
+        .subscribe()
+
+      profileChannel = supabase
+        .channel(`profile-${user.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'profiles',
+            filter: `id=eq.${user.id}`,
+          },
+          () => {
+            clearTimeout(timeout)
+            timeout = setTimeout(() => fetchData(), 500)
+          }
+        )
         .subscribe()
 
       // Setup Auth State Change Listener
@@ -127,7 +149,9 @@ export default function Layout({ children }: { children: ReactNode }) {
 
     // Cleanup function
     return () => {
-      if (channel) supabase.removeChannel(channel)
+      if (txChannel) supabase.removeChannel(txChannel)
+      if (expChannel) supabase.removeChannel(expChannel)
+      if (profileChannel) supabase.removeChannel(profileChannel)
       if (authListener) authListener.data.subscription.unsubscribe();
       clearTimeout(timeout)
     }
