@@ -268,11 +268,11 @@ export default function Transaction() {
 
         {/* Best Selling Performance */}
         <div className="mt-10 grid gap-6 lg:grid-cols-2">
-          <div className="rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-8 shadow-2xl dark:shadow-slate-950/20 backdrop-blur-xl transition-colors">
+          <div className="rounded-[40px] border border-slate=900/90 dark:border-slate-200 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-8 shadow-2xl dark:shadow-slate-950/20 backdrop-blur-xl transition-colors">
             <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-6">Best Selling Performance</h3>
             <div className="max-h-[500px] overflow-y-auto rounded-[32px] border border-slate-200 dark:border-slate-800/50 bg-slate-50 dark:bg-gradient-to-br dark:from-slate-950/20 dark:to-slate-900/40 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden transition-colors">
               <table className="w-full text-left text-xs sm:text-sm text-slate-600 dark:text-slate-300">
-                <thead className="border-b border-slate-200 dark:border-slate-800/50 bg-white dark:bg-slate-950 text-[10px] uppercase tracking-widest text-slate-500">
+                <thead className="border-b border-slate-900/900 dark:border-slate-200 bg-white dark:bg-slate-900/90 text-[10px] uppercase tracking-widest text-slate-400">
                   <tr>
                     <th className="px-6 py-5 font-medium">Product</th>
                     <th className="px-6 py-5 font-medium text-center">Qty Sold</th>
@@ -280,7 +280,7 @@ export default function Transaction() {
                     <th className="px-6 py-5 font-medium">Profit</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/30">
+                <tbody className="border border-slate-900/90 dark:border-slate-200 divide-y divide-slate-100 dark:divide-slate-900/90 bg-white dark:bg-slate-900/90 ">
                   {paginatedBestSelling.map((item, index) => (
                     <tr key={item.name} className="hover:bg-slate-100 dark:hover:bg-white/[0.02] transition-colors group">
                       <td className="px-6 py-4 font-medium text-slate-900 dark:text-slate-100 flex items-center gap-3">
@@ -296,7 +296,7 @@ export default function Transaction() {
                   ))}
                 </tbody>
                 {bestSelling.length > itemsPerPageBestSelling && (
-                  <tfoot className="border-t border-slate-200 dark:border-slate-800/50 bg-slate-100 dark:bg-slate-900/30 text-slate-900 dark:text-slate-200 transition-colors">
+                  <tfoot className="border-t rounded-lg border-slate-900/90 dark:border-slate-200 divide-y divide-slate-100 dark:divide-slate-900/90 bg-white dark:bg-slate-900/90 text-slate-900 dark:text-slate-400 transition-colors">
                     <tr>
                       <td colSpan={4} className="px-6 py-4">
                         <Pagination

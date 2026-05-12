@@ -22,7 +22,7 @@ export function Pagination({
   const range = getPageRange(currentPage, totalPages)
 
   return (
-    <div className="flex items-center justify-between gap-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 px-5 py-3">
+    <div className="flex items-center rounded-lg justify-between gap-4 border-t border-slate-200 dark:border-slate-900/90 bg-slate-200 dark:bg-slate-900/90 px-5 py-3">
       {/* Info */}
       <span className="hidden text-[11px] text-slate-500 sm:block">
         {(currentPage - 1) * itemsPerPage + 1}–
