@@ -1,23 +1,6 @@
 import React from 'react';
-import type { Product } from './Dashboard';
+import type { TransactionFormProps } from '../../types/types';
 
-interface TransactionFormProps {
-  products: Product[];
-  formData: {
-    productId: string;
-    manualName: string;
-    qty: string;
-    salePrice: string;
-    modalPrice: string;
-  };
-  onFieldChange: (field: string, value: string) => void;
-  onSelectProduct: (id: string) => void;
-  onSubmit: (e: React.FormEvent) => void;
-  isSubmitting: boolean;
-  calculatedTotal: string;
-  expectedProfit: string;
-  initialFocusRef?: React.RefObject<HTMLSelectElement | null>;
-}
 
 export const TransactionForm: React.FC<TransactionFormProps> = ({
   products,

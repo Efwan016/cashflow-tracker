@@ -7,7 +7,7 @@ import ChartComponent from '../components/Chart'
 import { Pagination } from '../components/Pagination'
 import { createCurrencyFormatter, createNumberFormatter } from '../../lib/utils'
 import { supabase } from '../../lib/supabase'
-import type { Transaction as TransactionType } from './Dashboard' // Dashboard.tsx remains in pages for types
+import type { Transaction as TransactionType } from '../../types/types'
 
 export default function Transaction() {
   const [filterType, setFilterType] = useState('today')
@@ -89,7 +89,7 @@ export default function Transaction() {
   const summary = useMemo(() => {
     const qty = transactions.reduce((s: number, t: TransactionType) => s + t.qty, 0);
     const rev = transactions.reduce((s: number, t: TransactionType) => s + t.total, 0);
-    const pro = transactions.reduce((s: number, t: TransactionType) => s + t.profit, 0);
+    const pro = transactions.reduce((s: number, t: TransactionType) => s + (t.profit ?? 0), 0);
     return { qty, rev, pro };
   }, [transactions]);
 

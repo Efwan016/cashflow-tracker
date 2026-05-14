@@ -15,56 +15,87 @@ export default function Layout({ children }: { children: ReactNode }) {
   const [netProfit, setNetProfit] = useState(0)
 
   const fetchData = useCallback(async () => {
-    const { data: authData, error: authError } = await supabase.auth.getUser()
-    const user = authData?.user
+  const { data: authData, error: authError } = await supabase.auth.getUser()
+  const user = authData?.user
 
-    if (authError) {
-      toast.error("Failed to get user session: " + authError.message)
-      return
-    }
+  if (authError) {
+    toast.error("Failed to get user session: " + authError.message)
+    return
+  }
 
-    if (user) {
-      setEmail(user.email || '')
+  if (!user) return
 
-      // 🔥 ambil profile dari database
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('full_name, avatar_url')
-        .eq('id', user.id)
-        .single()
+  setEmail(user.email || '')
 
-      if (profileError) {
-        toast.error("Failed to load profile: " + profileError.message)
-        return
-      }
+  // 🔥 Ambil profile dari database
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('full_name, avatar_url')
+    .eq('id', user.id)
+    .single()
 
-      if (profile?.full_name) {
-        setName(profile.full_name)
-      } else {
-        setName(user.email?.split('@')[0] || 'User')
-      }
+  if (profileError && profileError.code !== 'PGRST116') {
+    toast.error("Failed to load profile: " + profileError.message)
+    return
+  }
 
-      if (profile?.avatar_url) {
-        setAvatarUrl(profile.avatar_url)
-      }
+  setName(profile?.full_name || user.email?.split('@')[0] || 'User')
+  setAvatarUrl(profile?.avatar_url || null)
 
-      // Hitung Net Profit: Total Profit Transaksi - Total Expenses
-      const [{ data: transactions, error: txError }, { data: expenses, error: expError }] = await Promise.all([
-        supabase.from('Transactions').select('profit').eq('user_id', user.id),
-        supabase.from('expenses').select('total').eq('user_id', user.id)
-      ])
+  // 🔥 Hitung Net Profit bulan ini: tanggal 1 sampai sekarang
+  const now = new Date()
 
-      if (txError || expError) {
-        toast.error("Failed to load financial data: " + (txError?.message || expError?.message))
-        return
-      }
+  const startOfMonth = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    1,
+    0,
+    0,
+    0,
+    0
+  ).toISOString()
 
-      const grossProfit = (transactions ?? []).reduce((sum, t) => sum + (t.profit || 0), 0)
-      const totalExpenses = (expenses ?? []).reduce((sum, e) => sum + (e.total || 0), 0)
+  const endOfNow = now.toISOString()
 
-      setNetProfit(grossProfit - totalExpenses)
-    }
-  }, [])
+  const [
+    { data: transactions, error: txError },
+    { data: expenses, error: expError },
+  ] = await Promise.all([
+    supabase
+      .from('Transactions')
+      .select('profit')
+      .eq('user_id', user.id)
+      .gte('created_at', startOfMonth)
+      .lte('created_at', endOfNow),
+
+    supabase
+      .from('expenses')
+      .select('total')
+      .eq('user_id', user.id)
+      .gte('created_at', startOfMonth)
+      .lte('created_at', endOfNow),
+  ])
+
+  if (txError || expError) {
+    toast.error(
+      "Failed to load financial data: " +
+        (txError?.message || expError?.message)
+    )
+    return
+  }
+
+  const grossProfit = (transactions ?? []).reduce(
+    (sum, transaction) => sum + (transaction.profit || 0),
+    0
+  )
+
+  const totalExpenses = (expenses ?? []).reduce(
+    (sum, expense) => sum + (expense.total || 0),
+    0
+  )
+
+  setNetProfit(grossProfit - totalExpenses)
+}, [])
 
   useEffect(() => {
     let isMounted = true
@@ -74,7 +105,7 @@ export default function Layout({ children }: { children: ReactNode }) {
 
     const setupRealtimeAndAuthListener = async () => {
       const { data: { user } } = await supabase.auth.getUser()
-      
+
       if (!isMounted) return
 
       if (!user) {
@@ -92,29 +123,29 @@ export default function Layout({ children }: { children: ReactNode }) {
       const channelId = Math.random().toString(36).substring(7)
       realtimeChannel = supabase
         .channel(`layout-updates-${user.id}-${channelId}`)
-        .on('postgres_changes', { 
-          event: '*', 
-          schema: 'public', 
-          table: 'Transactions', 
-          filter: `user_id=eq.${user.id}` 
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'Transactions',
+          filter: `user_id=eq.${user.id}`
         }, () => {
           clearTimeout(timeout)
           timeout = setTimeout(() => fetchData(), 500)
         })
-        .on('postgres_changes', { 
-          event: '*', 
-          schema: 'public', 
-          table: 'expenses', 
-          filter: `user_id=eq.${user.id}` 
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'expenses',
+          filter: `user_id=eq.${user.id}`
         }, () => {
           clearTimeout(timeout)
           timeout = setTimeout(() => fetchData(), 500)
         })
-        .on('postgres_changes', { 
-          event: '*', 
-          schema: 'public', 
-          table: 'profiles', 
-          filter: `id=eq.${user.id}` 
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${user.id}`
         }, () => {
           clearTimeout(timeout)
           timeout = setTimeout(() => fetchData(), 500)
@@ -149,8 +180,10 @@ export default function Layout({ children }: { children: ReactNode }) {
     }
   }
 
-  const closeMobileSidebar = () => setIsSidebarOpen(false)
-
+  const closeSidebar = () => {
+    setIsSidebarOpen(false)
+    setIsDesktopSidebarOpen(false)
+  }
 
 
   return (
@@ -159,7 +192,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       <Sidebar
         isSidebarOpen={isSidebarOpen}
         isDesktopSidebarOpen={isDesktopSidebarOpen}
-        closeMobileSidebar={closeMobileSidebar}
+        closeMobileSidebar={closeSidebar}
         name={name}
         netProfit={netProfit}
         email={email}
@@ -169,11 +202,10 @@ export default function Layout({ children }: { children: ReactNode }) {
       {/* Overlay mobile */}
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 lg:hidden"
-          onClick={closeMobileSidebar}
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          onClick={closeSidebar}
         />
       )}
-
       {/* Content */}
       {/* Content */}
       <div

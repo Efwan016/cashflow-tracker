@@ -3,16 +3,8 @@ import { useMemo, useState } from 'react'
 import { createCurrencyFormatter } from '../../lib/utils'
 import ChevronIcon from '../../assets/Icon/ChevronIcon'
 import { navItems } from '../hooks/navIteems'
+import type { SidebarProps } from '../../types/types'
 
-interface Props {
-  isSidebarOpen: boolean
-  isDesktopSidebarOpen: boolean
-  closeMobileSidebar: () => void
-  name: string
-  netProfit: number
-  email: string
-  avatarUrl: string | null
-}
 
 export default function Sidebar({
   isSidebarOpen,
@@ -22,13 +14,13 @@ export default function Sidebar({
   netProfit,
   email,
   avatarUrl,
-}: Props) {
+}: SidebarProps) {
   const location = useLocation()
-  
+
   const [isProductsOpen, setIsProductsOpen] = useState(() => {
     return (
       location.pathname.startsWith('/products') ||
-      location.pathname.startsWith('/inventory') 
+      location.pathname.startsWith('/inventory')
     )
   })
 
@@ -39,70 +31,148 @@ export default function Sidebar({
     )
   })
 
-  const fmt = useMemo(() => createCurrencyFormatter(), []);
+  const fmt = useMemo(() => createCurrencyFormatter(), [])
+
+  const displayName = useMemo(() => {
+    return name?.trim() || email?.split('@')[0] || 'User'
+  }, [name, email])
 
   const initials = useMemo(() => {
-    const segments = name.split(' ').filter(Boolean)
+    const segments = displayName.split(' ').filter(Boolean)
+
     if (segments.length === 0) return 'CF'
     if (segments.length === 1) return segments[0].slice(0, 2).toUpperCase()
+
     return `${segments[0][0]}${segments[segments.length - 1][0]}`.toUpperCase()
-  }, [name])
+  }, [displayName])
+
+  const isProfitPositive = netProfit >= 0
+
+  const handleNavigate = () => {
+    closeMobileSidebar()
+  }
 
   return (
-    <div
-      className={`fixed top-0 left-0 z-50 flex h-full w-72 flex-col justify-between overflow-y-auto border-r border-black/5 dark:border-white/10 bg-white/95 dark:bg-slate-900/95 p-6 shadow-2xl shadow-slate-100/20 dark:shadow-slate-950/20 transition-transform duration-300 ease-in-out backdrop-blur-xl [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden ${
-        isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} ${isDesktopSidebarOpen ? 'lg:translate-x-0' : 'lg:-translate-x-full'}`}
+    <aside
+      className={`fixed left-0 top-0 z-50 flex h-dvh w-[18rem] flex-col justify-between overflow-y-auto border-r border-black/5 bg-white/90 p-4 text-slate-900 shadow-2xl shadow-slate-200/40 backdrop-blur-2xl transition-transform duration-300 ease-out [scrollbar-width:none] dark:border-white/10 dark:bg-slate-950/90 dark:text-slate-100 dark:shadow-slate-950/40 sm:p-5 lg:w-72 [&::-webkit-scrollbar]:hidden ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        } ${isDesktopSidebarOpen ? 'lg:translate-x-0' : 'lg:-translate-x-full'
+        }`}
     >
-      <div className="space-y-8">
-        <div className="rounded-[32px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 p-5 shadow-sm shadow-slate-100/20 dark:shadow-slate-950/20">
-          <p className="text-xs uppercase tracking-[0.35em] text-slate-500 dark:text-slate-500">Account</p>
-          <div className="mt-4 flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-600 text-sm font-bold text-white shadow-lg shadow-sky-500/20">
-              {avatarUrl ? (
-                <img
-                  src={avatarUrl}
-                  alt="Avatar"
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                initials
-              )}
-            </div>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">{name}</p>
-              <p className="truncate text-[10px] text-slate-500 dark:text-slate-500">{email || 'Premium Plan'}</p>
-            </div>
-          </div>
-          <div className="mt-5 rounded-2xl bg-slate-50 dark:bg-slate-950/50 border border-black/5 dark:border-white/5 p-4 transition-colors hover:bg-slate-100 dark:hover:bg-slate-950/80">
-            <p className="text-xs font-medium text-slate-500 dark:text-slate-500 uppercase tracking-wider">Net Profit</p>
-            <p className={`mt-1 text-xl font-bold tracking-tight ${netProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-              {netProfit >= 0 ? '+' : ''}{fmt.format(netProfit)}
-            </p>
-          </div>
-        </div> 8 
+      <div className="space-y-6">
+        {/* BRAND / ACCOUNT */}
+        <div className="relative overflow-hidden rounded-[2rem] border border-black/5 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+          <div className="absolute inset-0 bg-gradient-to-br from-sky-500/10 via-indigo-500/10 to-fuchsia-500/10" />
+          <div className="absolute -right-10 -top-12 h-32 w-32 rounded-full bg-sky-400/20 blur-3xl" />
+          <div className="absolute -bottom-14 -left-10 h-32 w-32 rounded-full bg-indigo-500/20 blur-3xl" />
 
+          <div className="relative">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-[10px] font-black uppercase tracking-[0.35em] text-slate-400">
+                Account
+              </p>
+
+              <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-emerald-500">
+                Live
+              </span>
+            </div>
+
+            <div className="mt-5 flex items-center gap-3">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500 via-indigo-500 to-fuchsia-500 text-sm font-black text-white shadow-lg shadow-sky-500/20">
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt="Avatar"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  initials
+                )}
+              </div>
+
+              <div className="min-w-0">
+                <p className="truncate text-sm font-black text-slate-950 dark:text-white">
+                  {displayName}
+                </p>
+
+                <p className="mt-0.5 truncate text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                  {email || 'Premium Account'}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 rounded-3xl border border-black/5 bg-slate-50 p-4 transition hover:bg-slate-100 dark:border-white/10 dark:bg-slate-950/60 dark:hover:bg-slate-950">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">
+                    Net Profit
+                  </p>
+                  <p className="mt-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    This Month
+                  </p>
+                </div>
+
+                <span
+                  className={`rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-wider ${isProfitPositive
+                    ? 'bg-emerald-500/10 text-emerald-500'
+                    : 'bg-rose-500/10 text-rose-500'
+                    }`}
+                >
+                  {isProfitPositive ? 'Profit' : 'Loss'}
+                </span>
+              </div>
+
+              <p
+                className={`mt-2 truncate text-xl font-black tracking-tight ${isProfitPositive ? 'text-emerald-500' : 'text-rose-500'
+                  }`}
+              >
+                {isProfitPositive ? '+' : ''}
+                {fmt.format(netProfit || 0)}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* NAVIGATION */}
         <nav className="space-y-2">
           {navItems.map((item) => {
-            const Icon = item.icon;
-            const hasChildren = !!item.children;
-            
-            // Tentukan state buka/tutup berdasarkan label kategori
-            const isOpen = item.label === 'Products' ? isProductsOpen : isFinanceOpen;
-            const setIsOpen = item.label === 'Products' ? setIsProductsOpen : setIsFinanceOpen;
+            const Icon = item.icon
+            const hasChildren = Boolean(item.children?.length)
+
+            const isProductsGroup = item.label === 'Products'
+            const isFinanceGroup = item.label === 'Finance'
+
+            const isOpen = isProductsGroup
+              ? isProductsOpen
+              : isFinanceGroup
+                ? isFinanceOpen
+                : false
+
+            const setIsOpen = isProductsGroup
+              ? setIsProductsOpen
+              : isFinanceGroup
+                ? setIsFinanceOpen
+                : undefined
 
             const content = (
               <div className="flex items-center gap-3">
-                <Icon />
-                <span className="font-medium">{item.label}</span>
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500 transition group-hover:bg-white/80 group-hover:text-sky-500 dark:bg-white/5 dark:text-slate-400 dark:group-hover:bg-white/10 dark:group-hover:text-sky-400">
+                  <Icon />
+                </span>
+
+                <span className="min-w-0 flex-1 truncate font-bold">
+                  {item.label}
+                </span>
+
                 {item.badge ? (
-                  <span className="ml-auto rounded-full bg-sky-500/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-sky-400 border border-sky-500/20">
+                  <span className="rounded-full border border-sky-500/20 bg-sky-500/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-sky-500">
                     {item.badge}
                   </span>
                 ) : null}
+
                 {hasChildren && (
-                  <div className="ml-auto">
+                  <span className="ml-auto shrink-0">
                     <ChevronIcon isOpen={isOpen} />
-                  </div>
+                  </span>
                 )}
               </div>
             )
@@ -112,33 +182,49 @@ export default function Sidebar({
                 <div key={item.label} className="space-y-1">
                   <button
                     type="button"
-                    onClick={() => setIsOpen(!isOpen)}
-                    className={`block w-full rounded-2xl px-4 py-3 text-left text-sm transition-all duration-200 outline-none focus:ring-0 ${isOpen
-                      ? 'text-slate-900 dark:text-white bg-slate-100 dark:bg-white/5' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
-                    }`}
+                    onClick={() => setIsOpen?.((prev) => !prev)}
+                    className={`group block w-full rounded-2xl px-3 py-2.5 text-left text-sm outline-none transition-all duration-200 ${isOpen
+                      ? 'bg-slate-100 text-slate-950 shadow-sm dark:bg-white/10 dark:text-white'
+                      : 'text-slate-500 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white'
+                      }`}
                   >
                     {content}
                   </button>
-                  {isOpen && (
-                    <div className="mt-1 ml-4 space-y-1 border-none pl-4">
-                      {item.children?.map((child) => (
-                        <NavLink
-                          key={child.path}
-                          to={child.path}
-                          className={({ isActive }) =>
-                            `flex items-center gap-3 rounded-xl px-4 py-2 text-xs transition-all outline-none focus:ring-0 ${
-                              isActive ? 'bg-sky-500/20 text-sky-400 font-bold'
-                                : 'text-slate-500 hover:bg-white/5 hover:text-slate-300'
-                            }`
-                          }
-                          onClick={closeMobileSidebar}
-                        >
-                          <child.icon />
-                          {child.label}
-                        </NavLink>
-                      ))}
+
+                  <div
+                    className={`grid transition-all duration-300 ${isOpen
+                      ? 'grid-rows-[1fr] opacity-100'
+                      : 'grid-rows-[0fr] opacity-0'
+                      }`}
+                  >
+                    <div className="overflow-hidden">
+                      <div className="ml-5 mt-1 space-y-1 border-l border-slate-200 pl-4 dark:border-white/10">
+                        {item.children?.map((child) => {
+                          const ChildIcon = child.icon
+
+                          return (
+                            <NavLink
+                              key={child.path}
+                              to={child.path}
+                              onClick={handleNavigate}
+                              className={({ isActive }) =>
+                                `group flex items-center gap-3 rounded-2xl px-3 py-2.5 text-xs font-bold outline-none transition-all duration-200 ${isActive
+                                  ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20'
+                                  : 'text-slate-500 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white'
+                                }`
+                              }
+                            >
+                              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/10">
+                                <ChildIcon />
+                              </span>
+
+                              <span className="truncate">{child.label}</span>
+                            </NavLink>
+                          )
+                        })}
+                      </div>
                     </div>
-                  )}
+                  </div>
                 </div>
               )
             }
@@ -147,13 +233,13 @@ export default function Sidebar({
               <NavLink
                 key={item.label}
                 to={item.path || '#'}
+                onClick={handleNavigate}
                 className={({ isActive }) =>
-                  `block w-full rounded-2xl px-4 py-3 text-left text-sm transition-all duration-200 outline-none focus:ring-0 ${
-                    isActive ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20'
-                      : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
+                  `group block w-full rounded-2xl px-3 py-2.5 text-left text-sm outline-none transition-all duration-200 ${isActive
+                    ? 'bg-gradient-to-r from-sky-500 to-indigo-500 text-white shadow-lg shadow-sky-500/20'
+                    : 'text-slate-500 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white'
                   }`
                 }
-                onClick={closeMobileSidebar}
               >
                 {content}
               </NavLink>
@@ -162,22 +248,30 @@ export default function Sidebar({
         </nav>
       </div>
 
-      <div className="space-y-4 text-slate-900 dark:text-slate-100">
-        <div className="rounded-[32px] border border-black/5 dark:border-white/10 bg-white dark:bg-gradient-to-b dark:from-slate-900/90 dark:to-slate-950/80 p-5 shadow-sm shadow-slate-100/20 dark:shadow-slate-950/20">
-          <p className="text-xs uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">Tips</p>
-          <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
-            Get faster insights with live reports and automated budget controls.
-          </p>
+      {/* FOOTER */}
+      <div className="mt-6 space-y-4">
+        <div className="relative overflow-hidden rounded-[2rem] border border-black/5 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+          <div className="absolute -right-10 -top-10 h-28 w-28 rounded-full bg-sky-400/10 blur-2xl" />
+
+          <div className="relative">
+            <p className="text-[10px] font-black uppercase tracking-[0.35em] text-slate-400">
+              Tips
+            </p>
+
+            <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+              Review your cashflow regularly so profit, expenses, and stock movement stay easy to track.
+            </p>
+          </div>
         </div>
 
         <button
           type="button"
           onClick={closeMobileSidebar}
-          className="inline-flex w-full items-center justify-center rounded-3xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-800 transition hover:border-sky-400 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-950/95 dark:text-slate-100 dark:hover:border-sky-400 dark:hover:bg-slate-800 lg:hidden"
+          className="inline-flex h-12 w-full items-center justify-center rounded-2xl border border-slate-200 bg-slate-100 px-4 text-sm font-black text-slate-800 transition hover:border-sky-400 hover:bg-slate-200 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:hover:border-sky-400 dark:hover:bg-white/10 lg:hidden"
         >
-          Close sidebar
+          Close Sidebar
         </button>
       </div>
-    </div>
+    </aside>
   )
 }

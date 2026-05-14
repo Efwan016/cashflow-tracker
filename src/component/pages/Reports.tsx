@@ -4,45 +4,15 @@ import { supabase } from '../../lib/supabase'
 import { createCurrencyFormatter, createNumberFormatter, toDateKey } from '../../lib/utils'
 import ChartComponent from '../components/Chart'
 import { Pagination } from '../components/Pagination'
-import type { Product } from '../../types/types'
+import type { Expense, Product, Stock, StockLog,  Transaction } from '../../types/types'
 
-type ReportTransaction = {
-  id: string
-  product_id: string | null
-  qty: number
-  harga_jual: number
-  total: number
-  created_at: string
-  product_name: string | null
-}
 
-type ReportExpense = {
-  id: string
-  description: string
-  total: number
-  created_at: string
-}
-
-type ReportStock = {
-  id: string
-  product_id: string
-  total: number
-}
-
-type ReportStockLog = {
-  id: string
-  product_id: string
-  type: string
-  qty: number
-  created_at: string
-}
 
 export default function Reports() {
-  const [transactions, setTransactions] = useState<ReportTransaction[]>([])
-  const [expenses, setExpenses] = useState<ReportExpense[]>([])
-  const [stocks, setStocks] = useState<ReportStock[]>([])
-  // Menggunakan tipe data yang lebih spesifik untuk stockLogs
-  const [stockLogs, setStockLogs] = useState<ReportStockLog[]>([])
+  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [expenses, setExpenses] = useState<Expense[]>([])
+  const [stocks, setStocks] = useState<Stock[]>([])
+  const [stockLogs, setStockLogs] = useState<StockLog[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')

@@ -1,11 +1,6 @@
 import { supabase } from '../../lib/supabase';
-import type { Transaction }  from '../pages/Dashboard'; //  Correct path relative to src/services/
+import type { Transaction, TransactionFilter } from '../../types/types';
 
-export interface TransactionFilter {
-  start?: string;
-  end?: string;
-  limit?: number;
-}
 
 export const transactionService = {
   async fetchTransactions(userId: string, filters: TransactionFilter): Promise<Transaction[]> {

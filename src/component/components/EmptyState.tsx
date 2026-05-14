@@ -1,15 +1,5 @@
 import { PackageSearch } from 'lucide-react'
-
-// ─── EmptyState ───────────────────────────────────────────────────────────────
-
-interface EmptyStateProps {
-  title?: string
-  description?: string
-  action?: {
-    label: string
-    onClick: () => void
-  }
-}
+import type { EmptyStateProps } from '../../types/types'
 
 export function EmptyState({
   title = 'No data found',

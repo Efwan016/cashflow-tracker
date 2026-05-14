@@ -4,13 +4,8 @@ import { supabase } from '../../lib/supabase'
 import { toast } from 'react-toastify'
 import { Pagination } from '../components/Pagination'
 import { createCurrencyFormatter, getTzOffset, getLocalDate, formatDateTimeLocal } from '../../lib/utils'
+import type { Expense } from '../../types/types'
 
-type ExpenseRecord = {
-  id: string
-  description: string
-  total: number
-  created_at: string
-}
 
 export default function Expense() {
   const navigate = useNavigate()
@@ -18,7 +13,7 @@ export default function Expense() {
   const [amount, setAmount] = useState('')
   const descriptionInputRef = useRef<HTMLInputElement>(null)
 
-  const [expenses, setExpenses] = useState<ExpenseRecord[]>([])
+  const [expenses, setExpenses] = useState<Expense[]>([])
   const [loading, setLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)

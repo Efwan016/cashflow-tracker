@@ -1,10 +1,6 @@
 import { toast } from 'react-toastify'
+import type { ConfirmToastProps } from '../../types/types'
 
-type ConfirmToastProps = {
-  message: string
-  toastId: string
-  onConfirm: () => void
-}
 
 export default function ConfirmToast({
   message,

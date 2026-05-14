@@ -1,15 +1,9 @@
 import { Link } from 'react-router-dom'
 import { Search, RefreshCw, Plus, X } from 'lucide-react'
+import type  { InventoryHeaderProps } from '../../../types/types'
 
 // ─── InventoryHeader ──────────────────────────────────────────────────────────
 
-interface InventoryHeaderProps {
-  searchQuery: string
-  onSearchChange: (query: string) => void
-  onRefresh: () => void
-  isRefreshing: boolean
-  realtimeConnected: boolean
-}
 
 export function InventoryHeader({
   searchQuery,

@@ -1,18 +1,8 @@
 import { Loader2, TrendingUp, TrendingDown, Zap } from 'lucide-react'
-import type { StockUpdateForm, ProductName } from '../../../types/types'
-
+import type { StockControlPanelProps } from '../../../types/types'
 // ─── StockControlPanel ────────────────────────────────────────────────────────
 
-interface StockControlPanelProps {
-  form: StockUpdateForm
-  onFormChange: (form: StockUpdateForm) => void
-  products: ProductName[]
-  onSubmit: () => void
-  onQuickAdjust: (delta: number) => void
-  submitting: boolean
-  error: string
-  success: string
-}
+
 
 export function StockControlPanel({
   form,

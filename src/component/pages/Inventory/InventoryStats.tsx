@@ -1,17 +1,10 @@
 import { Package2, BarChart3, ArrowLeftRight, AlertTriangle } from 'lucide-react'
 import { StatCardSkeleton } from '../../components/InventorySkeleton'
+import type { StatCardProps } from '../../../types/types'
 
 // ─── InventoryStats ───────────────────────────────────────────────────────────
 
-interface StatCardProps {
-  label: string
-  value: string | number
-  subtext?: string
-  icon: React.ReactNode
-  accentClass: string
-  borderClass: string
-  loading?: boolean
-}
+
 
 function StatCard({
   label,

@@ -1,14 +1,8 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { getPageRange } from "../../lib/utils"
+import type { PaginationProps } from '../../types/types'
 
-// ─── Pagination ───────────────────────────────────────────────────────────────
 
-interface PaginationProps {
-  currentPage: number
-  totalItems: number
-  itemsPerPage: number
-  onPageChange: (page: number) => void
-}
 
 export function Pagination({
   currentPage,

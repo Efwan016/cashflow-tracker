@@ -1,6 +1,6 @@
-// ─── InventorySkeleton ────────────────────────────────────────────────────────
+import type { TableSkeletonProps } from "../../types/types"
 
-function ShimmerRow({ cols }: { cols: number }) {
+export function ShimmerRow({ cols }: { cols: number }) {
   return (
     <tr>
       {Array.from({ length: cols }).map((_, i) => (
@@ -12,10 +12,6 @@ function ShimmerRow({ cols }: { cols: number }) {
   )
 }
 
-interface TableSkeletonProps {
-  rows?: number
-  cols?: number
-}
 
 export function TableSkeleton({ rows = 6, cols = 4 }: TableSkeletonProps) {
   return (

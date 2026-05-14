@@ -1,10 +1,6 @@
 import { getStockStatus } from '../../lib/utils'
+import type { StatusBadgeProps } from '../../types/types'
 
-// ─── StatusBadge ─────────────────────────────────────────────────────────────
-
-interface StatusBadgeProps {
-  total: number
-}
 
 export function StatusBadge({ total }: StatusBadgeProps) {
   const status = getStockStatus(total)
