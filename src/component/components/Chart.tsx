@@ -3,6 +3,8 @@ import {
   CategoryScale,
   LinearScale,
   TimeScale,
+  BarController,
+  LineController,
   BarElement,
   LineElement,
   PointElement,
@@ -13,11 +15,14 @@ import {
   type ChartOptions,
   type ScriptableContext,
 } from 'chart.js'
+
 import 'chartjs-adapter-date-fns'
 import { Chart as ReactChart } from 'react-chartjs-2'
 import type { ChartProps } from '../../types/types'
 
 ChartJS.register(
+  BarController,
+  LineController,
   CategoryScale,
   LinearScale,
   TimeScale,
