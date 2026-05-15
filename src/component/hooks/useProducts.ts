@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import { productService } from '../services/productService';
-import type { Product } from '../pages/Dashboard';
+import type { Product } from "../../types/types"
 
 export function useProducts(userId: string | null) {
   const [products, setProducts] = useState<Product[]>([]);

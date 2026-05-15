@@ -7,6 +7,8 @@ import Layout from './component/layout/layout'
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
 import Skeleton from './component/components/Skeleton';
+import ForgotPassword from './component/pages/ForgotPassword';
+import ResetPassword from './component/pages/Setting/ResetPasword';
 
 
 // Lazy Loaded Components
@@ -34,6 +36,8 @@ function App() {
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Auth />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
           {/* Protected Routes */}
           {[

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { supabase } from '../../lib/supabase'
 import GoogleIcon from '../../assets/Icon/GoogleIcon'
@@ -60,17 +60,17 @@ export default function Auth() {
     }
 
     const handleOAuthSignIn = async (provider: 'google' | 'facebook') => {
-    const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-            redirectTo: `${window.location.origin}/dashboard`
-        }
-    })
+        const { error } = await supabase.auth.signInWithOAuth({
+            provider,
+            options: {
+                redirectTo: `${window.location.origin}/dashboard`
+            }
+        })
 
-    if (error) {
-        toast.error(`Login ${provider} gagal: ${error.message}`)
+        if (error) {
+            toast.error(`Login ${provider} gagal: ${error.message}`)
+        }
     }
-}
 
     return (
         <main className="relative min-h-screen overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
@@ -173,7 +173,7 @@ export default function Auth() {
                                     </span>
 
                                     <button
-                                        type="button" // Tambahkan type="button" untuk mencegah submit form
+                                        type="button"
                                         onPointerDown={() => setShowPassword(true)}
                                         onPointerUp={() => setShowPassword(false)}
                                         onPointerLeave={() => setShowPassword(false)}
@@ -184,13 +184,23 @@ export default function Auth() {
                                     </button>
                                 </div>
                             </label>
+                            {isLogin && (
+                                <div className="flex justify-end">
+                                    <Link
+                                        to="/forgot-password"
+                                        className="text-sm font-medium text-sky-600 transition hover:text-sky-500 dark:text-sky-300 dark:hover:text-sky-200"
+                                    >
+                                        Forgot password?
+                                    </Link>
+                                </div>
+                            )}
 
                             {!isLogin && (
                                 <label className="grid gap-3 text-left">
                                     <div className="relative">
-                                         <div className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-slate-400">
-                                        <LockIcon />
-                                    </div>
+                                        <div className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-slate-400">
+                                            <LockIcon />
+                                        </div>
                                         <input
                                             type={showConfirmPassword ? 'text' : 'password'}
                                             name="confirmPassword"
