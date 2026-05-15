@@ -1,5 +1,5 @@
 import { supabase } from '../../lib/supabase';
-import type { Product } from '../pages/Dashboard'; // Correct path relative to src/services/
+import type { Product } from '../../types/types';
 
 export const productService = {
   async getProducts(userId: string): Promise<Product[]> {

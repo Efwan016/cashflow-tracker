@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import { toast } from 'react-toastify';
-import type { Product } from '../pages/Dashboard';
+import type { Product } from '../../types/types';
 import { transactionService } from '../services/transactionService';
 import { formatDateTimeLocal } from '../../lib/utils';
 
