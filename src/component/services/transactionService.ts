@@ -35,7 +35,9 @@ export const transactionService = {
     }
 
     // 2. Simpan Transaksi
-    const { error: txError } = await supabase.from('Transactions').insert([transaction]);
+    const { error: txError } = await supabase
+      .from('Transactions')
+      .insert([{ ...transaction, user_id: userId }])
     if (txError) throw txError;
 
     // 3. Update Stock & Log jika perlu
@@ -64,7 +66,7 @@ export const transactionService = {
         p_qty: tx.qty,
         p_user_id: userId
       });
-      
+
       // Log Revert (Optional)
       await supabase.from('Stock_logs').insert([
         { user_id: userId, product_id: tx.product_id, type: 'IN', qty: tx.qty, created_at: new Date().toISOString() }

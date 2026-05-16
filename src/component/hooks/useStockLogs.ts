@@ -59,7 +59,7 @@ export function useStockLogs(searchQuery: string) {
       const [logRes, productRes] = await Promise.all([
         supabase
           .from('Stock_logs')
-          .select('id, product_id, type, qty, created_at')
+          .select('id, user_id, product_id, type, qty, created_at')
           .eq('user_id', uid)
           .order('created_at', { ascending: false })
           .limit(200),
@@ -70,6 +70,11 @@ export function useStockLogs(searchQuery: string) {
           .order('name', { ascending: true }),
       ])
 
+      console.log('logRes data:', logRes.data)
+      console.log('logRes error:', logRes.error)
+      console.log('productRes data:', productRes.data)
+      console.log('productRes error:', productRes.error)
+      
       if (logRes.error) throw logRes.error
       if (productRes.error) throw productRes.error
 
@@ -146,7 +151,7 @@ export function useStockLogs(searchQuery: string) {
     if (!userId) return
     const { data, error } = await supabase
       .from('Stock_logs')
-      .select('id, product_id, type, qty, created_at')
+      .select('id, user_id, product_id, type, qty, created_at')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .limit(200)

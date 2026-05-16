@@ -33,6 +33,7 @@ export type Transaction = {
 
 export type Expense ={
     id: string
+    user_id: string
     description: string
     total: number
     created_at: string
@@ -42,14 +43,17 @@ export type Expense ={
 
 export type StockLog = {
   id: string
+  user_id: string
   product_id: string
-  type: string | null
+  type: 'IN' | 'OUT'
   qty: number
   created_at: string
   product?: Product
 }
 
+
 export type Profile = {
+  user_id: string
   full_name: string | null
   avatar_url: string | null
 }
@@ -67,6 +71,7 @@ export type FilterType =
 
 export type StockRecord = {
   id: string
+  user_id: string
   product_id: string
   total: number
   product_name?: string
@@ -74,6 +79,7 @@ export type StockRecord = {
 
 export type StockLogRecord = {
   id: string
+  user_id: string
   product_id: string
   type: 'IN' | 'OUT'
   qty: number

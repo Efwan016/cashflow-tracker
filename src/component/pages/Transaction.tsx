@@ -30,54 +30,66 @@ export default function Transaction() {
   const itemsPerPageBestSelling = 5
 
   const bestSelling = useMemo(() => {
-    const productSales = new Map<string, { name: string; qty: number; revenue: number; profit: number }>()
-    transactions.forEach(tx => {
-      const key = tx.product_name || 'Manual Sale'
-      const existing = productSales.get(key) || { name: key, qty: 0, revenue: 0, profit: 0 }
-      existing.qty += tx.qty
-      existing.revenue += tx.total
-      existing.profit += tx.profit || 0
+    const productSales = new Map<
+      string,
+      { name: string; qty: number; revenue: number; profit: number }
+    >()
+
+    transactions.forEach((tx) => {
+      const key =
+        tx.product_name ||
+        products.find((p) => p.id === tx.product_id)?.name ||
+        'Manual Sale'
+
+      const existing = productSales.get(key) || {
+        name: key,
+        qty: 0,
+        revenue: 0,
+        profit: 0,
+      }
+
+      existing.qty += tx.qty ?? 0
+      existing.revenue += tx.total ?? 0
+      existing.profit += tx.profit ?? 0
+
       productSales.set(key, existing)
     })
+
     return Array.from(productSales.values()).sort((a, b) => b.qty - a.qty)
-  }, [transactions])
+  }, [transactions, products])
 
   const paginatedBestSelling = useMemo(() => {
     return bestSelling.slice((bestSellingCurrentPage - 1) * itemsPerPageBestSelling, bestSellingCurrentPage * itemsPerPageBestSelling)
   }, [bestSelling, bestSellingCurrentPage])
 
   const bestSellingChartData = useMemo(() => {
-    return {
-      labels: bestSelling.map(p => p.name),
-      revenue: bestSelling.map(p => p.revenue),
-      expense: [],
-      netProfit: []
-    }
-  }, [bestSelling])
+  const topProducts = bestSelling.slice(0, 5)
+
+  return {
+    labels: topProducts.map((p) => p.name),
+    revenue: topProducts.map((p) => p.revenue),
+    expense: [],
+    netProfit: [],
+  }
+}, [bestSelling])
 
   useEffect(() => {
-    let timeout: ReturnType<typeof setTimeout>
-    let channel: ReturnType<typeof supabase.channel> | null = null
+    let isMounted = true
 
-    supabase.auth.getUser().then(({ data }) => {
-      const uId = data.user?.id || null
-      setUserId(uId)
-      if (uId) {
-        channel = supabase
-          .channel(`tx-realtime-${uId}`)
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'Transactions', filter: `user_id=eq.${uId}` }, () => {
-            clearTimeout(timeout)
-            timeout = setTimeout(() => refresh(), 500)
-          })
-          .subscribe()
-      }
-    })
+    const loadUser = async () => {
+      const { data } = await supabase.auth.getUser()
+
+      if (!isMounted) return
+
+      setUserId(data.user?.id ?? null)
+    }
+
+    loadUser()
 
     return () => {
-      if (channel) supabase.removeChannel(channel)
-      clearTimeout(timeout)
+      isMounted = false
     }
-  }, [refresh])
+  }, [])
 
   const fmt = useMemo(() => createCurrencyFormatter(), [])
   const num = useMemo(() => createNumberFormatter(), [])
@@ -163,7 +175,7 @@ export default function Transaction() {
                     setEndDate('')
                   }
                 }}
-                 className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/90 px-4 py-2.5 text-xs font-bold text-slate-900 dark:text-slate-100 outline-none backdrop-blur-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/90  focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20 transition-colors"
+                className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/90 px-4 py-2.5 text-xs font-bold text-slate-900 dark:text-slate-100 outline-none backdrop-blur-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/90  focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20 transition-colors"
               >
                 <option value="all">Recent activity</option>
                 <option value="today">Today</option>
@@ -179,8 +191,8 @@ export default function Transaction() {
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                     className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/90 px-4 py-2.5 text-xs font-medium text-slate-900 dark:text-white outline-none backdrop-blur-xl transition-all focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10 dark:[color-scheme:dark] hover:bg-slate-50 dark:hover:bg-slate-800/80"
-                    />
+                    className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/90 px-4 py-2.5 text-xs font-medium text-slate-900 dark:text-white outline-none backdrop-blur-xl transition-all focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10 dark:[color-scheme:dark] hover:bg-slate-50 dark:hover:bg-slate-800/80"
+                  />
                   {filterType === 'range' && (
                     <>
                       <span className="text-slate-500 text-xs">to</span>
@@ -207,7 +219,7 @@ export default function Transaction() {
                   <th className="px-6 py-5 font-medium">Modal</th>
                   <th className="px-6 py-5 font-medium">Profit</th>
                   <th className="px-6 py-5 text-right">Action</th>
-                  
+
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/30">
@@ -316,7 +328,7 @@ export default function Transaction() {
           <div className="rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-8 shadow-2xl dark:shadow-slate-950/20 backdrop-blur-xl transition-colors">
             <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-6">Sales Performance Chart</h3>
             <div className="h-80">
-              <ChartComponent data={bestSellingChartData} />
+              <ChartComponent data={bestSellingChartData} variant="bar" />
             </div>
           </div>
         </div>
