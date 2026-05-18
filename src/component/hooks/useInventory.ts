@@ -68,6 +68,7 @@ export function useInventory() {
 
         return {
           id: stock?.id ?? product.id,
+          user_id: user.id,
           product_id: product.id,
           product_name: product.name,
           total: stock?.total ?? 0,
