@@ -1,24 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { Pagination } from '../../components/Pagination'
-import type { Product, Stock, Transaction } from '../../../types/types'
-
-type ReportTablesProps = {
-  loading: boolean
-  error: string
-  txTotal: number
-  stockTotal: number
-  pagedTransactions: Transaction[]
-  pagedStocks: Stock[]
-  txPage: number
-  stockPage: number
-  itemsPerPage: number
-  onTxPageChange: (page: number) => void
-  onStockPageChange: (page: number) => void
-  getProductName: (transaction: Transaction) => string
-  num: Intl.NumberFormat
-  fmt: Intl.NumberFormat
-  productDetails: Map<string, Product>
-}
+import type { ReportTablesProps } from '../../../types/types'
 
 export default function ReportTables({
   loading,

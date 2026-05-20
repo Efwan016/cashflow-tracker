@@ -1,20 +1,5 @@
 import ChartComponent from '../../components/Chart'
-import type { ChartProps } from '../../../types/types'
-
-type TrendTotals = {
-  revenue: number
-  grossProfit: number
-  expenses: number
-}
-
-type ReportTrendSectionProps = {
-  trendChartData: ChartProps['data']
-  comparisonChartData: ChartProps['data']
-  comparisonTitle: string
-  dateRangeLabel: string
-  currentTotals: TrendTotals
-  fmt: Intl.NumberFormat
-}
+import type { ReportTrendSectionProps } from '../../../types/types'
 
 export default function ReportTrendSection({
   trendChartData,

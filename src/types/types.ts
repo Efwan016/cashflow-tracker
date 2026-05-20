@@ -252,3 +252,128 @@ export interface SidebarProps {
   email: string
   avatarUrl: string | null
 }
+ // ───  Report Types ────────────────────────────────────────────────────────────────
+
+ export type SummaryCard = {
+  title: string
+  value: string
+  helpText: string
+  badgeClass: string
+}
+
+export type GrowthCard = {
+  title: string
+  displayValue: string
+  growthLabel: string
+  growthClass: string
+  helpText: string
+}
+
+export type AverageCard = {
+  title: string
+  value: string
+  subtitle: string
+}
+
+export type ReportCardsProps = {
+  summaryCards: SummaryCard[]
+  growthCards: GrowthCard[]
+  averageCards: AverageCard[]
+}
+
+export type ReportControlsProps = {
+  filterType: FilterType
+  startDate: string
+  endDate: string
+  loading: boolean
+  isRefreshing: boolean
+  realtimeConnected: boolean
+  dateRangeLabel: string
+  filterTypeLabel: string
+  onFilterTypeChange: (type: FilterType) => void
+  onDateChange: (field: 'start' | 'end', value: string) => void
+  onRefresh: () => void
+}
+
+export type StockItem = {
+  name: string
+  qty: number
+  modal: number
+  jual: number
+}
+
+export type ReportInsightsProps = {
+  bestByQty: ProductInsight[]
+  bestByRevenue: ProductInsight[]
+  mostProfitable: ProductInsight[]
+  maxQtyByQty: number
+  maxRevenue: number
+  maxProfit: number
+  expenseBreakdown: { name: string; total: number }[]
+  maxExpenseCategory: number
+  biggestExpense: Expense | null
+  stockSummary: {
+    value: number
+    potentialRevenue: number
+    potentialProfit: number
+    lowStock: StockItem[]
+  }
+  pagedLowStock: StockItem[]
+  lowStockPage: number
+  itemsPerPage: number
+  onLowStockPageChange: (page: number) => void
+  fmt: Intl.NumberFormat
+  num: Intl.NumberFormat
+  filterType: string
+  startDate: string
+  endDate: string
+}
+
+export type OverviewTotals = {
+  revenue: number
+  grossProfit: number
+  expenses: number
+}
+
+export type ReportOverviewProps = {
+  monthlyComparisonChartData: ChartProps['data']
+  currentMonthTotals: OverviewTotals
+  monthlyRevenueGrowth: number
+  monthlyProfitGrowth: number
+  monthlyExpenseGrowth: number
+  monthComparisonSubtitle: string
+  fmt: Intl.NumberFormat
+}
+
+export type ReportTablesProps = {
+  loading: boolean
+  error: string
+  txTotal: number
+  stockTotal: number
+  pagedTransactions: Transaction[]
+  pagedStocks: Stock[]
+  txPage: number
+  stockPage: number
+  itemsPerPage: number
+  onTxPageChange: (page: number) => void
+  onStockPageChange: (page: number) => void
+  getProductName: (transaction: Transaction) => string
+  num: Intl.NumberFormat
+  fmt: Intl.NumberFormat
+  productDetails: Map<string, Product>
+}
+
+export type TrendTotals = {
+  revenue: number
+  grossProfit: number
+  expenses: number
+}
+
+export type ReportTrendSectionProps = {
+  trendChartData: ChartProps['data']
+  comparisonChartData: ChartProps['data']
+  comparisonTitle: string
+  dateRangeLabel: string
+  currentTotals: TrendTotals
+  fmt: Intl.NumberFormat
+}

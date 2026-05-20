@@ -586,17 +586,24 @@ export default function Dashboard() {
   }, [transactions, expenses])
 
   const bestSelling = useMemo(() => {
-    const map: Record<string, { name: string; qty: number; total: number }> = {}
+    const map: Record<string, { name: string; qty: number; total: number; profit: number }> = {}
 
     transactions.forEach((transaction) => {
-      const name = transaction.product_name || 'Product'
+      // KUNCI UTAMA: Trim spasi gaib dan samakan kapitalisasi ke huruf besar semua saat pengelompokan
+      const rawName = transaction.product_name || 'Product'
+      const cleanKey = rawName.trim().toUpperCase()
 
-      if (!map[name]) {
-        map[name] = { name, qty: 0, total: 0 }
+      // Buat format tampilan yang rapi (Title Case atau sesuaikan)
+      // Misal jika 'SERVICE HP' maka jadikan 'Service HP' agar enak dilihat di UI
+      const displayName = cleanKey === 'SERVICE HP' ? 'Service HP' : rawName.trim()
+
+      if (!map[cleanKey]) {
+        map[cleanKey] = { name: displayName, qty: 0, total: 0, profit: 0 }
       }
 
-      map[name].qty += transaction.qty ?? 0
-      map[name].total += transaction.total ?? 0
+      map[cleanKey].qty += transaction.qty ?? 0
+      map[cleanKey].total += transaction.total ?? 0
+      map[cleanKey].profit += Number(transaction.profit) || 0 // Tambahkan akumulasi profit di sini
     })
 
     return Object.values(map)
@@ -604,13 +611,21 @@ export default function Dashboard() {
       .slice(0, 5)
   }, [transactions])
 
-  const bestSellingChartData = useMemo(
-    () => ({
-      labels: bestSelling.map((product) => product.name),
-      revenue: bestSelling.map((product) => product.total),
-      expense: [],
-      netProfit: [],
-    }),
+const bestSellingChartData = useMemo(
+    () => {
+      // Cari profit tertinggi di antara top 5 produk ini sebagai patokan 100% lebar bar
+      const maxProfit = Math.max(...bestSelling.map((product) => product.profit), 0)
+
+      return {
+        labels: bestSelling.map((product) => product.name),
+        revenue: bestSelling.map((product) => product.total),
+        // KUNCI UTAMA: Kirim data akumulasi profit ke komponen visualisasi
+        netProfit: bestSelling.map((product) => product.profit), 
+        // Simpan nilai maxProfit di objek ini agar bisa dibaca oleh komponen Chart/Bar di bawah
+        maxProfit: maxProfit, 
+        expense: [],
+      }
+    },
     [bestSelling]
   )
 

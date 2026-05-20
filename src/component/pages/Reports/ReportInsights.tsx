@@ -1,47 +1,6 @@
 import { Pagination } from '../../components/Pagination'
 import { Link } from 'react-router-dom'
-import type { Expense } from '../../../types/types'
-
-type ProductInsight = {
-  name: string
-  qty: number
-  revenue: number
-  profit: number
-}
-
-type StockItem = {
-  name: string
-  qty: number
-  modal: number
-  jual: number
-}
-
-type ReportInsightsProps = {
-  bestByQty: ProductInsight[]
-  bestByRevenue: ProductInsight[]
-  mostProfitable: ProductInsight[]
-  maxQtyByQty: number
-  maxRevenue: number
-  maxProfit: number
-  expenseBreakdown: { name: string; total: number }[]
-  maxExpenseCategory: number
-  biggestExpense: Expense | null
-  stockSummary: {
-    value: number
-    potentialRevenue: number
-    potentialProfit: number
-    lowStock: StockItem[]
-  }
-  pagedLowStock: StockItem[]
-  lowStockPage: number
-  itemsPerPage: number
-  onLowStockPageChange: (page: number) => void
-  fmt: Intl.NumberFormat
-  num: Intl.NumberFormat
-  filterType: string
-  startDate: string
-  endDate: string
-}
+import type { ReportInsightsProps } from '../../../types/types'
 
 export default function ReportInsights({
   bestByQty,

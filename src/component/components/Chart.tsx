@@ -120,11 +120,11 @@ export default function Chart({ data, variant = 'cashflow' }: ChartProps) {
   }
 
   const timePoints = data.labels.map((label, index) => ({
-  date: new Date(label).getTime(),
-  revenue: data.revenue[index] ?? 0,
-  expense: data.expense[index] ?? 0,
-  netProfit: data.netProfit[index] ?? 0,
-}))
+    date: new Date(label).getTime(),
+    revenue: data.revenue[index] ?? 0,
+    expense: data.expense[index] ?? 0,
+    netProfit: data.netProfit[index] ?? 0,
+  }))
 
   const cashflowData: ChartData<'bar' | 'line'> = {
     datasets: [
@@ -198,20 +198,28 @@ export default function Chart({ data, variant = 'cashflow' }: ChartProps) {
     ],
   }
 
+  const hasNetProfit = data.netProfit && data.netProfit.length > 0
+
   const barData: ChartData<'bar'> = {
     labels: data.labels,
     datasets: [
       {
         type: 'bar',
-        label: 'Value',
-        data: data.revenue,
+        label: hasNetProfit ? 'Profit' : 'Revenue',
+        data: hasNetProfit ? data.netProfit : data.revenue,
         backgroundColor: (context: ScriptableContext<'bar'>) =>
-          createBarGradient(
-            context,
-            'rgba(56, 189, 248, 0.92)',
-            'rgba(99, 102, 241, 0.18)'
-          ),
-        borderColor: 'rgba(56, 189, 248, 0.45)',
+          hasNetProfit
+            ? createBarGradient(
+                context,
+                'rgba(16, 185, 129, 0.92)', // Warna Emerald top kalau Profit
+                'rgba(52, 211, 153, 0.18)'  // Warna Emerald bottom kalau Profit
+              )
+            : createBarGradient(
+                context,
+                'rgba(56, 189, 248, 0.92)', // Tetap Sky Blue untuk Revenue/Stok
+                'rgba(99, 102, 241, 0.18)'
+              ),
+        borderColor: hasNetProfit ? 'rgba(16, 185, 129, 0.45)' : 'rgba(56, 189, 248, 0.45)',
         borderWidth: 1,
         borderRadius: 999,
         borderSkipped: false,
@@ -219,6 +227,82 @@ export default function Chart({ data, variant = 'cashflow' }: ChartProps) {
         categoryPercentage: 0.7,
       },
     ],
+  }
+
+  const barOptions: ChartOptions<'bar'> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: {
+      mode: 'index',
+      intersect: false,
+    },
+    animation: {
+      duration: 850,
+      easing: 'easeOutQuart',
+    },
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        backgroundColor: 'rgba(15, 23, 42, 0.96)',
+        titleColor: '#f8fafc',
+        bodyColor: '#cbd5e1',
+        borderColor: 'rgba(148, 163, 184, 0.18)',
+        borderWidth: 1,
+        padding: 14,
+        cornerRadius: 18,
+        callbacks: {
+          label(context) {
+            const label = context.dataset.label || 'Value'
+            return `${label}: ${formatCurrency(Number(context.raw || 0))}`
+          },
+        },
+      },
+    },
+    scales: {
+      x: {
+        border: {
+          display: false,
+        },
+        grid: {
+          display: false,
+          drawTicks: false,
+        },
+        ticks: {
+          color: '#94a3b8',
+          maxRotation: 0,
+          autoSkip: true,
+          maxTicksLimit: 5,
+          padding: 10,
+          font: {
+            size: 10,
+            weight: 'bold',
+          },
+        },
+      },
+      y: {
+        border: {
+          display: false,
+        },
+        grid: {
+          color: 'rgba(148, 163, 184, 0.1)',
+          drawTicks: false,
+        },
+        ticks: {
+          color: '#94a3b8',
+          padding: 10,
+          maxTicksLimit: 5,
+          font: {
+            size: 10,
+            weight: 'bold',
+          },
+          callback(value) {
+            return formatCompact(Number(value))
+          },
+        },
+      },
+    },
   }
 
   const cashflowOptions: ChartOptions<'bar' | 'line'> = {
@@ -332,81 +416,6 @@ export default function Chart({ data, variant = 'cashflow' }: ChartProps) {
           color: '#94a3b8',
           padding: 12,
           maxTicksLimit: 6,
-          font: {
-            size: 10,
-            weight: 'bold',
-          },
-          callback(value) {
-            return formatCompact(Number(value))
-          },
-        },
-      },
-    },
-  }
-
-  const barOptions: ChartOptions<'bar'> = {
-    responsive: true,
-    maintainAspectRatio: false,
-    interaction: {
-      mode: 'index',
-      intersect: false,
-    },
-    animation: {
-      duration: 850,
-      easing: 'easeOutQuart',
-    },
-    plugins: {
-      legend: {
-        display: false,
-      },
-      tooltip: {
-        backgroundColor: 'rgba(15, 23, 42, 0.96)',
-        titleColor: '#f8fafc',
-        bodyColor: '#cbd5e1',
-        borderColor: 'rgba(148, 163, 184, 0.18)',
-        borderWidth: 1,
-        padding: 14,
-        cornerRadius: 18,
-        callbacks: {
-          label(context) {
-            return `Value: ${formatCurrency(Number(context.raw || 0))}`
-          },
-        },
-      },
-    },
-    scales: {
-      x: {
-        border: {
-          display: false,
-        },
-        grid: {
-          display: false,
-          drawTicks: false,
-        },
-        ticks: {
-          color: '#94a3b8',
-          maxRotation: 0,
-          autoSkip: true,
-          maxTicksLimit: 5,
-          padding: 10,
-          font: {
-            size: 10,
-            weight: 'bold',
-          },
-        },
-      },
-      y: {
-        border: {
-          display: false,
-        },
-        grid: {
-          color: 'rgba(148, 163, 184, 0.1)',
-          drawTicks: false,
-        },
-        ticks: {
-          color: '#94a3b8',
-          padding: 10,
-          maxTicksLimit: 5,
           font: {
             size: 10,
             weight: 'bold',

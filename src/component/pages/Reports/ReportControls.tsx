@@ -1,19 +1,6 @@
 import type { FilterType } from '../../../types/types'
 import { IC } from '../../components/Icons'
-
-type ReportControlsProps = {
-  filterType: FilterType
-  startDate: string
-  endDate: string
-  loading: boolean
-  isRefreshing: boolean
-  realtimeConnected: boolean
-  dateRangeLabel: string
-  filterTypeLabel: string
-  onFilterTypeChange: (type: FilterType) => void
-  onDateChange: (field: 'start' | 'end', value: string) => void
-  onRefresh: () => void
-}
+import type { ReportControlsProps } from '../../../types/types'
 
 export default function ReportControls({
   filterType,
@@ -29,8 +16,8 @@ export default function ReportControls({
   onRefresh,
 }: ReportControlsProps) {
   return (
-    <div className="overflow-hidden rounded-[36px] border border-slate-200/80 bg-white shadow-sm transition-colors dark:border-white/10 dark:bg-slate-950/80">
-      <div className="border-b border-slate-100 bg-gradient-to-br from-slate-50 via-white to-sky-50/50 p-6 dark:border-white/10 dark:from-slate-950 dark:via-slate-950 dark:to-sky-950/20">
+    <div className="overflow-hidden rounded-[36px] border border-slate-200/80 bg-slate-50 shadow-sm transition-colors duration-200 dark:border-slate-700 dark:bg-slate-900/90">
+      <div className="border-b border-slate-200 bg-slate-100/80 p-6 dark:border-slate-700 dark:bg-slate-900/80">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.35em] text-sky-600 dark:text-sky-300">
@@ -81,19 +68,21 @@ export default function ReportControls({
               </select>
             </label>
 
-            <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900/80">
-              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500 dark:text-slate-400">
+            <div className="block">
+              <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.25em] text-slate-500 dark:text-slate-400">
                 Selected period
-              </p>
+              </span>
 
-              <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
-                <p className="text-base font-semibold text-slate-900 dark:text-white">
-                  {dateRangeLabel}
-                </p>
+              <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900/80">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <p className="text-base font-semibold text-slate-900 dark:text-white">
+                    {dateRangeLabel}
+                  </p>
 
-                <span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700 dark:bg-sky-500/10 dark:text-sky-200">
-                  {filterTypeLabel}
-                </span>
+                  <span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700 dark:bg-sky-500/10 dark:text-sky-200">
+                    {filterTypeLabel}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -107,9 +96,12 @@ export default function ReportControls({
 
                 <input
                   type="date"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   value={startDate}
                   onChange={(event) => onDateChange('start', event.target.value)}
                   className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm outline-none transition hover:border-slate-300 focus:border-sky-400 focus:ring-4 focus:ring-sky-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-sky-500/10"
+                  placeholder="YYYY-MM-DD"
                 />
               </label>
 
@@ -121,9 +113,12 @@ export default function ReportControls({
 
                   <input
                     type="date"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     value={endDate}
                     onChange={(event) => onDateChange('end', event.target.value)}
                     className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm outline-none transition hover:border-slate-300 focus:border-sky-400 focus:ring-4 focus:ring-sky-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-sky-500/10"
+                    placeholder="YYYY-MM-DD"
                   />
                 </label>
               )}

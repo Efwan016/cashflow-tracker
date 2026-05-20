@@ -1,21 +1,5 @@
 import ChartComponent from '../../components/Chart'
-import type { ChartProps } from '../../../types/types'
-
-type OverviewTotals = {
-  revenue: number
-  grossProfit: number
-  expenses: number
-}
-
-type ReportOverviewProps = {
-  monthlyComparisonChartData: ChartProps['data']
-  currentMonthTotals: OverviewTotals
-  monthlyRevenueGrowth: number
-  monthlyProfitGrowth: number
-  monthlyExpenseGrowth: number
-  monthComparisonSubtitle: string
-  fmt: Intl.NumberFormat
-}
+import type { ReportOverviewProps } from '../../../types/types'
 
 export default function ReportOverview({
   monthlyComparisonChartData,

@@ -102,6 +102,16 @@ const getGrowth = (current: number, previous: number) => {
 
 const formatPercentage = (value: number) => `${value >= 0 ? '+' : ''}${Math.round(value * 10) / 10}%`
 
+// KUNCI UTAMA: Helper untuk normalisasi nama produk - sama seperti Dashboard
+// Gunakan sebagai key untuk pengelompokan (trim + uppercase) agar produk dengan nama yang sama
+// tapi berbeda spasi atau kapitalisasi dihitung sebagai satu produk
+const normalizeProductName = (rawName: string) => {
+  const cleanKey = rawName.trim().toUpperCase()
+  // Format tampilan yang rapi: untuk 'SERVICE HP' jadi 'Service HP', selain itu gunakan rawName yang sudah di-trim
+  const displayName = cleanKey === 'SERVICE HP' ? 'Service HP' : rawName.trim()
+  return { cleanKey, displayName }
+}
+
 export function useReportsData(initialFilterType?: FilterType, initialStartDate?: string, initialEndDate?: string) {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [expenses, setExpenses] = useState<Expense[]>([])
@@ -582,13 +592,16 @@ export function useReportsData(initialFilterType?: FilterType, initialStartDate?
     const map = new Map<string, { name: string; qty: number; revenue: number; profit: number }>()
 
     filteredTransactions.forEach((transaction) => {
-      const name = getProductName(transaction)
-      const entry = map.get(name) ?? { name, qty: 0, revenue: 0, profit: 0 }
+      // KUNCI UTAMA: Gunakan normalisasi nama produk saat pengelompokan, sama seperti Dashboard
+      const rawName = getProductName(transaction)
+      const { cleanKey, displayName } = normalizeProductName(rawName)
+      
+      const entry = map.get(cleanKey) ?? { name: displayName, qty: 0, revenue: 0, profit: 0 }
       entry.qty += safeNumber(transaction.qty)
       entry.revenue += safeNumber(transaction.total)
       const margin = transaction.profit != null ? transaction.profit : safeNumber(transaction.total) - safeNumber(transaction.harga_modal) * safeNumber(transaction.qty)
       entry.profit += margin
-      map.set(name, entry)
+      map.set(cleanKey, entry)
     })
 
     return Array.from(map.values())
@@ -941,6 +954,9 @@ export function useReportsData(initialFilterType?: FilterType, initialStartDate?
     comparisonChartData,
     comparisonTitle,
     currentTotals,
+    filteredTransactions,
+    filteredExpenses,
+    stocks,
     productPerformance, // <--- Tambahkan ini
     previousTotals,
     bestByQty,
