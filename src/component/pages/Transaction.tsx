@@ -108,9 +108,9 @@ export default function Transaction() {
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="mb-10 rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-8 shadow-xl dark:shadow-[0_30px_120px_-50px_rgba(15,23,42,0.85)] backdrop-blur-xl transition-colors">
+        <div className="mb-10 rounded-3xl sm:rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-6 sm:p-8 shadow-xl dark:shadow-[0_30px_120px_-50px_rgba(15,23,42,0.85)] backdrop-blur-xl transition-colors">
           <p className="text-sm uppercase tracking-[0.35em] text-sky-600 dark:text-sky-300/80">Sales Entry</p>
-          <h1 className="mt-3 text-4xl font-semibold text-slate-900 dark:text-white">Record transaction</h1>
+          <h1 className="mt-3 text-2xl sm:text-4xl font-semibold text-slate-900 dark:text-white">Record transaction</h1>
           <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-400">
             Log your sales to automatically track revenue, profit, and inventory changes. Use manual mode for items not tracked in the product catalog.
           </p>
@@ -129,7 +129,7 @@ export default function Transaction() {
             initialFocusRef={firstInputRef}
           />
 
-          <aside className="rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-8 shadow-2xl dark:shadow-slate-950/20 backdrop-blur-xl transition-colors">
+          <aside className="rounded-3xl sm:rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-6 sm:p-8 shadow-2xl dark:shadow-slate-950/20 backdrop-blur-xl transition-colors">
             <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Workflow Guide</h2>
             <ul className="mt-6 space-y-4 text-sm text-slate-500 dark:text-slate-400">
               <li className="flex gap-3">
@@ -151,7 +151,7 @@ export default function Transaction() {
           </aside>
         </div>
 
-        <div className="mt-10 overflow-hidden rounded-[40px] border border-black/5 dark:border-white/5 bg-white dark:bg-slate-900/90 dark:from-slate-900/50 dark:to-slate-950/40 p-8 shadow-2xl backdrop-blur-xl transition-colors">
+        <div className="mt-10 rounded-3xl sm:rounded-[40px] border border-black/5 dark:border-white/5 bg-white dark:bg-slate-900/90 dark:from-slate-900/50 dark:to-slate-950/40 p-6 sm:p-8 shadow-2xl backdrop-blur-xl transition-colors">
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-sky-600 dark:text-sky-400/80">History</p>
@@ -209,7 +209,7 @@ export default function Transaction() {
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-[32px] border border-slate-200 dark:border-slate-800/50 bg-white dark:bg-slate-900/90">
+          <div className="overflow-x-auto rounded-[32px] border border-slate-200 dark:border-slate-800/50 bg-white dark:bg-slate-900/90">
             <table className="w-full text-left text-xs sm:text-sm text-slate-600 dark:text-slate-300">
               <thead className="border-b border-slate-200 dark:border-slate-800/50 bg-slate-50 dark:bg-slate-900 text-[10px] uppercase tracking-widest text-slate-500">
                 <tr>
@@ -280,9 +280,9 @@ export default function Transaction() {
 
         {/* Best Selling Performance */}
         <div className="mt-10 grid gap-6 lg:grid-cols-2">
-          <div className="rounded-[40px] border border-slate=900/90 dark:border-slate-200 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-8 shadow-2xl dark:shadow-slate-950/20 backdrop-blur-xl transition-colors">
+          <div className="rounded-3xl sm:rounded-[40px] border border-slate-900/90 dark:border-slate-200 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-6 sm:p-8 shadow-2xl dark:shadow-slate-950/20 backdrop-blur-xl transition-colors overflow-hidden">
             <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-6">Best Selling Performance</h3>
-            <div className="max-h-[500px] overflow-y-auto rounded-[32px] border border-slate-200 dark:border-slate-800/50 bg-slate-50 dark:bg-gradient-to-br dark:from-slate-950/20 dark:to-slate-900/40 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden transition-colors">
+            <div className="max-h-[500px] overflow-auto rounded-3xl border border-slate-200 dark:border-slate-800/50 bg-slate-50 dark:bg-gradient-to-br dark:from-slate-950/20 dark:to-slate-900/40 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden transition-colors">
               <table className="w-full text-left text-xs sm:text-sm text-slate-600 dark:text-slate-300">
                 <thead className="border-b border-slate-900/900 dark:border-slate-200 bg-white dark:bg-slate-900/90 text-[10px] uppercase tracking-widest text-slate-400">
                   <tr>
@@ -325,7 +325,7 @@ export default function Transaction() {
             </div>
           </div>
 
-          <div className="rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-8 shadow-2xl dark:shadow-slate-950/20 backdrop-blur-xl transition-colors">
+          <div className="rounded-3xl sm:rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-6 sm:p-8 shadow-2xl dark:shadow-slate-950/20 backdrop-blur-xl transition-colors">
             <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-6">Sales Performance Chart</h3>
             <div className="h-80">
               <ChartComponent data={bestSellingChartData} variant="bar" />

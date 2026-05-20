@@ -218,16 +218,16 @@ export default function Expense() {
         <div className="animate-[pulse_8s_ease-in-out_infinite_reverse] absolute rounded-full" style={{ width: 520, height: 520, bottom: -80, right: '8%', background: 'radial-gradient(circle, rgba(124,58,237,0.14) 0%, transparent 70%)', filter: 'blur(65px)' }} />
       </div>
       <div className="relative mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="mb-10 rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-8 shadow-xl dark:shadow-[0_30px_120px_-50px_rgba(15,23,42,0.85)] backdrop-blur-xl transition-colors">
+        <div className="mb-10 rounded-3xl sm:rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-6 sm:p-8 shadow-xl dark:shadow-[0_30px_120px_-50px_rgba(15,23,42,0.85)] backdrop-blur-xl transition-colors">
           <p className="text-sm uppercase tracking-[0.35em] text-sky-600 dark:text-sky-300/80">Add expense</p>
-          <h1 className="mt-3 text-4xl font-semibold text-slate-900 dark:text-white">Record a new expense</h1>
+          <h1 className="mt-3 text-2xl sm:text-4xl font-semibold text-slate-900 dark:text-white">Record a new expense</h1>
           <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">
             Store expense entries in Supabase so the app can report total spend, net cashflow, and expense trends.
           </p>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
-          <section className="rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-8 shadow-2xl dark:shadow-slate-950/20 backdrop-blur-xl transition-colors">
+          <section className="rounded-3xl sm:rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-6 sm:p-8 shadow-2xl dark:shadow-slate-950/20 backdrop-blur-xl transition-colors">
             <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="space-y-6">
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="grid gap-3 text-left">
@@ -276,7 +276,7 @@ export default function Expense() {
             </form>
           </section>
 
-          <aside className="rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-8 shadow-2xl dark:shadow-slate-950/20 backdrop-blur-xl transition-colors">
+          <aside className="rounded-3xl sm:rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-6 sm:p-8 shadow-2xl dark:shadow-slate-950/20 backdrop-blur-xl transition-colors">
             <div className="space-y-5">
               <div>
                 <p className="text-sm uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">Expense tracking</p>
@@ -306,7 +306,7 @@ export default function Expense() {
         </div>
 
         {/* HISTORY SECTION */}
-        <div className="mt-10 overflow-hidden rounded-[40px] border border-black/5 dark:border-white/5 bg-white dark:bg-slate-900/90 dark:from-slate-900/50 dark:to-slate-950/40 p-8 shadow-2xl backdrop-blur-xl transition-colors">
+        <div className="mt-10 rounded-3xl sm:rounded-[40px] border border-black/5 dark:border-white/5 bg-white dark:bg-slate-900/90 dark:from-slate-900/50 dark:to-slate-950/40 p-6 sm:p-8 shadow-2xl backdrop-blur-xl transition-colors">
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-sky-600 dark:text-sky-400/80">History</p>
@@ -368,7 +368,7 @@ export default function Expense() {
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-[32px]  border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 dark:from-slate-950/20 dark:to-slate-900/40 transition-colors">
+          <div className="overflow-x-auto rounded-[32px]  border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 dark:from-slate-950/20 dark:to-slate-900/40 transition-colors">
             <table className="w-full text-left text-xs sm:text-sm text-white dark:text-slate-300">
               <thead className="border-b border-slate-200 dark:border-slate-800 text-[10px] uppercase tracking-widest text-slate-900/90 dark:text-white/80 bg-slate-50 dark:white dark:bg-slate-900/90 dark:from-slate-950/50 dark:to-slate-900/50">
                 <tr>

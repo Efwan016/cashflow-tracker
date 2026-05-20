@@ -1,4 +1,5 @@
 import { Pagination } from '../../components/Pagination'
+import { Link } from 'react-router-dom'
 import type { Expense } from '../../../types/types'
 
 type ProductInsight = {
@@ -37,6 +38,9 @@ type ReportInsightsProps = {
   onLowStockPageChange: (page: number) => void
   fmt: Intl.NumberFormat
   num: Intl.NumberFormat
+  filterType: string
+  startDate: string
+  endDate: string
 }
 
 export default function ReportInsights({
@@ -56,11 +60,14 @@ export default function ReportInsights({
   onLowStockPageChange,
   fmt,
   num,
+  filterType,
+  startDate,
+  endDate,
 }: ReportInsightsProps) {
   return (
     <>
       <section className="mt-8 grid gap-6 xl:grid-cols-3">
-        <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-950/80">
+        <Link to={`/reports/insights/best-by-quantity?type=${filterType}&start=${startDate}&end=${endDate}`} className="group rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm transition-all hover:shadow-lg hover:-translate-y-1 dark:border-slate-700 dark:bg-slate-950/80">
           <p className="text-sm uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">Product insights</p>
           <h3 className="mt-3 text-xl font-semibold text-slate-900 dark:text-white">Best seller by quantity</h3>
           <div className="mt-6 space-y-4">
@@ -84,9 +91,9 @@ export default function ReportInsights({
               ))
             )}
           </div>
-        </div>
+        </Link>
 
-        <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-950/80">
+        <Link to={`/reports/insights/best-by-revenue?type=${filterType}&start=${startDate}&end=${endDate}`} className="group rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm transition-all hover:shadow-lg hover:-translate-y-1 dark:border-slate-700 dark:bg-slate-950/80">
           <p className="text-sm uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">Product insights</p>
           <h3 className="mt-3 text-xl font-semibold text-slate-900 dark:text-white">Best seller by revenue</h3>
           <div className="mt-6 space-y-4">
@@ -110,9 +117,9 @@ export default function ReportInsights({
               ))
             )}
           </div>
-        </div>
+        </Link>
 
-        <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-950/80">
+        <Link to={`/reports/insights/most-profitable?type=${filterType}&start=${startDate}&end=${endDate}`} className="group rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm transition-all hover:shadow-lg hover:-translate-y-1 dark:border-slate-700 dark:bg-slate-950/80">
           <p className="text-sm uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">Product insights</p>
           <h3 className="mt-3 text-xl font-semibold text-slate-900 dark:text-white">Most profitable product</h3>
           <div className="mt-6 space-y-4">
@@ -136,7 +143,7 @@ export default function ReportInsights({
               ))
             )}
           </div>
-        </div>
+        </Link>
       </section>
 
       <section className="mt-8 grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">

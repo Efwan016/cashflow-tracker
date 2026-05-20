@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import { Pagination } from '../../components/Pagination'
 import type { Product, Stock, Transaction } from '../../../types/types'
 
@@ -36,6 +37,7 @@ export default function ReportTables({
   fmt,
   productDetails,
 }: ReportTablesProps) {
+  const navigate = useNavigate()
   const safeNumber = (value: number | null | undefined) => Number(value ?? 0)
 
   return (
@@ -46,7 +48,15 @@ export default function ReportTables({
             <p className="text-sm uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">Revenue report</p>
             <h2 className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">Recent transactions</h2>
           </div>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Latest sales within your selected period.</p>
+          <div className="flex flex-col gap-2 sm:items-end">
+            <p className="text-sm text-slate-500 dark:text-slate-400">Latest sales within your selected period.</p>
+            <button
+              onClick={() => navigate('/transactions')}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium transition-colors"
+            >
+              View All Transactions →
+            </button>
+          </div>
         </div>
 
         <div className="mt-6 overflow-x-auto rounded-[32px] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/90">
@@ -76,7 +86,11 @@ export default function ReportTables({
                 </tr>
               ) : (
                 pagedTransactions.map((item) => (
-                  <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors">
+                  <tr
+                    key={item.id}
+                    onClick={() => navigate('/transactions')}
+                    className="hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
+                  >
                     <td className="px-4 py-4 font-medium text-slate-900 dark:text-slate-100">{getProductName(item)}</td>
                     <td className="px-4 py-4 text-slate-700 dark:text-slate-100">{num.format(item.qty)}</td>
                     <td className="px-4 py-4 text-slate-700 dark:text-slate-100">{fmt.format(item.harga_jual)}</td>
@@ -103,7 +117,15 @@ export default function ReportTables({
             <p className="text-sm uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">Inventory report</p>
             <h2 className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">Current stock overview</h2>
           </div>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Active stock details and valuation.</p>
+          <div className="flex flex-col gap-2 sm:items-end">
+            <p className="text-sm text-slate-500 dark:text-slate-400">Active stock details and valuation.</p>
+            <button
+              onClick={() => navigate('/inventory')}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium transition-colors"
+            >
+              View All Stock →
+            </button>
+          </div>
         </div>
 
         <div className="mt-6 overflow-x-auto rounded-[32px] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/90">
@@ -135,7 +157,11 @@ export default function ReportTables({
                   const modalPrice = safeNumber(item.harga_modal ?? product?.harga_modal)
                   const jualPrice = safeNumber(item.harga_jual ?? product?.harga_jual)
                   return (
-                    <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors">
+                    <tr
+                      key={item.id}
+                      onClick={() => navigate('/inventory')}
+                      className="hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
+                    >
                       <td className="px-4 py-4 font-medium text-slate-900 dark:text-slate-100">{product?.name ?? item.product_id}</td>
                       <td className="px-4 py-4 text-slate-700 dark:text-slate-100">{num.format(item.total)}</td>
                       <td className="px-4 py-4 text-slate-700 dark:text-slate-100">{fmt.format(modalPrice * item.total)}</td>

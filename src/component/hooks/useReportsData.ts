@@ -102,7 +102,7 @@ const getGrowth = (current: number, previous: number) => {
 
 const formatPercentage = (value: number) => `${value >= 0 ? '+' : ''}${Math.round(value * 10) / 10}%`
 
-export function useReportsData() {
+export function useReportsData(initialFilterType?: FilterType, initialStartDate?: string, initialEndDate?: string) {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [stocks, setStocks] = useState<Stock[]>([])
@@ -110,9 +110,9 @@ export function useReportsData() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [realtimeConnected, setRealtimeConnected] = useState(false)
-  const [filterType, setFilterType] = useState<FilterType>('today')
-  const [startDate, setStartDate] = useState(() => getPresetRange('today').start)
-  const [endDate, setEndDate] = useState(() => getPresetRange('today').end)
+  const [filterType, setFilterType] = useState<FilterType>(initialFilterType || 'today')
+  const [startDate, setStartDate] = useState(initialStartDate || (() => getPresetRange('today').start))
+  const [endDate, setEndDate] = useState(initialEndDate || (() => getPresetRange('today').end))
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [txPage, setTxPage] = useState(1)
   const [stockPage, setStockPage] = useState(1)
@@ -453,6 +453,65 @@ export function useReportsData() {
     }
 
     return { labels, revenue, expense, netProfit }
+  }, [filteredTransactions, filteredExpenses, currentRange])
+
+  const dayOfWeekData = useMemo(() => {
+    const dailyData = new Array(7).fill(0).map(() => ({
+      revenue: 0,
+      expense: 0,
+      grossProfit: 0,
+      transactionsCount: 0,
+      daysCount: 0, // To count how many days of this type are in the range
+    }))
+
+    // Aggregate transactions and expenses by day of week
+    filteredTransactions.forEach((tx) => {
+      const d = new Date(tx.created_at)
+      const day = d.getDay() // 0 for Sunday, 1 for Monday, etc.
+      dailyData[day].revenue += safeNumber(tx.total)
+      const profit = tx.profit != null ? tx.profit : safeNumber(tx.total) - safeNumber(tx.harga_modal) * safeNumber(tx.qty)
+      dailyData[day].grossProfit += profit
+      dailyData[day].transactionsCount++
+    })
+
+    filteredExpenses.forEach((exp) => {
+      const d = new Date(exp.created_at)
+      const day = d.getDay()
+      dailyData[day].expense += safeNumber(exp.total)
+    })
+
+    // Count how many times each day of the week appears in the currentRange
+    let cursor = parseLocalDate(currentRange.start)
+    const end = parseLocalDate(currentRange.end)
+    while (cursor <= end) {
+      dailyData[cursor.getDay()].daysCount++
+      cursor = addDays(cursor, 1)
+    }
+    
+    // Calculate averages and reorder labels to start from Monday (Mon -> Sun)
+    const orderedLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    const orderMap = { 'Mon': 1, 'Tue': 2, 'Wed': 3, 'Thu': 4, 'Fri': 5, 'Sat': 6, 'Sun': 0 }
+
+    const averageRevenue: number[] = []
+    const averageExpense: number[] = []
+    const averageNetProfit: number[] = []
+
+    orderedLabels.forEach(label => {
+      const originalDayIndex = orderMap[label as keyof typeof orderMap]
+      const data = dailyData[originalDayIndex]
+      const daysInPeriod = data.daysCount > 0 ? data.daysCount : 1; // Avoid division by zero
+
+      averageRevenue.push(data.revenue / daysInPeriod)
+      averageExpense.push(data.expense / daysInPeriod)
+      averageNetProfit.push((data.grossProfit - data.expense) / daysInPeriod)
+    })
+
+    return {
+      labels: orderedLabels,
+      revenue: averageRevenue,
+      expense: averageExpense,
+      netProfit: averageNetProfit,
+    }
   }, [filteredTransactions, filteredExpenses, currentRange])
 
   const monthlyComparisonChartData = useMemo(() => {
@@ -878,9 +937,12 @@ export function useReportsData() {
     fmt,
     num,
     trendChartData,
+    dayOfWeekData,
     comparisonChartData,
     comparisonTitle,
     currentTotals,
+    productPerformance, // <--- Tambahkan ini
+    previousTotals,
     bestByQty,
     bestByRevenue,
     mostProfitable,

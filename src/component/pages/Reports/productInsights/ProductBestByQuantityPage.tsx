@@ -1,0 +1,118 @@
+import { useMemo, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
+import { useReportsData } from "../../../hooks/useReportsData"
+import { Pagination } from "../../../components/Pagination"
+import type { FilterType } from '../../../../types/types'
+
+export default function ProductBestByQuantityPage() {
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+
+  const filterType = (searchParams.get('type') as FilterType) || 'today'
+  const startDate = searchParams.get('start') || ''
+  const endDate = searchParams.get('end') || ''
+
+  const { productPerformance, loading, error, fmt, num } = useReportsData(filterType, startDate, endDate)
+
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
+
+  const sortedProducts = useMemo(() => {
+    return [...productPerformance].sort((a, b) => b.qty - a.qty)
+  }, [productPerformance])
+
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage
+    return sortedProducts.slice(startIndex, startIndex + itemsPerPage)
+  }, [sortedProducts, currentPage, itemsPerPage])
+
+  return (
+    <main className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:py-10 sm:px-6 lg:px-8">
+        <div className="mb-8 sm:mb-10 rounded-3xl sm:rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-950/80 p-5 sm:p-8 shadow-xl backdrop-blur-xl transition-colors">
+          <div className="flex items-start sm:items-center gap-4 mb-4">
+            <button
+              onClick={() => navigate('/reports')}
+              className="mt-1 sm:mt-0 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <div>
+              <p className="text-xs sm:text-sm uppercase tracking-[0.2em] text-sky-600 dark:text-sky-300/80 font-bold">Product Insights</p>
+              <h1 className="mt-2 text-xl sm:text-3xl font-semibold text-slate-900 dark:text-white">Best Seller by Quantity</h1>
+            </div>
+          </div>
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+            Detailed breakdown of products with the highest sales volume.
+          </p>
+        </div>
+
+        {loading && (
+          <div className="flex flex-col items-center justify-center py-20 gap-4">
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-sky-500 border-t-transparent"></div>
+            <p className="text-sm text-slate-500">Loading product data...</p>
+          </div>
+        )}
+
+        {error && (
+          <div className="mb-10 rounded-3xl border border-rose-500/20 bg-rose-500/10 p-6 text-sm text-rose-600 dark:text-rose-400">
+            {error}
+          </div>
+        )}
+
+        {!loading && !error && sortedProducts.length === 0 && (
+          <div className="mb-10 rounded-[40px] border border-slate-200 bg-white p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-950/80">
+            No product sales recorded for this period.
+          </div>
+        )}
+
+        {!loading && !error && sortedProducts.length > 0 && (
+          <section className="mb-10 rounded-3xl sm:rounded-[40px] border border-slate-200 bg-white overflow-hidden dark:border-slate-700 dark:bg-slate-950/80 shadow-xl">
+            <div className="p-6 sm:p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+              <h2 className="text-xl font-semibold">Sorted by Quantity</h2>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left min-w-[700px]">
+                <thead className="bg-slate-50 dark:bg-slate-900/50 text-xs uppercase tracking-wider text-slate-500 font-bold">
+                  <tr>
+                    <th className="px-6 py-5">Rank</th>
+                    <th className="px-6 py-5">Product Name</th>
+                    <th className="px-6 py-5 text-center">Quantity Sold</th>
+                    <th className="px-6 py-5">Total Revenue</th>
+                    <th className="px-6 py-5">Total Profit</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
+                  {paginatedProducts.map((item, index) => (
+                    <tr key={item.name} className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors">
+                      <td className="px-6 py-5">
+                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-sky-50 dark:bg-sky-500/10 text-xs font-black text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-500/20">
+                          {((currentPage - 1) * itemsPerPage) + index + 1}
+                        </span>
+                      </td>
+                      <td className="px-6 py-5 font-bold text-slate-900 dark:text-slate-100">{item.name}</td>
+                      <td className="px-6 py-5 font-mono text-slate-700 dark:text-slate-300">{num.format(item.qty)}</td>
+                      <td className="px-6 py-5 text-slate-700 dark:text-slate-300">{fmt.format(item.revenue)}</td>
+                      <td className="px-6 py-5 text-emerald-600 dark:text-emerald-400 font-black">{fmt.format(item.profit)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {sortedProducts.length > itemsPerPage && (
+              <div className="p-6 border-t border-slate-100 dark:border-slate-800">
+                <Pagination
+                  currentPage={currentPage}
+                  totalItems={sortedProducts.length}
+                  itemsPerPage={itemsPerPage}
+                  onPageChange={setCurrentPage}
+                />
+              </div>
+            )}
+          </section>
+        )}
+      </div>
+    </main>
+  )
+}

@@ -21,6 +21,15 @@ const Inventory = lazy(() => import('./component/pages/Inventory/InventoryPage')
 const Reports = lazy(() => import('./component/pages/Reports'));
 const Profile = lazy(() => import('./component/pages/Profile'));
 
+// Report Detail Pages
+const ReportGrowthDetails = lazy(() => import('./component/pages/Reports/ReportGrowthDetailsPage'));
+const ReportTrendDetails = lazy(() => import('./component/pages/Reports/ReportTrendDetailsPage'));
+
+// Product Insight Detail Pages
+const ProductBestByQuantity = lazy(() => import('./component/pages/Reports/productInsights/ProductBestByQuantityPage'));
+const ProductBestByRevenue = lazy(() => import('./component/pages/Reports/productInsights/ProductBestByRevenuePage'));
+const ProductMostProfitable = lazy(() => import('./component/pages/Reports/productInsights/ProductMostProfitablePage'));
+
 // Settings Group
 const Settings = lazy(() => import('./component/pages/Setting'));
 const Privacy = lazy(() => import('./component/pages/Setting/Privacy'));
@@ -47,6 +56,11 @@ function App() {
             { path: '/expenses', element: <Expense /> },
             { path: '/inventory', element: <Inventory /> },
             { path: '/reports', element: <Reports /> },
+            { path: '/reports/growth', element: <ReportGrowthDetails /> },
+            { path: '/reports/trends', element: <ReportTrendDetails /> },
+            { path: '/reports/insights/best-by-quantity', element: <ProductBestByQuantity /> },
+            { path: '/reports/insights/best-by-revenue', element: <ProductBestByRevenue /> },
+            { path: '/reports/insights/most-profitable', element: <ProductMostProfitable /> },
             { path: '/profile', element: <Profile /> },
             { path: '/settings', element: <Settings /> },
             { path: '/privacy', element: <Privacy /> },

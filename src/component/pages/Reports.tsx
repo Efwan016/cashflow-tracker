@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import ReportControls from './Reports/ReportControls'
 import ReportOverview from './Reports/ReportOverview'
 import ReportTrendSection from './Reports/ReportTrendSection'
@@ -7,6 +8,7 @@ import { ReportSummary, ReportGrowth, ReportAverages } from './Reports/ReportCar
 import { useReportsData } from '../hooks/useReportsData'
 
 export default function Reports() {
+  const navigate = useNavigate()
   const {
     filterType,
     startDate,
@@ -93,6 +95,15 @@ export default function Reports() {
         <ReportGrowth growthCards={growthCards} />
         <ReportAverages averageCards={averageCards} />
 
+        <div className="flex justify-end mt-4 mb-6">
+          <button
+            onClick={() => navigate(`/reports/growth?type=${filterType}&start=${startDate}&end=${endDate}`)}
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-medium transition-colors shadow-lg hover:shadow-xl"
+          >
+            View Detailed Growth Analysis →
+          </button>
+        </div>
+
         <ReportOverview
           monthlyComparisonChartData={monthlyComparisonChartData}
           currentMonthTotals={currentMonthTotals}
@@ -112,6 +123,15 @@ export default function Reports() {
           fmt={fmt}
         />
 
+        <div className="flex justify-end mt-4 mb-6">
+          <button
+            onClick={() => navigate(`/reports/trends?type=${filterType}&start=${startDate}&end=${endDate}`)}
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-medium transition-colors shadow-lg hover:shadow-xl"
+          >
+            View Complete Trend Analysis →
+          </button>
+        </div>
+
         <ReportInsights
           bestByQty={bestByQty}
           bestByRevenue={bestByRevenue}
@@ -129,6 +149,9 @@ export default function Reports() {
           onLowStockPageChange={onLowStockPageChange}
           fmt={fmt}
           num={num}
+          filterType={filterType}
+          startDate={startDate}
+          endDate={endDate}
         />
 
         <ReportTables

@@ -67,6 +67,13 @@ export type FilterType =
   | 'specific'
   | 'range'
 
+export type ProductInsight = {
+  name: string
+  qty: number
+  revenue: number
+  profit: number
+}
+
 // ─── Inventory Module — Shared Types ──────────────────────────────────────────
 
 export type StockRecord = {
