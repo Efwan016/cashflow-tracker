@@ -1,3 +1,8 @@
+/**
+ * Builds the current local timezone offset in ISO-like `+HH:mm` or `-HH:mm` form.
+ *
+ * @returns The user's current timezone offset, including sign and minutes.
+ */
 export const getTzOffset = () => {
   const offset = new Date().getTimezoneOffset();
   const absOffset = Math.abs(offset);
@@ -7,14 +12,32 @@ export const getTzOffset = () => {
   return `${sign}${hours}:${minutes}`;
 };
 
+/**
+ * Returns a local calendar date string for today or a date in the past.
+ *
+ * @param daysAgo - Number of days to subtract from the current local date.
+ * @returns A date string formatted as `YYYY-MM-DD`.
+ */
 export const getLocalDate = (daysAgo = 0) => {
   const d = new Date();
   d.setDate(d.getDate() - daysAgo);
   return d.toLocaleDateString('en-CA');
 };
 
+/**
+ * Converts a date-like string into a stable UTC date key.
+ *
+ * @param d - Date string accepted by the JavaScript `Date` constructor.
+ * @returns The UTC date portion formatted as `YYYY-MM-DD`.
+ */
 export const toDateKey = (d: string) => new Date(d).toISOString().split('T')[0];
 
+/**
+ * Creates a locale-aware currency formatter for dashboard and report amounts.
+ *
+ * @returns An `Intl.NumberFormat` that formats whole-number IDR for Indonesian
+ * users or whole-number USD for other locales.
+ */
 export const createCurrencyFormatter = () => {
   const isID = navigator.language.startsWith('id') || Intl.DateTimeFormat().resolvedOptions().timeZone?.includes('Jakarta');
   return new Intl.NumberFormat(navigator.language, {
@@ -25,8 +48,20 @@ export const createCurrencyFormatter = () => {
   });
 };
 
+/**
+ * Creates a locale-aware formatter for plain numeric values.
+ *
+ * @returns An `Intl.NumberFormat` using the current browser language.
+ */
 export const createNumberFormatter = () => new Intl.NumberFormat(navigator.language);
 
+/**
+ * Formats a timestamp as a short relative age label.
+ *
+ * @param dateString - Date string accepted by the JavaScript `Date` constructor.
+ * @returns A compact relative time label such as `just now`, `5m ago`, `2h ago`,
+ * or `3d ago`.
+ */
 export const ago = (dateString: string): string => {
   const minutes = Math.floor((Date.now() - new Date(dateString).getTime()) / 60000);
   if (minutes < 1) return 'just now';
@@ -36,11 +71,24 @@ export const ago = (dateString: string): string => {
   return `${Math.floor(hours / 24)}d ago`;
 };
 
+/**
+ * Formats a `Date` as a local datetime string with the current timezone offset.
+ *
+ * @param date - Date to format. Defaults to the current date and time.
+ * @returns A local datetime string in `YYYY-MM-DDTHH:mm:ss+HH:mm` style.
+ */
 export const formatDateTimeLocal = (date: Date = new Date()) => 
   date.toLocaleString('sv-SE').replace(' ', 'T') + getTzOffset();
 
 // ─── Pagination Utility ───────────────────────────────────────────────────────
 
+/**
+ * Builds the visible page list for pagination controls.
+ *
+ * @param current - The currently selected page number.
+ * @param total - The total number of available pages.
+ * @returns A compact page range containing page numbers and ellipsis markers.
+ */
 export function getPageRange(current: number, total: number): (number | '...')[] {
   const range: (number | '...')[] = []
   if (total <= 7) {

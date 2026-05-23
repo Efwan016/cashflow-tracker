@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { supabase } from '../../lib/supabase'
+import { useLanguage } from '../providers/useLanguage'
 import GoogleIcon from '../../assets/Icon/GoogleIcon'
 import EyeOpen from '../../assets/Icon/eyeOpen'
 import EyeClosed from '../../assets/Icon/eyeClosed'
@@ -17,18 +18,19 @@ export default function Auth() {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
     const [error, setError] = useState('')
     const navigate = useNavigate()
+    const { t } = useLanguage()
 
     const handleSubmit = async (e?: React.FormEvent) => {
         if (e) e.preventDefault()
         setError('')
 
         if (!email || !password) {
-            setError('Email and password are required')
+            setError(t('auth.error.emailPasswordRequired'))
             return
         }
 
         if (!isLogin && password !== confirmPassword) {
-            setError("Passwords don't match")
+            setError(t('auth.error.passwordMismatch'))
             return
         }
 
@@ -39,7 +41,16 @@ export default function Auth() {
             })
 
             if (error) {
-                setError('Login failed: ' + error.message)
+                // Pesan error yang lebih spesifik untuk password salah
+                if (error.message.includes('Invalid login credentials') || error.message.includes('invalid_credentials')) {
+                    setError(t('auth.error.invalidCredentials'))
+                } else if (error.message.includes('User not found')) {
+                    setError(t('auth.error.userNotFound'))
+                } else if (error.message.includes('too_many_requests')) {
+                    setError(t('auth.error.tooManyAttempts'))
+                } else {
+                    setError(t('auth.error.loginFailed'))
+                }
             } else {
                 navigate('/dashboard')
             }
@@ -51,10 +62,10 @@ export default function Auth() {
             })
 
             if (error) {
-                setError('Register failed: ' + error.message)
-                toast.error('Register failed: ' + error.message)
+                setError(t('auth.error.registerFailed'))
+                toast.error(t('auth.error.registerFailed'))
             } else {
-                toast.success('Register successful, check your email!')
+                toast.success(t('auth.success.registerSuccess'))
             }
         }
     }
@@ -88,29 +99,29 @@ export default function Auth() {
                 <div className="grid w-full gap-8 rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 p-6 shadow-xl dark:shadow-[0_40px_120px_-50px_rgba(15,23,42,0.85)] backdrop-blur-xl lg:grid-cols-[0.95fr_1.05fr] lg:p-0 transition-colors">
                     <aside className="hidden rounded-[40px] bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 p-10 lg:flex lg:flex-col lg:justify-center">
                         <img src="/IconCashflow.png" alt="Hero Image" className="mb-10 w-32 rounded-lg object-cover" />
-                        <h1 className="text-4xl font-bold tracking-tight text-white">Manage your cash flow effortlessly</h1>
+                        <h1 className="text-4xl font-bold tracking-tight text-white">{t('Manage your cash flow effortlessly')}</h1>
                         <div className="rounded-[32px] border border-white/10 bg-slate-950/80 p-10 shadow-2xl shadow-slate-950/30">
-                            <p className="text-sm uppercase tracking-[0.35em] text-sky-300/80">Cashflow App</p>
-                            <h1 className="mt-6 text-4xl font-semibold tracking-tight text-white">Premium finance experience</h1>
+                            <p className="text-sm uppercase tracking-[0.35em] text-sky-300/80">{t('Cashflow App')}</p>
+                            <h1 className="mt-6 text-4xl font-semibold tracking-tight text-white">{t('Premium finance experience')}</h1>
                             <p className="mt-4 max-w-md text-sm leading-7 text-slate-400">
-                                Manage your cash flow effortlessly with a sleek interface, real-time insights, and complete control over your finances.
+                                {t('Manage your cash flow effortlessly with a sleek interface, real-time insights, and complete control over your finances.')}
                             </p>
                             <div className="mt-10 space-y-4 text-sm text-slate-400">
                                 <div className="flex items-start gap-3">
                                     <span className="mt-1 inline-flex h-2.5 w-2.5 rounded-full bg-sky-400" />
-                                    Clean & insightful dashboard
+                                    {t('Clean & insightful dashboard')}
                                 </div>
                                 <div className="flex items-start gap-3">
                                     <span className="mt-1 inline-flex h-2.5 w-2.5 rounded-full bg-sky-400" />
-                                    Bank-level data security
+                                    {t('Bank-level data security')}
                                 </div>
                                 <div className="flex items-start gap-3">
                                     <span className="mt-1 inline-flex h-2.5 w-2.5 rounded-full bg-sky-400" />
-                                    Fully responsive across all devices
+                                    {t('Fully responsive across all devices')}
                                 </div>
                             </div>
                             <p className="mt-4 max-w-md text-sm leading-7 text-slate-400">
-                                Take control of your finances with a modern interface, powerful insights, and a seamless experience built for clarity and speed.
+                                {t('Take control of your finances with a modern interface, powerful insights, and a seamless experience built for clarity and speed.')}
                             </p>
                         </div>
                     </aside>
@@ -118,17 +129,17 @@ export default function Auth() {
                     <section className="rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/95 p-8 shadow-2xl dark:shadow-slate-950/30 sm:p-10 transition-colors">
                         <div className="mb-8 text-center lg:text-left">
                             <span className="inline-flex rounded-full bg-sky-500/10 px-3 py-1 text-xs uppercase tracking-[0.35em] text-sky-600 dark:text-sky-300">
-                                {isLogin ? 'Login' : 'Register'}
+                                {isLogin ? t('Login') : t('Register')}
                             </span>
 
                             <h2 className="mt-5 text-3xl font-semibold text-slate-900 dark:text-white sm:text-4xl">
-                                {isLogin ? 'Welcome back' : 'Create your account'}
+                                {isLogin ? t('Welcome back') : t('Create your account')}
                             </h2>
 
                             <p className="mt-4 max-w-xl text-sm leading-6 text-slate-500 dark:text-slate-400 sm:text-base">
                                 {isLogin
-                                    ? 'Sign in to continue managing your finances with a clean and intuitive experience.'
-                                    : 'Start tracking your income and expenses with a simple and powerful system.'}
+                                    ? t('Sign in to continue managing your finances with a clean and intuitive experience.')
+                                    : t('Start tracking your income and expenses with a simple and powerful system.')}
                             </p>
                         </div>
 
@@ -148,7 +159,7 @@ export default function Auth() {
                                         className="peer w-full rounded-[28px] border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/85 px-5 py-4 pl-12 text-slate-900 dark:text-slate-100 shadow-inner outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"
                                     />
                                     <span className="pointer-events-none absolute left-12 -top-2 z-10 rounded-xl bg-white dark:bg-slate-900 px-2 text-sm text-slate-500 transition-all duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-500 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-sky-600 dark:peer-focus:text-sky-300 peer-focus:-translate-y-0">
-                                        Email
+                                        {t('Email')}
                                     </span>
                                 </div>
                             </label>
@@ -169,7 +180,7 @@ export default function Auth() {
                                     />
 
                                     <span className="pointer-events-none absolute left-12 -top-2 z-10 rounded-xl bg-white dark:bg-slate-900 px-2 text-sm text-slate-500 transition-all duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-500 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-sky-600 dark:peer-focus:text-sky-300 peer-focus:-translate-y-0">
-                                        Password
+                                        {t('Password')}
                                     </span>
 
                                     <button
@@ -190,7 +201,7 @@ export default function Auth() {
                                         to="/forgot-password"
                                         className="text-sm font-medium text-sky-600 transition hover:text-sky-500 dark:text-sky-300 dark:hover:text-sky-200"
                                     >
-                                        Forgot password?
+                                        {t('Forgot password?')}
                                     </Link>
                                 </div>
                             )}
@@ -212,7 +223,7 @@ export default function Auth() {
                                         />
 
                                         <span className="pointer-events-none absolute left-12 -top-2 z-10 rounded-xl bg-white dark:bg-slate-900 px-2 text-sm text-slate-500 transition-all duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-500 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-sky-600 dark:peer-focus:text-sky-300 peer-focus:-translate-y-0">
-                                            Confirm Password
+                                            {t('Confirm Password')}
                                         </span>
 
                                         <button
@@ -234,11 +245,31 @@ export default function Auth() {
                                 </label>
                             )}
 
+                            {error && (
+                                <div className="rounded-[20px] border border-red-200 bg-red-50 p-4 dark:border-red-900/30 dark:bg-red-950/20">
+                                    <div className="flex gap-3">
+                                        <div className="mt-0.5">
+                                            <svg
+                                                className="h-5 w-5 text-red-600 dark:text-red-400"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 24 24"
+                                                fill="currentColor"
+                                            >
+                                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+                                            </svg>
+                                        </div>
+                                        <p className="text-sm text-red-800 dark:text-red-200">
+                                            {error}
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+
                             <button
                                 type="submit"
                                 className="w-full rounded-[28px] bg-gradient-to-r from-sky-500 to-indigo-500 px-5 py-4 text-base font-semibold text-white shadow-lg shadow-sky-500/20 transition duration-200 hover:from-sky-400 hover:to-indigo-400"
                             >
-                                {isLogin ? 'Sign In' : 'Create Account'}
+                                {isLogin ? t('Sign In') : t('Create Account')}
                             </button>
                         </form>
 
@@ -247,7 +278,7 @@ export default function Auth() {
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-center gap-3 text-xs text-slate-500">
                                         <span className="h-px flex-1 bg-slate-700" />
-                                        <span>or continue with</span>
+                                        <span>{t('or continue with')}</span>
                                         <span className="h-px flex-1 bg-slate-700" />
                                     </div>
 
@@ -259,27 +290,27 @@ export default function Auth() {
                                         <span className="flex items-center justify-center w-5 h-5">
                                             <GoogleIcon />
                                         </span>
-                                        <span className="leading-none">Continue with Google</span>
+                                        <span className="leading-none">{t('Continue with Google')}</span>
                                     </button>
                                 </div>
                             )}
                         </div>
 
                         <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between text-sm text-slate-500 dark:text-slate-400">
-                            <span>{isLogin ? "Don't have an account?" : 'Already have an account?'}</span>
+                            <span>{isLogin ? t("Don't have an account?") : t('Already have an account?')}</span>
                             <button
                                 type="button"
                                 onClick={() => setIsLogin(!isLogin)}
                                 className="text-sky-600 dark:text-sky-300 transition hover:text-sky-400 dark:hover:text-sky-100"
                             >
-                                {isLogin ? 'Sign up' : 'Sign in'}
+                                {isLogin ? t('Sign up') : t('Sign in')}
                             </button>
                         </div>
 
                         <div className="mt-10 rounded-[28px] border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/75 p-5 text-sm text-slate-500 dark:text-slate-400 shadow-sm transition-colors">
-                            <p className="font-medium text-slate-900 dark:text-slate-100">Pro tip</p>
+                            <p className="font-medium text-slate-900 dark:text-slate-100">{t('Pro tip')}</p>
                             <p className="mt-3 leading-6">
-                                Use a secure email and a strong password to protect your account, then monitor your daily financial activity through your dashboard.
+                                {t('Use a secure email and a strong password to protect your account, then monitor your daily financial activity through your dashboard.')}
                             </p>
                         </div>
                     </section>

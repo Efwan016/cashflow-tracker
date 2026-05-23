@@ -8,8 +8,10 @@ import { Pagination } from '../components/Pagination'
 import { createCurrencyFormatter, createNumberFormatter } from '../../lib/utils'
 import { supabase } from '../../lib/supabase'
 import type { Transaction as TransactionType } from '../../types/types'
+import { useLanguage } from '../providers/useLanguage'
 
 export default function Transaction() {
+  const { t } = useLanguage()
   const [filterType, setFilterType] = useState('today')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
@@ -109,10 +111,10 @@ export default function Transaction() {
     <main className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="mb-10 rounded-3xl sm:rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-6 sm:p-8 shadow-xl dark:shadow-[0_30px_120px_-50px_rgba(15,23,42,0.85)] backdrop-blur-xl transition-colors">
-          <p className="text-sm uppercase tracking-[0.35em] text-sky-600 dark:text-sky-300/80">Sales Entry</p>
-          <h1 className="mt-3 text-2xl sm:text-4xl font-semibold text-slate-900 dark:text-white">Record transaction</h1>
+          <p className="text-sm uppercase tracking-[0.35em] text-sky-600 dark:text-sky-300/80">{t('Sales Entry')}</p>
+          <h1 className="mt-3 text-2xl sm:text-4xl font-semibold text-slate-900 dark:text-white">{t('Record transaction')}</h1>
           <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-400">
-            Log your sales to automatically track revenue, profit, and inventory changes. Use manual mode for items not tracked in the product catalog.
+            {t('Log your sales to automatically track revenue, profit, and inventory changes. Use manual mode for items not tracked in the product catalog.')}
           </p>
         </div>
 
@@ -130,23 +132,23 @@ export default function Transaction() {
           />
 
           <aside className="rounded-3xl sm:rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-6 sm:p-8 shadow-2xl dark:shadow-slate-950/20 backdrop-blur-xl transition-colors">
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Workflow Guide</h2>
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">{t('Workflow Guide')}</h2>
             <ul className="mt-6 space-y-4 text-sm text-slate-500 dark:text-slate-400">
               <li className="flex gap-3">
                 <span className="text-sky-600 dark:text-sky-400 font-bold">01</span>
-                <span className="text-slate-600 dark:text-slate-400">Select a product to auto-fill prices and link to inventory counts.</span>
+                <span className="text-slate-600 dark:text-slate-400">{t('Select a product to auto-fill prices and link to inventory counts.')}</span>
               </li>
               <li className="flex gap-3">
                 <span className="text-sky-600 dark:text-sky-400 font-bold">02</span>
-                <span className="text-slate-600 dark:text-slate-400">Profit is calculated as <code>(Sale - Cost) * Qty</code>.</span>
+                <span className="text-slate-600 dark:text-slate-400">{t('Profit is calculated as')} <code>(Sale - Cost) * Qty</code>.</span>
               </li>
               <li className="flex gap-3">
                 <span className="text-sky-600 dark:text-sky-400 font-bold">03</span>
-                <span className="text-slate-600 dark:text-slate-400">Deleting a transaction will automatically restore the product stock level.</span>
+                <span className="text-slate-600 dark:text-slate-400">{t('Deleting a transaction will automatically restore the product stock level.')}</span>
               </li>
             </ul>
             <div className="mt-10 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 dark:from-slate-950/90 dark:to-slate-900/80 p-5 text-sm text-slate-600 dark:text-slate-300">
-              Manual transactions do not impact inventory levels but are included in financial reports.
+              {t('Manual transactions do not impact inventory levels but are included in financial reports.')}
             </div>
           </aside>
         </div>
@@ -154,14 +156,14 @@ export default function Transaction() {
         <div className="mt-10 rounded-3xl sm:rounded-[40px] border border-black/5 dark:border-white/5 bg-white dark:bg-slate-900/90 dark:from-slate-900/50 dark:to-slate-950/40 p-6 sm:p-8 shadow-2xl backdrop-blur-xl transition-colors">
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-sky-600 dark:text-sky-400/80">History</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-sky-600 dark:text-sky-400/80">{t('History')}</p>
               <h2 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
-                {filterType === 'all' && 'Recent Activity'}
-                {filterType === 'today' && 'Today\'s Sales'}
-                {filterType === 'last7' && 'Last 7 Days'}
-                {filterType === 'thisMonth' && 'This Month'}
-                {filterType === 'specific' && (startDate ? `Sales on ${new Date(startDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}` : 'Specific Date')}
-                {filterType === 'range' && (startDate && endDate ? `Sales from ${new Date(startDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })} to ${new Date(endDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}` : 'Date Range')}
+                {filterType === 'all' && t('Recent Activity')}
+                {filterType === 'today' && t("Today's Sales")}
+                {filterType === 'last7' && t('Last 7 Days')}
+                {filterType === 'thisMonth' && t('This Month')}
+                {filterType === 'specific' && (startDate ? `${t('Sales on')} ${new Date(startDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}` : t('Specific Date'))}
+                {filterType === 'range' && (startDate && endDate ? `${t('Sales from')} ${new Date(startDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })} ${t('to')} ${new Date(endDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}` : t('Date Range'))}
               </h2>
             </div>
 
@@ -177,12 +179,12 @@ export default function Transaction() {
                 }}
                 className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/90 px-4 py-2.5 text-xs font-bold text-slate-900 dark:text-slate-100 outline-none backdrop-blur-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/90  focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20 transition-colors"
               >
-                <option value="all">Recent activity</option>
-                <option value="today">Today</option>
-                <option value="last7">Last 7 Days</option>
-                <option value="thisMonth">This Month</option>
-                <option value="specific">Pick a Date</option>
-                <option value="range">Date Range</option>
+                <option value="all">{t('Recent activity')}</option>
+                <option value="today">{t('Today')}</option>
+                <option value="last7">{t('Last 7 Days')}</option>
+                <option value="thisMonth">{t('This Month')}</option>
+                <option value="specific">{t('Pick a Date')}</option>
+                <option value="range">{t('Date Range')}</option>
               </select>
 
               {(filterType === 'specific' || filterType === 'range') && (
@@ -195,7 +197,7 @@ export default function Transaction() {
                   />
                   {filterType === 'range' && (
                     <>
-                      <span className="text-slate-500 text-xs">to</span>
+                      <span className="text-slate-500 text-xs">{t('to')}</span>
                       <input
                         type="date"
                         value={endDate}
@@ -213,12 +215,12 @@ export default function Transaction() {
             <table className="w-full text-left text-xs sm:text-sm text-slate-600 dark:text-slate-300">
               <thead className="border-b border-slate-200 dark:border-slate-800/50 bg-slate-50 dark:bg-slate-900 text-[10px] uppercase tracking-widest text-slate-500">
                 <tr>
-                  <th className="px-6 py-5 font-medium">Product</th>
-                  <th className="px-6 py-5 font-medium text-center">Qty</th>
-                  <th className="px-6 py-5 font-medium">Revenue</th>
-                  <th className="px-6 py-5 font-medium">Modal</th>
-                  <th className="px-6 py-5 font-medium">Profit</th>
-                  <th className="px-6 py-5 text-right">Action</th>
+                  <th className="px-6 py-5 font-medium">{t('Product')}</th>
+                  <th className="px-6 py-5 font-medium text-center">{t('Qty')}</th>
+                  <th className="px-6 py-5 font-medium">{t('Revenue')}</th>
+                  <th className="px-6 py-5 font-medium">{t('Modal')}</th>
+                  <th className="px-6 py-5 font-medium">{t('Profit')}</th>
+                  <th className="px-6 py-5 text-right">{t('Action')}</th>
 
                 </tr>
               </thead>

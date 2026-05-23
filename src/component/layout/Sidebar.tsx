@@ -1,6 +1,9 @@
 import { NavLink, useLocation } from 'react-router-dom'
 import { useMemo, useState } from 'react'
+import { Check, ChevronDown, Languages } from 'lucide-react'
 import { createCurrencyFormatter } from '../../lib/utils'
+import { useLanguage } from '../providers/useLanguage'
+import { languages, type Language } from '../../lib/i18n'
 import ChevronIcon from '../../assets/Icon/ChevronIcon'
 import { navItems } from '../hooks/navIteems'
 import type { SidebarProps } from '../../types/types'
@@ -16,6 +19,8 @@ export default function Sidebar({
   avatarUrl,
 }: SidebarProps) {
   const location = useLocation()
+  const { t, language, setLanguage } = useLanguage()
+  const [isLanguageOpen, setIsLanguageOpen] = useState(false)
 
   const [isProductsOpen, setIsProductsOpen] = useState(() => {
     return (
@@ -32,6 +37,9 @@ export default function Sidebar({
   })
 
   const fmt = useMemo(() => createCurrencyFormatter(), [])
+  const currentLanguage = useMemo(() => {
+    return languages.find((item) => item.code === language) ?? languages[0]
+  }, [language])
 
   const displayName = useMemo(() => {
     return name?.trim() || email?.split('@')[0] || 'User'
@@ -68,7 +76,7 @@ export default function Sidebar({
           <div className="relative">
             <div className="flex items-center justify-between gap-3">
               <p className="text-[10px] font-black uppercase tracking-[0.35em] text-slate-400">
-                Account
+                {t('sidebar.account')}
               </p>
 
               <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-emerald-500">
@@ -104,10 +112,10 @@ export default function Sidebar({
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">
-                    Net Profit
+                    {t('sidebar.netProfit')}
                   </p>
                   <p className="mt-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    This Month
+                    {t('sidebar.thisMonth')}
                   </p>
                 </div>
 
@@ -117,7 +125,7 @@ export default function Sidebar({
                     : 'bg-rose-500/10 text-rose-500'
                     }`}
                 >
-                  {isProfitPositive ? 'Profit' : 'Loss'}
+                  {isProfitPositive ? t('sidebar.profit') : t('sidebar.loss')}
                 </span>
               </div>
 
@@ -160,12 +168,12 @@ export default function Sidebar({
                 </span>
 
                 <span className="min-w-0 flex-1 truncate font-bold">
-                  {item.label}
+                  {t(item.label)}
                 </span>
 
                 {item.badge ? (
                   <span className="rounded-full border border-sky-500/20 bg-sky-500/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-sky-500">
-                    {item.badge}
+                    {t(item.badge)}
                   </span>
                 ) : null}
 
@@ -218,7 +226,7 @@ export default function Sidebar({
                                 <ChildIcon />
                               </span>
 
-                              <span className="truncate">{child.label}</span>
+                              <span className="truncate">{t(child.label)}</span>
                             </NavLink>
                           )
                         })}
@@ -250,16 +258,113 @@ export default function Sidebar({
 
       {/* FOOTER */}
       <div className="mt-6 space-y-4">
+        {/* Language Selector */}
+        <div className="rounded-[2rem] border border-black/5 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-sky-500/15 bg-sky-500/10 text-sky-600 dark:text-sky-300">
+                <Languages className="h-4 w-4" />
+              </span>
+
+              <div className="min-w-0">
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">
+                  {t('sidebar.language')}
+                </p>
+                <p className="mt-1 truncate text-sm font-black text-slate-950 dark:text-white">
+                  {currentLanguage.name}
+                </p>
+              </div>
+            </div>
+
+            <span className="shrink-0 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+              {currentLanguage.code}
+            </span>
+          </div>
+
+          <button
+            type="button"
+            aria-expanded={isLanguageOpen}
+            aria-controls="sidebar-language-options"
+            onClick={() => setIsLanguageOpen((open) => !open)}
+            className="mt-4 flex w-full items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-left text-sm font-bold text-slate-900 shadow-inner shadow-white/60 outline-none transition hover:border-sky-300 hover:bg-white focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20 dark:border-white/10 dark:bg-slate-950/70 dark:text-slate-100 dark:shadow-none dark:hover:border-sky-500/60 dark:hover:bg-slate-900"
+          >
+            <span className="flex min-w-0 items-center gap-3">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-lg shadow-sm dark:bg-white/10">
+                {currentLanguage.flag}
+              </span>
+              <span className="min-w-0">
+                <span className="block truncate">{currentLanguage.name}</span>
+                <span className="mt-0.5 block text-[10px] font-black uppercase tracking-[0.24em] text-slate-400">
+                  {currentLanguage.code}
+                </span>
+              </span>
+            </span>
+
+            <ChevronDown
+              className={`h-4 w-4 shrink-0 text-slate-400 transition duration-300 ${isLanguageOpen ? 'rotate-180 text-sky-500' : ''}`}
+            />
+          </button>
+
+          <div
+            id="sidebar-language-options"
+            className={`grid transition-all duration-300 ease-out ${isLanguageOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}
+          >
+            <div className="overflow-hidden">
+              <div className="mt-3 max-h-72 space-y-1 overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50 p-1.5 [scrollbar-width:none] dark:border-white/10 dark:bg-slate-950/70 [&::-webkit-scrollbar]:hidden">
+                {languages.map((lang) => {
+                  const isSelected = language === lang.code
+
+                  return (
+                    <button
+                      key={lang.code}
+                      type="button"
+                      aria-pressed={isSelected}
+                      onClick={() => {
+                        setLanguage(lang.code as Language)
+                        setIsLanguageOpen(false)
+                      }}
+                      className={`flex w-full items-center gap-3 rounded-xl px-2.5 py-2.5 text-left text-sm outline-none transition ${
+                        isSelected
+                          ? 'bg-white text-slate-950 shadow-sm ring-1 ring-sky-500/15 dark:bg-white/10 dark:text-white'
+                          : 'text-slate-600 hover:bg-white hover:text-slate-950 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white'
+                      }`}
+                    >
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-base shadow-sm dark:bg-white/10">
+                        {lang.flag}
+                      </span>
+
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate font-bold">{lang.name}</span>
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                          {lang.code}
+                        </span>
+                      </span>
+
+                      {isSelected ? (
+                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sky-500 text-white shadow-sm shadow-sky-500/20">
+                          <Check className="h-3.5 w-3.5" />
+                        </span>
+                      ) : (
+                        <span className="h-7 w-7 shrink-0" />
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="relative overflow-hidden rounded-[2rem] border border-black/5 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
           <div className="absolute -right-10 -top-10 h-28 w-28 rounded-full bg-sky-400/10 blur-2xl" />
 
           <div className="relative">
             <p className="text-[10px] font-black uppercase tracking-[0.35em] text-slate-400">
-              Tips
+              {t('sidebar.tips')}
             </p>
 
             <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
-              Review your cashflow regularly so profit, expenses, and stock movement stay easy to track.
+              {t('sidebar.tipsText')}
             </p>
           </div>
         </div>
@@ -269,7 +374,7 @@ export default function Sidebar({
           onClick={closeMobileSidebar}
           className="inline-flex h-12 w-full items-center justify-center rounded-2xl border border-slate-200 bg-slate-100 px-4 text-sm font-black text-slate-800 transition hover:border-sky-400 hover:bg-slate-200 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:hover:border-sky-400 dark:hover:bg-white/10 lg:hidden"
         >
-          Close Sidebar
+          {t('sidebar.closeSidebar')}
         </button>
       </div>
     </aside>

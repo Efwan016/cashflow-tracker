@@ -377,3 +377,11 @@ export type ReportTrendSectionProps = {
   currentTotals: TrendTotals
   fmt: Intl.NumberFormat
 }
+
+// ─── AI Insight Types ────────────────────────────────────────────────────────
+
+export type ReportInsightResponse = {
+  insight: string
+  generatedAt: string
+  error?: string
+}

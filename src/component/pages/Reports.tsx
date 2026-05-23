@@ -8,6 +8,7 @@ import ReportTrendSection from './Reports/ReportTrendSection'
 import ReportInsights from './Reports/ReportInsights'
 import ReportTables from './Reports/ReportTables'
 import { ReportSummary, ReportGrowth, ReportAverages } from './Reports/ReportCards'
+import LastAIInsight from './Reports/LastAIInsight'
 import { useReportsData } from '../hooks/useReportsData'
 import type { Transaction } from '../../types/types'
 
@@ -641,6 +642,21 @@ if (recentTransactions.length > 0) {
             View Detailed Growth Analysis →
           </button>
         </div>
+
+        <LastAIInsight
+          revenue={currentTotals.revenue}
+          grossProfit={currentTotals.grossProfit}
+          expenses={currentTotals.expenses}
+          netProfit={currentTotals.grossProfit - currentTotals.expenses}
+          expenseRatio={
+            currentTotals.grossProfit > 0
+              ? ((currentTotals.expenses / currentTotals.grossProfit) * 100)
+              : 0
+          }
+          bestSellingProduct={bestByQty[0]?.name ?? null}
+          mostProfitableProduct={mostProfitable[0]?.name ?? null}
+          lowStockCount={stockSummary.lowStock.length}
+        />
 
         <ReportOverview
           monthlyComparisonChartData={monthlyComparisonChartData}

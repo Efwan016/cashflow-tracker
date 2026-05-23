@@ -5,9 +5,11 @@ import { toast } from 'react-toastify'
 import { Pagination } from '../components/Pagination'
 import { createCurrencyFormatter, getTzOffset, getLocalDate, formatDateTimeLocal } from '../../lib/utils'
 import type { Expense } from '../../types/types'
+import { useLanguage } from '../providers/useLanguage'
 
 
 export default function Expense() {
+  const { t } = useLanguage()
   const navigate = useNavigate()
   const [description, setDescription] = useState('')
   const [amount, setAmount] = useState('')
@@ -219,10 +221,10 @@ export default function Expense() {
       </div>
       <div className="relative mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="mb-10 rounded-3xl sm:rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-6 sm:p-8 shadow-xl dark:shadow-[0_30px_120px_-50px_rgba(15,23,42,0.85)] backdrop-blur-xl transition-colors">
-          <p className="text-sm uppercase tracking-[0.35em] text-sky-600 dark:text-sky-300/80">Add expense</p>
-          <h1 className="mt-3 text-2xl sm:text-4xl font-semibold text-slate-900 dark:text-white">Record a new expense</h1>
+          <p className="text-sm uppercase tracking-[0.35em] text-sky-600 dark:text-sky-300/80">{t('Add expense')}</p>
+          <h1 className="mt-3 text-2xl sm:text-4xl font-semibold text-slate-900 dark:text-white">{t('Record a new expense')}</h1>
           <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">
-            Store expense entries in Supabase so the app can report total spend, net cashflow, and expense trends.
+            {t('Store expense entries in Supabase so the app can report total spend, net cashflow, and expense trends.')}
           </p>
         </div>
 
@@ -231,18 +233,18 @@ export default function Expense() {
             <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="space-y-6">
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="grid gap-3 text-left">
-                  <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">Expense description</span>
+                  <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">{t('Expense description')}</span>
                   <input
                     ref={descriptionInputRef}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="e.g. Office supplies, utilities"
+                    placeholder={t('e.g. Office supplies, utilities')}
                     className="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/90 dark:from-slate-950/90 dark:to-slate-900/80 px-4 py-4 text-slate-900 dark:text-white outline-none transition-all focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20 hover:bg-slate-100 dark:hover:bg-slate-900/90"
                   />
                 </label>
 
                 <label className="grid gap-3 text-left">
-                  <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">Expense amount</span>
+                  <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">{t('Expense amount')}</span>
                   <input
                     type="number"
                     min="0"
@@ -255,7 +257,7 @@ export default function Expense() {
               </div>
 
               <div className="grid gap-3 text-left">
-                <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">Calculated expense</span>
+                <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">{t('Calculated expense')}</span>
                 <div className="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/90 dark:from-slate-950/90 dark:to-slate-900/80 px-4 py-4 text-slate-900 dark:text-white">
                   {fmt.format(formattedAmount)}
                 </div>
@@ -263,14 +265,14 @@ export default function Expense() {
 
               <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-sm text-slate-500 dark:text-slate-400">
-                  This expense entry is stored in the <span className="font-semibold text-slate-900 dark:text-white">expenses</span> table.
+                  {t('This expense entry is stored in the')} <span className="font-semibold text-slate-900 dark:text-white">expenses</span> table.
                 </p>
                 <button
                   type="submit"
                   disabled={isSubmitting}
                   className="inline-flex items-center justify-center rounded-3xl bg-gradient-to-r from-sky-500 to-indigo-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:from-sky-400 hover:to-indigo-400 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {isSubmitting ? 'Saving...' : 'Save expense'}
+                  {isSubmitting ? t('Saving...') : t('Save expense')}
                 </button>
               </div>
             </form>
@@ -279,27 +281,27 @@ export default function Expense() {
           <aside className="rounded-3xl sm:rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-6 sm:p-8 shadow-2xl dark:shadow-slate-950/20 backdrop-blur-xl transition-colors">
             <div className="space-y-5">
               <div>
-                <p className="text-sm uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">Expense tracking</p>
-                <h2 className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">Capture spend instantly</h2>
+                <p className="text-sm uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">{t('Expense tracking')}</p>
+                <h2 className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">{t('Capture spend instantly')}</h2>
               </div>
               
               <div className="grid gap-4">
                 <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 dark:from-slate-950/50 dark:to-slate-900/60 p-5 shadow-lg transition-colors">
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Total period spend</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">{t('Total period spend')}</p>
                   <p className="mt-3 text-3xl font-semibold text-rose-600 dark:text-rose-400">{fmt.format(totalFilteredExpense)}</p>
-                  <p className="mt-1 text-[10px] text-slate-500 uppercase tracking-wider">{filterType.replace('all', 'Recent items')}</p>
+                  <p className="mt-1 text-[10px] text-slate-500 uppercase tracking-wider">{filterType.replace('all', t('Recent items'))}</p>
                 </div>
               </div>
 
               <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 p-5 shadow-sm transition-colors">
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-400 dark:text-slate-500">Why it matters</p>
-                <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">Expenses are essential for accurate cashflow reporting and real net profit calculation.</p>
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400 dark:text-slate-500">{t('Why it matters')}</p>
+                <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">{t('Expenses are essential for accurate cashflow reporting and real net profit calculation.')}</p>
               </div>
               <NavLink
                 to="/reports"
                 className="inline-flex w-full items-center justify-center rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/90 px-4 py-3 text-sm font-semibold text-slate-700 dark:text-slate-200 transition hover:border-sky-400 hover:bg-slate-50 dark:hover:bg-slate-800"
               >
-                Review reports
+                {t('Review reports')}
               </NavLink>
             </div>
           </aside>
@@ -309,8 +311,8 @@ export default function Expense() {
         <div className="mt-10 rounded-3xl sm:rounded-[40px] border border-black/5 dark:border-white/5 bg-white dark:bg-slate-900/90 dark:from-slate-900/50 dark:to-slate-950/40 p-6 sm:p-8 shadow-2xl backdrop-blur-xl transition-colors">
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-sky-600 dark:text-sky-400/80">History</p>
-              <h2 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">Expense Log</h2>
+              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-sky-600 dark:text-sky-400/80">{t('History')}</p>
+              <h2 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">{t('Expense Log')}</h2>
             </div>
 
             <div className="flex flex-wrap items-center gap-3">

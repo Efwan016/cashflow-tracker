@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import Layout from './component/layout/layout'
+import { LanguageProvider } from './component/providers/LanguageProvider'
 
 // Styles
 import 'react-toastify/dist/ReactToastify.css';
@@ -40,8 +41,9 @@ const DetailInfo = lazy(() => import('./component/pages/Setting/DetailInfo'));
 
 function App() {
   return (
-    <BrowserRouter>
-      <Suspense fallback={<Skeleton />}>
+    <LanguageProvider>
+      <BrowserRouter>
+        <Suspense fallback={<Skeleton />}>
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Auth />} />
@@ -92,6 +94,7 @@ function App() {
         }
       />
     </BrowserRouter>
+    </LanguageProvider>
   )
 }
 

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { supabase } from '../../lib/supabase'
+import { useLanguage } from '../providers/useLanguage'
 
 
 const SearchIcon = () => (
@@ -53,6 +54,7 @@ interface SearchableItem {
 
 export default function Topbar({ toggleSidebar }: { toggleSidebar: () => void }) {
     const navigate = useNavigate()
+    const { t } = useLanguage()
     const [openMenu, setOpenMenu] = useState(false)
     const [searchQuery, setSearchQuery] = useState('')
     const [showResults, setShowResults] = useState(false)
@@ -86,9 +88,9 @@ export default function Topbar({ toggleSidebar }: { toggleSidebar: () => void })
     const filteredResults = useMemo(() => {
         if (!searchQuery.trim()) return []
         return searchableItems.filter(item => 
-            item.title.toLowerCase().includes(searchQuery.toLowerCase())
+            t(item.title).toLowerCase().includes(searchQuery.toLowerCase())
         )
-    }, [searchQuery, searchableItems])
+    }, [searchQuery, searchableItems, t])
 
     // Logika Night Mode: Update class di <html> tag dan simpan di localStorage
     useEffect(() => {
@@ -187,13 +189,13 @@ export default function Topbar({ toggleSidebar }: { toggleSidebar: () => void })
     }, [name])
 
     const handleLogout = async () => {
-        const id = toast.loading("Logging out...")
+        const id = toast.loading(t('Logging out...'))
         try {
             await supabase.auth.signOut()
-            toast.update(id, { render: "Logged out successfully", type: "success", isLoading: false, autoClose: 2000 })
+            toast.update(id, { render: t('Logged out successfully'), type: "success", isLoading: false, autoClose: 2000 })
             navigate('/')
         } catch  {
-            toast.update(id, { render: "Logout failed", type: "error", isLoading: false, autoClose: 2000 })
+            toast.update(id, { render: t('Logout failed'), type: "error", isLoading: false, autoClose: 2000 })
         }
     }
 
@@ -225,7 +227,7 @@ export default function Topbar({ toggleSidebar }: { toggleSidebar: () => void })
 
                 <div className="min-w-0">
                     <h1 className="truncate text-xl font-bold tracking-tight text-slate-900 sm:text-2xl dark:text-white">
-                       Let’s check your progress, <span className="bg-gradient-to-r from-sky-400 to-indigo-400 bg-clip-text text-transparent">{name.split(' ')[0]}</span>
+                       {t('Let’s check your progress')}, <span className="bg-gradient-to-r from-sky-400 to-indigo-400 bg-clip-text text-transparent">{name.split(' ')[0]}</span>
                     </h1>
                 </div>
             </div>
@@ -245,7 +247,7 @@ export default function Topbar({ toggleSidebar }: { toggleSidebar: () => void })
                                 setShowResults(true)
                             }}
                             onFocus={() => setShowResults(true)}
-                            placeholder="Search pages... (Ctrl+K)"
+                            placeholder={t('Search pages... (Ctrl+K)')}
                             className="h-11 w-full rounded-2xl border border-black/5 bg-slate-100 pl-11 pr-4 text-sm text-slate-900 outline-none transition-all focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10 dark:border-white/5 dark:bg-slate-800/30 dark:text-slate-100 dark:placeholder-slate-500"
                         />
                     </div>
@@ -265,14 +267,14 @@ export default function Topbar({ toggleSidebar }: { toggleSidebar: () => void })
                                             }}
                                             className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-left hover:bg-slate-100 transition-colors dark:hover:bg-slate-800"
                                         >
-                                            <span className="text-sm font-medium text-slate-900 dark:text-slate-200">{item.title}</span>
-                                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{item.category}</span>
+                                            <span className="text-sm font-medium text-slate-900 dark:text-slate-200">{t(item.title)}</span>
+                                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{t(item.category)}</span>
                                         </button>
                                     ))}
                                 </div>
                             ) : (
                                 <div className="px-4 py-8 text-center">
-                                    <p className="text-sm text-slate-500">No results found for "{searchQuery}"</p>
+                                    <p className="text-sm text-slate-500">{t('No results found for')} "{searchQuery}"</p>
                                 </div>
                             )}
                         </div>
@@ -309,7 +311,7 @@ export default function Topbar({ toggleSidebar }: { toggleSidebar: () => void })
                         </div>
                         <div className="min-w-0 text-left">
                             <p className="max-w-[100px] truncate text-xs font-bold text-slate-900 dark:text-white">{name}</p>
-                            <p className="max-w-[100px] truncate text-[10px] font-medium text-slate-500">{email || 'Premium Plan'}</p>
+                            <p className="max-w-[100px] truncate text-[10px] font-medium text-slate-500">{email || t('Premium Plan')}</p>
                         </div>
                     </button>
 
@@ -323,7 +325,7 @@ export default function Topbar({ toggleSidebar }: { toggleSidebar: () => void })
                                 className="group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-900 transition-all hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white"
                             >
                                 <span className="text-slate-500 group-hover:text-sky-400 transition-colors"><UserIcon /></span>
-                                Profile
+                                {t('Profile')}
                             </button>
 
                             <button
@@ -331,7 +333,7 @@ export default function Topbar({ toggleSidebar }: { toggleSidebar: () => void })
                                 className="group mt-1 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-rose-600 transition-all hover:bg-rose-100 hover:text-rose-700 dark:text-rose-400 dark:hover:bg-rose-500/10 dark:hover:text-rose-300"
                             >
                                 <span className="text-rose-500/50 group-hover:text-rose-400 transition-colors"><LogoutIcon /></span>
-                                Logout
+                                {t('Logout')}
                             </button>
                         </div>
                     )}

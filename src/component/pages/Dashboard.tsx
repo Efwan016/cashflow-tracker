@@ -17,6 +17,7 @@ import {
   createNumberFormatter,
   ago,
 } from '../../lib/utils'
+import { useLanguage } from '../providers/useLanguage'
 import type {
   Transaction,
   Expense,
@@ -471,6 +472,7 @@ function FeedRow({
 // ─── Main ──────────────────────────────────────────────────────────────────────
 
 export default function Dashboard() {
+  const { t } = useLanguage()
   const [filter, setFilter] = useState<FilterType>('today')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
@@ -793,7 +795,7 @@ const bestSellingChartData = useMemo(
                 className={`mb-2 text-[11px] font-black uppercase tracking-widest ${pos ? 'text-emerald-500' : 'text-rose-500'
                   }`}
               >
-                {pos ? 'Net Profit' : 'Net Loss'}
+                {pos ? t('Net Profit') : t('Net Loss')}
               </p>
               <p
                 className={`break-words text-3xl font-black tracking-tight sm:text-6xl lg:text-7xl ${pos ? 'text-emerald-500' : 'text-rose-500'
@@ -804,11 +806,11 @@ const bestSellingChartData = useMemo(
               </p>
 
               <p className="mt-3 text-sm leading-6 text-slate-500 dark:text-slate-400">
-                Gross profit{' '}
+                {t('Gross profit')}{' '}
                 <span className="font-black text-slate-800 dark:text-slate-100">
                   {fmt.format(metrics.grossProfit)}
                 </span>{' '}
-                minus expenses{' '}
+                {t('minus expenses')}{' '}
                 <span className="font-black text-slate-800 dark:text-slate-100">
                   {fmt.format(metrics.totalExpense)}
                 </span>
@@ -818,7 +820,7 @@ const bestSellingChartData = useMemo(
             <div className="grid grid-cols-2 gap-3 sm:min-w-[280px]">
               <div className="rounded-3xl border border-slate-200 bg-white/80 p-4 text-center shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
                 <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                  Margin
+                  {t('Margin')}
                 </p>
                 <p className="mt-1 text-3xl font-black text-slate-950 dark:text-white">
                   {metrics.marginPct}%
@@ -827,7 +829,7 @@ const bestSellingChartData = useMemo(
 
               <div className="rounded-3xl border border-slate-200 bg-white/80 p-4 text-center shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
                 <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                  Transactions
+                  {t('Transactions')}
                 </p>
                 <p className="mt-1 text-3xl font-black text-slate-950 dark:text-white">
                   {metrics.txCount}
@@ -840,36 +842,36 @@ const bestSellingChartData = useMemo(
         {/* KPI CARDS */}
         <section className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <KpiCard
-            label="Revenue"
+            label={t('Revenue')}
             value={fmt.format(metrics.revenue)}
-            sub={`${metrics.txCount} transactions`}
+            sub={`${metrics.txCount} ${t('transactions')}`}
             pct={metrics.revSharePct}
             accent="emerald"
             icon={<IC.Revenue />}
           />
 
           <KpiCard
-            label="Expenses"
+            label={t('Expenses')}
             value={fmt.format(metrics.totalExpense)}
-            sub={`${expenses.length} entries`}
+            sub={`${expenses.length} ${t('entries')}`}
             pct={100 - metrics.revSharePct}
             accent="rose"
             icon={<IC.Expense />}
           />
 
           <KpiCard
-            label="Gross Profit"
+            label={t('Gross Profit')}
             value={fmt.format(metrics.grossProfit)}
-            sub={`${metrics.marginPct}% of revenue`}
+            sub={`${metrics.marginPct}% ${t('of revenue')}`}
             pct={metrics.marginPct}
             accent="sky"
             icon={<IC.Profit />}
           />
 
           <KpiCard
-            label="Stock Value"
+            label={t('Stock Value')}
             value={fmt.format(metrics.stockValue)}
-            sub={`${num.format(metrics.stockQty)} units · ${metrics.skus} SKUs`}
+            sub={`${num.format(metrics.stockQty)} ${t('units')} · ${metrics.skus} SKUs`}
             accent="amber"
             icon={<IC.Box />}
           />
@@ -882,11 +884,11 @@ const bestSellingChartData = useMemo(
             {/* Cashflow Breakdown */}
             <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.04] sm:p-8">
               <p className="mb-1 text-[11px] font-black uppercase tracking-widest text-slate-400">
-                Overview
+                {t('Overview')}
               </p>
 
               <h2 className="mb-6 text-xl font-black text-slate-950 dark:text-white">
-                Cashflow Breakdown
+                {t('Cashflow Breakdown')}
               </h2>
 
               <div className="mb-6 h-[240px] rounded-3xl border border-slate-200 bg-slate-50/70 p-3 dark:border-white/10 dark:bg-slate-950/40 sm:h-[320px] sm:p-4">
@@ -896,21 +898,21 @@ const bestSellingChartData = useMemo(
               <div className="space-y-4">
                 {[
                   {
-                    label: 'Revenue',
+                    label: t('Revenue'),
                     val: fmt.format(metrics.revenue),
                     pct: metrics.revSharePct,
                     bar: 'linear-gradient(90deg,#059669,#34d399)',
                     dot: '#34d399',
                   },
                   {
-                    label: 'Expenses',
+                    label: t('Expenses'),
                     val: fmt.format(metrics.totalExpense),
                     pct: 100 - metrics.revSharePct,
                     bar: 'linear-gradient(90deg,#be123c,#fb7185)',
                     dot: '#fb7185',
                   },
                   {
-                    label: 'Profit Margin',
+                    label: t('Profit Margin'),
                     val: `${metrics.marginPct}%`,
                     pct: Math.min(100, Math.max(0, metrics.marginPct)),
                     bar: 'linear-gradient(90deg,#0284c7,#38bdf8)',
