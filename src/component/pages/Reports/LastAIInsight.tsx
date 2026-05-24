@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { supabase } from '../../../lib/supabase'
+import { useLanguage } from '../../providers/useLanguage'
 import type { ReportInsightResponse } from '../../../types/types'
 
 interface LastAIInsightProps {
@@ -23,10 +24,27 @@ export default function LastAIInsight({
   mostProfitableProduct,
   lowStockCount,
 }: LastAIInsightProps) {
+  const { language, t } = useLanguage()
   const [insight, setInsight] = useState<string | null>(null)
   const [generatedAt, setGeneratedAt] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const formatInsightLines = (value: string) =>
+    value
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line) =>
+        line
+          .replace(/^[-*•\s]+/, '')
+          .replace(/\*\*/g, '')
+          .replace(/__/g, '')
+          .replace(/`/g, '')
+          .trim(),
+      )
+
+  const insightLines = insight ? formatInsightLines(insight) : []
 
   const handleGenerateInsight = async () => {
     setLoading(true)
@@ -45,6 +63,7 @@ export default function LastAIInsight({
             bestSellingProduct,
             mostProfitableProduct,
             lowStockCount,
+            language,
           },
         },
       )
@@ -62,7 +81,7 @@ export default function LastAIInsight({
       setInsight(response.insight)
       setGeneratedAt(response.generatedAt)
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to generate insight'
+      const errorMessage = err instanceof Error ? err.message : t('Failed to generate insight')
       setError(errorMessage)
       console.error('AI Insight Error:', err)
     } finally {
@@ -73,7 +92,7 @@ export default function LastAIInsight({
   const formatTimestamp = (isoString: string) => {
     try {
       const date = new Date(isoString)
-      return date.toLocaleString('en-US', {
+      return date.toLocaleString(language, {
         month: 'short',
         day: 'numeric',
         year: 'numeric',
@@ -92,13 +111,13 @@ export default function LastAIInsight({
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-sm uppercase tracking-[0.35em] text-amber-500 dark:text-amber-400">
-                AI Powered
+                {t('AI Powered')}
               </p>
               <h2 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
-                Last AI Insight
+                {t('Last AI Insight')}
               </h2>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-400">
-                Get AI-powered business insights powered by Gemini. Analyze your report data and receive practical recommendations to improve your business performance.
+                {t('Get AI-powered business insights powered by Gemini. Analyze your report data and receive practical recommendations to improve your business performance.')}
               </p>
             </div>
           </div>
@@ -132,7 +151,7 @@ export default function LastAIInsight({
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 />
               </svg>
-              Generating insight...
+              {t('Generating insight...')}
             </>
           ) : (
             <>
@@ -146,7 +165,7 @@ export default function LastAIInsight({
               >
                 <path d="M12 2v20m10-10H2" />
               </svg>
-              Generate AI Insight
+              {t('Generate AI Insight')}
             </>
           )}
         </button>
@@ -167,7 +186,7 @@ export default function LastAIInsight({
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-semibold text-red-900 dark:text-red-200">
-                  Failed to generate insight
+                  {t('Failed to generate insight')}
                 </p>
                 <p className="mt-1 text-xs text-red-800 dark:text-red-300">
                   {error}
@@ -195,10 +214,10 @@ export default function LastAIInsight({
               />
             </svg>
             <p className="mt-4 text-sm font-semibold text-slate-600 dark:text-slate-300">
-              No insight generated yet
+              {t('No insight generated yet')}
             </p>
             <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-              Click the button above to generate an AI-powered business insight
+              {t('Click the button above to generate an AI-powered business insight')}
             </p>
           </div>
         )}
@@ -220,11 +239,22 @@ export default function LastAIInsight({
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">
-                    AI Insight Generated
+                    {t('AI Insight Generated')}
                   </p>
-                  <div className="mt-3 space-y-2 whitespace-pre-wrap text-sm leading-6 text-amber-800 dark:text-amber-300">
-                    {insight}
-                  </div>
+                  {insightLines.length > 0 ? (
+                    <ul className="space-y-3 text-sm leading-6 text-amber-800 dark:text-amber-300">
+                      {insightLines.map((line, index) => (
+                        <li key={index} className="flex items-start gap-3">
+                          <span className="mt-1 inline-flex h-2 w-2 flex-shrink-0 rounded-full bg-amber-600 dark:bg-amber-300" />
+                          <span>{line}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <div className="whitespace-pre-wrap text-sm leading-6 text-amber-800 dark:text-amber-300">
+                      {insight}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -232,7 +262,7 @@ export default function LastAIInsight({
             {generatedAt && (
               <div className="flex items-center justify-between gap-4 rounded-[20px] border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-400">
                 <span>
-                  Generated on{' '}
+                  {t('Generated on')}{' '}
                   <time dateTime={generatedAt} className="font-semibold">
                     {formatTimestamp(generatedAt)}
                   </time>
@@ -242,7 +272,7 @@ export default function LastAIInsight({
                   disabled={loading}
                   className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 font-medium transition hover:bg-slate-100 disabled:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700"
                 >
-                  Regenerate
+                  {t('Regenerate')}
                 </button>
               </div>
             )}

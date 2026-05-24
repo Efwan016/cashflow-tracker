@@ -1,6 +1,8 @@
 import { render, screen } from '@testing-library/react'
 import { vi } from 'vitest'
+import type { ReactElement } from 'react'
 import ReportOverview from '../component/pages/Reports/ReportOverview'
+import { LanguageProvider } from '../component/providers/LanguageProvider'
 import type { ReportOverviewProps } from '../types/types'
 
 vi.mock('../component/components/Chart', () => ({
@@ -33,8 +35,10 @@ describe('ReportOverview component', () => {
     fmt,
   }
 
+  const renderWithLanguage = (ui: ReactElement) => render(<LanguageProvider>{ui}</LanguageProvider>)
+
   test('renders overview headings and summary cards', () => {
-    render(<ReportOverview {...defaultProps} />)
+    renderWithLanguage(<ReportOverview {...defaultProps} />)
 
     expect(screen.getByText('This month vs last month')).toBeInTheDocument()
     expect(screen.getByText('Revenue, cost, and profit performance.')).toBeInTheDocument()
@@ -46,7 +50,7 @@ describe('ReportOverview component', () => {
   })
 
   test('formats chart values and growth labels', () => {
-    render(<ReportOverview {...defaultProps} />)
+    renderWithLanguage(<ReportOverview {...defaultProps} />)
 
     expect(screen.getByText(/10,000/)).toBeInTheDocument()
     expect(screen.getAllByText('+12.5%')[0]).toBeInTheDocument()

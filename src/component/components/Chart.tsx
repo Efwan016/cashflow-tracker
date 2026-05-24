@@ -18,6 +18,7 @@ import {
 
 import 'chartjs-adapter-date-fns'
 import { Chart as ReactChart } from 'react-chartjs-2'
+import { useLanguage } from '../providers/useLanguage'
 import type { ChartProps } from '../../types/types'
 
 ChartJS.register(
@@ -96,6 +97,7 @@ function createLineGradient(context: ScriptableContext<'line'>) {
 }
 
 export default function Chart({ data, variant = 'cashflow' }: ChartProps) {
+  const { t, language } = useLanguage()
   const isBarOnly = variant === 'bar'
 
   const hasData =
@@ -109,10 +111,10 @@ export default function Chart({ data, variant = 'cashflow' }: ChartProps) {
       <div className="flex h-full min-h-[220px] items-center justify-center rounded-3xl border border-slate-200 bg-slate-50 text-center dark:border-white/10 dark:bg-slate-950/40">
         <div>
           <p className="text-sm font-black text-slate-500 dark:text-slate-300">
-            No chart data yet
+            {t('No chart data yet')}
           </p>
           <p className="mt-1 text-xs text-slate-400">
-            Your analytics will appear after new activity is recorded.
+            {t('Your analytics will appear after new activity is recorded.')}
           </p>
         </div>
       </div>
@@ -130,7 +132,7 @@ export default function Chart({ data, variant = 'cashflow' }: ChartProps) {
     datasets: [
       {
         type: 'bar' as const,
-        label: 'Revenue',
+        label: t('Revenue'),
         data: timePoints.map((item) => ({
           x: item.date,
           y: item.revenue,
@@ -151,7 +153,7 @@ export default function Chart({ data, variant = 'cashflow' }: ChartProps) {
       },
       {
         type: 'bar' as const,
-        label: 'Expense',
+        label: t('Expense'),
         data: timePoints.map((item) => ({
           x: item.date,
           y: item.expense,
@@ -172,7 +174,7 @@ export default function Chart({ data, variant = 'cashflow' }: ChartProps) {
       },
       {
         type: 'line' as const,
-        label: 'Net Profit',
+        label: t('Net Profit'),
         data: timePoints.map((item) => ({
           x: item.date,
           y: item.netProfit,
@@ -205,7 +207,7 @@ export default function Chart({ data, variant = 'cashflow' }: ChartProps) {
     datasets: [
       {
         type: 'bar',
-        label: hasNetProfit ? 'Profit' : 'Revenue',
+        label: hasNetProfit ? t('Profit') : t('Revenue'),
         data: hasNetProfit ? data.netProfit : data.revenue,
         backgroundColor: (context: ScriptableContext<'bar'>) =>
           hasNetProfit
@@ -254,7 +256,7 @@ export default function Chart({ data, variant = 'cashflow' }: ChartProps) {
         cornerRadius: 18,
         callbacks: {
           label(context) {
-            const label = context.dataset.label || 'Value'
+            const label = context.dataset.label || t('Value')
             return `${label}: ${formatCurrency(Number(context.raw || 0))}`
           },
         },
@@ -359,7 +361,7 @@ export default function Chart({ data, variant = 'cashflow' }: ChartProps) {
 
             if (!raw) return ''
 
-            return new Intl.DateTimeFormat('id-ID', {
+            return new Intl.DateTimeFormat(language, {
               day: '2-digit',
               month: 'short',
               year: 'numeric',

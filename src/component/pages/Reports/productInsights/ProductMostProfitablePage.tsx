@@ -3,9 +3,12 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { useReportsData } from "../../../hooks/useReportsData"
 import { Pagination } from "../../../components/Pagination"
+import { useLanguage } from '../../../providers/useLanguage'
 import type { FilterType } from '../../../../types/types'
 
 export default function ProductMostProfitablePage() {
+  const { t } = useLanguage()
+
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
@@ -39,12 +42,12 @@ export default function ProductMostProfitablePage() {
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <p className="text-xs sm:text-sm uppercase tracking-[0.2em] text-amber-600 dark:text-amber-400 font-bold">Product Insights</p>
-              <h1 className="mt-2 text-xl sm:text-3xl font-semibold text-slate-900 dark:text-white">Most Profitable Product</h1>
+              <p className="text-xs sm:text-sm uppercase tracking-[0.2em] text-amber-600 dark:text-amber-400 font-bold">{t('Product Insights')}</p>
+              <h1 className="mt-2 text-xl sm:text-3xl font-semibold text-slate-900 dark:text-white">{t('Most Profitable Product')}</h1>
             </div>
           </div>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            Detailed breakdown of products with the highest total profit contribution.
+            {t('Detailed breakdown of products with the highest total profit contribution.')}
           </p>
         </div>
 
@@ -62,7 +65,7 @@ export default function ProductMostProfitablePage() {
 
         {!loading && !error && sortedProducts.length === 0 && (
           <div className="mb-10 rounded-3xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-950/80">
-            No profit data available for this period.
+            {t('No profit data available for this period.')}
           </div>
         )}
 
@@ -72,11 +75,11 @@ export default function ProductMostProfitablePage() {
               <table className="w-full text-left min-w-[700px]">
                 <thead className="bg-slate-50 dark:bg-slate-900/50 text-xs uppercase tracking-wider text-slate-500 font-bold">
                   <tr>
-                    <th className="px-6 py-5">Rank</th>
-                    <th className="px-6 py-5">Product Name</th>
-                    <th className="px-6 py-5">Profit</th>
-                    <th className="px-6 py-5">Revenue</th>
-                    <th className="px-6 py-5 text-center">Qty Sold</th>
+                    <th className="px-6 py-5">{t('Rank')}</th>
+                    <th className="px-6 py-5">{t('Product Name')}</th>
+                    <th className="px-6 py-5">{t('Profit')}</th>
+                    <th className="px-6 py-5">{t('Revenue')}</th>
+                    <th className="px-6 py-5 text-center">{t('Qty Sold')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-sm">

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import { useLanguage } from '../providers/useLanguage'
 import ReportControls from './Reports/ReportControls'
 import ReportOverview from './Reports/ReportOverview'
 import ReportTrendSection from './Reports/ReportTrendSection'
@@ -11,6 +12,8 @@ import { ReportSummary, ReportGrowth, ReportAverages } from './Reports/ReportCar
 import LastAIInsight from './Reports/LastAIInsight'
 import { useReportsData } from '../hooks/useReportsData'
 import type { Transaction } from '../../types/types'
+
+type Translate = (key: string) => string
 
 type JsPdfWithAutoTable = jsPDF & {
   lastAutoTable?: {
@@ -49,37 +52,38 @@ const generateReportInsights = (params: {
   stockSummary: { lowStock: { name: string; qty: number }[] }
   bestByQty: { name: string; qty: number }[]
   filteredTransactions: unknown[]
+  t: Translate
 }) => {
-  const { currentTotals, stockSummary, bestByQty, filteredTransactions } = params
+  const { currentTotals, stockSummary, bestByQty, filteredTransactions, t } = params
   const insights: string[] = []
   const netProfit = currentTotals.grossProfit - currentTotals.expenses
 
   if (filteredTransactions.length === 0) {
-    insights.push('No transactions recorded in this period. Focus on marketing and promotions to drive sales.')
+    insights.push(t('No transactions recorded in this period. Focus on marketing and promotions to drive sales.'))
     return insights
   }
 
   if (netProfit < 0) {
-    insights.push('Net profit negatif: bisnis mengalami kerugian. Tinjau kembali strategi harga, biaya, dan pemasaran untuk perbaikan.')
+    insights.push(t('Net profit is negative: the business is operating at a loss. Review pricing, costs, and marketing strategy for improvement.'))
   } else {
-    insights.push('Net profit positif: performa bisnis sehat, lanjutkan strategi yang berjalan baik.')
+    insights.push(t('Net profit is positive: business performance is healthy, continue the strategy that is working well.'))
   }
 
   if (currentTotals.expenses > currentTotals.revenue * 0.6) {
-    insights.push('Expense tinggi dibanding revenue. Evaluasi biaya operasional untuk meningkatkan margin.')
+    insights.push(t('Expenses are high compared with revenue. Evaluate operating costs to improve margins.'))
   }
 
   if (stockSummary.lowStock.length > 0) {
     const lowNames = stockSummary.lowStock.slice(0, 3).map((item) => item.name).join(', ')
-    insights.push(`Stok rendah terdeteksi pada produk: ${lowNames}. Segera restock agar penjualan tidak terhenti.`)
+    insights.push(`${t('Low stock detected for products')}: ${lowNames}. ${t('Restock soon so sales do not stop.')}`)
   }
 
   if (bestByQty.length > 0) {
-    insights.push(`Produk best seller: ${bestByQty[0].name}. Pertahankan stok dan fokus pada produk ini.`)
+    insights.push(`${t('Best seller product')}: ${bestByQty[0].name}. ${t('Maintain stock and focus on this product.')}`)
   }
 
   if (currentTotals.revenue > 0 && netProfit / currentTotals.revenue < 0.15) {
-    insights.push('Margin profit rendah. Evaluasi harga modal dan harga jual untuk menjaga profitabilitas.')
+    insights.push(t('Profit margin is low. Review cost price and sale price to protect profitability.'))
   }
 
   return insights
@@ -95,6 +99,7 @@ const formatCsvDate = (value: string) => {
 
 export default function Reports() {
   const navigate = useNavigate()
+  const { t } = useLanguage()
   const [previewOpen, setPreviewOpen] = useState(false)
 
   const {
@@ -164,26 +169,27 @@ export default function Reports() {
       stockSummary,
       bestByQty,
       filteredTransactions,
+      t,
     })
 
     const summaryRows: string[][] = [
-      ['SECTION: SUMMARY'],
-      ['Date Range', dateRangeLabel],
-      ['Filter Type', filterTypeLabel],
-      ['Revenue', fmt.format(currentTotals.revenue)],
-      ['Gross Profit', fmt.format(currentTotals.grossProfit)],
-      ['Expenses', fmt.format(currentTotals.expenses)],
-      ['Net Profit', fmt.format(currentTotals.grossProfit - currentTotals.expenses)],
-      ['Transaction Count', String(currentTotals.transactionsCount)],
-      ['Average Transaction', fmt.format(averageTransaction)],
-      ['Stock Value', fmt.format(stockSummary.value)],
-      ['Total Stock Qty', String(stocks.reduce((sum, stock) => sum + safeNumber(stock.total), 0))],
-      ['Low Stock Count', String(lowStockCount)],
+      [t('SECTION: SUMMARY')],
+      [t('Date Range'), dateRangeLabel],
+      [t('Filter Type'), filterTypeLabel],
+      [t('Revenue'), fmt.format(currentTotals.revenue)],
+      [t('Gross Profit'), fmt.format(currentTotals.grossProfit)],
+      [t('Expenses'), fmt.format(currentTotals.expenses)],
+      [t('Net Profit'), fmt.format(currentTotals.grossProfit - currentTotals.expenses)],
+      [t('Transaction Count'), String(currentTotals.transactionsCount)],
+      [t('Average Transaction'), fmt.format(averageTransaction)],
+      [t('Stock Value'), fmt.format(stockSummary.value)],
+      [t('Total Stock Qty'), String(stocks.reduce((sum, stock) => sum + safeNumber(stock.total), 0))],
+      [t('Low Stock Count'), String(lowStockCount)],
     ]
 
     const transactionRows: string[][] = [
-      ['SECTION: TRANSACTIONS'],
-      ['Date', 'Product Name', 'Qty', 'Cost Price', 'Sale Price', 'Revenue', 'Gross Profit', 'Created At'],
+      [t('SECTION: TRANSACTIONS')],
+      [t('Date'), t('Product Name'), t('Qty'), t('Cost Price'), t('Sale Price'), t('Revenue'), t('Gross Profit'), t('Created At')],
       ...filteredTransactions.map((transaction) => {
         const costPrice = transaction.harga_modal ?? null
         const salePrice = transaction.harga_jual ?? null
@@ -192,7 +198,7 @@ export default function Reports() {
           : safeNumber(transaction.total) - safeNumber(costPrice) * safeNumber(transaction.qty)
         return [
           formatCsvDate(transaction.created_at),
-          transaction.product_name ?? 'Manual Sale',
+          transaction.product_name ?? t('Manual Sale'),
           String(transaction.qty ?? ''),
           costPrice != null ? fmt.format(costPrice) : '',
           salePrice != null ? fmt.format(salePrice) : '',
@@ -204,11 +210,11 @@ export default function Reports() {
     ]
 
     const expenseRows: string[][] = [
-      ['SECTION: EXPENSES'],
-      ['Date', 'Expense Name / Category', 'Amount', 'Note', 'Created At'],
+      [t('SECTION: EXPENSES')],
+      [t('Date'), t('Expense Name / Category'), t('Amount'), t('Note'), t('Created At')],
       ...filteredExpenses.map((expense) => [
         formatCsvDate(expense.created_at),
-        expense.description ?? 'Expense',
+        expense.description ?? t('Expense'),
         fmt.format(expense.total ?? 0),
         '',
         expense.created_at,
@@ -216,8 +222,8 @@ export default function Reports() {
     ]
 
     const stockRows: string[][] = [
-      ['SECTION: STOCK'],
-      ['Product Name', 'Current Stock', 'Cost Price', 'Sale Price', 'Stock Value', 'Status'],
+      [t('SECTION: STOCK')],
+      [t('Product Name'), t('Current Stock'), t('Cost Price'), t('Sale Price'), t('Stock Value'), t('Status')],
       ...stocks.map((stock) => {
         const product = productDetails.get(stock.product_id)
         const qty = safeNumber(stock.total)
@@ -230,14 +236,14 @@ export default function Reports() {
           fmt.format(costPrice),
           fmt.format(salePrice),
           fmt.format(value),
-          qty <= 5 ? 'Low Stock' : 'OK',
+          qty <= 5 ? t('Low Stock') : t('OK'),
         ]
       }),
     ]
 
     const bestSellingRows: string[][] = [
-      ['SECTION: BEST SELLING PRODUCTS'],
-      ['Product Name', 'Total Qty Sold', 'Revenue', 'Gross Profit'],
+      [t('SECTION: BEST SELLING PRODUCTS')],
+      [t('Product Name'), t('Total Qty Sold'), t('Revenue'), t('Gross Profit')],
       ...bestByQty.map((product) => [
         product.name,
         String(product.qty),
@@ -247,7 +253,7 @@ export default function Reports() {
     ]
 
     const insightRows: string[][] = [
-      ['SECTION: INSIGHTS'],
+      [t('SECTION: INSIGHTS')],
       ...insights.map((insight) => [insight]),
     ]
 
@@ -275,8 +281,8 @@ export default function Reports() {
 
   const handleExportFullReportPdf = () => {
     const doc = new jsPDF({ unit: 'pt', format: 'a4' })
-    const title = 'Business Report'
-    const reportDate = filterType === 'today' ? `Date: ${dateRangeLabel}` : `Date range: ${dateRangeLabel}`
+    const title = t('Business Report')
+    const reportDate = filterType === 'today' ? `${t('Date')}: ${dateRangeLabel}` : `${t('Date range')}: ${dateRangeLabel}`
     const netProfit = currentTotals.grossProfit - currentTotals.expenses
     const netMargin = currentTotals.revenue ? netProfit / currentTotals.revenue : 0
     const expenseRatio = currentTotals.grossProfit ? currentTotals.expenses / currentTotals.grossProfit : 0
@@ -285,126 +291,127 @@ export default function Reports() {
       stockSummary,
       bestByQty,
       filteredTransactions,
+      t,
     })
 
     doc.setFontSize(18)
     doc.text(title, 40, 48)
     doc.setFontSize(10)
     doc.text(reportDate, 40, 68)
-    doc.text(`Generated: ${new Date().toLocaleDateString('en-CA')}`, 40, 82)
+    doc.text(`${t('Generated')}: ${new Date().toLocaleDateString('en-CA')}`, 40, 82)
 
     const summaryBody = [
-      ['Revenue', fmt.format(currentTotals.revenue)],
-      ['Gross Profit', fmt.format(currentTotals.grossProfit)],
-      ['Expenses', fmt.format(currentTotals.expenses)],
-      ['Net Profit', fmt.format(netProfit)],
-      ['Transaction Count', String(currentTotals.transactionsCount)],
-      ['Average Transaction', currentTotals.transactionsCount ? fmt.format(currentTotals.revenue / currentTotals.transactionsCount) : fmt.format(0)],
-      ['Stock Value', fmt.format(stockSummary.value)],
-      ['Low Stock Count', String(stockSummary.lowStock.length)],
-      ['Net Margin', `${(netMargin * 100).toFixed(1)}%`],
-      ['Expense Ratio', currentTotals.grossProfit ? `${(expenseRatio * 100).toFixed(1)}%` : 'N/A'],
+      [t('Revenue'), fmt.format(currentTotals.revenue)],
+      [t('Gross Profit'), fmt.format(currentTotals.grossProfit)],
+      [t('Expenses'), fmt.format(currentTotals.expenses)],
+      [t('Net Profit'), fmt.format(netProfit)],
+      [t('Transaction Count'), String(currentTotals.transactionsCount)],
+      [t('Average Transaction'), currentTotals.transactionsCount ? fmt.format(currentTotals.revenue / currentTotals.transactionsCount) : fmt.format(0)],
+      [t('Stock Value'), fmt.format(stockSummary.value)],
+      [t('Low Stock Count'), String(stockSummary.lowStock.length)],
+      [t('Net Margin'), `${(netMargin * 100).toFixed(1)}%`],
+      [t('Expense Ratio'), currentTotals.grossProfit ? `${(expenseRatio * 100).toFixed(1)}%` : t('N/A')],
     ]
 
     autoTable(doc, {
-  startY: 100,
-  head: [['Summary metric', 'Value']],
-  body: summaryBody,
-  theme: 'striped',
-  styles: { fontSize: 10, cellPadding: 4 },
-  headStyles: { fillColor: [14, 110, 224] },
-  columnStyles: { 0: { cellWidth: 180 }, 1: { cellWidth: 180 } },
-})
+      startY: 100,
+      head: [[t('Summary metric'), t('Value')]],
+      body: summaryBody,
+      theme: 'striped',
+      styles: { fontSize: 10, cellPadding: 4 },
+      headStyles: { fillColor: [14, 110, 224] },
+      columnStyles: { 0: { cellWidth: 180 }, 1: { cellWidth: 180 } },
+    })
 
-let currentY = getLastAutoTableY(doc, 100)
-currentY += 24
+    let currentY = getLastAutoTableY(doc, 100)
+    currentY += 24
 
-doc.setFontSize(12)
-doc.text('Business Insights', 40, currentY)
-currentY += 14
+    doc.setFontSize(12)
+    doc.text(t('Business Insights'), 40, currentY)
+    currentY += 14
 
-doc.setFontSize(10)
-insights.slice(0, 6).forEach((insight) => {
-  doc.text(`• ${insight}`, 48, currentY)
-  currentY += 14
-})
+    doc.setFontSize(10)
+    insights.slice(0, 6).forEach((insight) => {
+      doc.text(`• ${insight}`, 48, currentY)
+      currentY += 14
+    })
 
-currentY += 10
+    currentY += 10
 
-autoTable(doc, {
-  startY: currentY,
-  head: [['Best Selling Product', 'Qty Sold', 'Revenue', 'Gross Profit']],
-  body: bestByQty.slice(0, 5).map((product) => [
-    product.name,
-    String(product.qty),
-    fmt.format(product.revenue),
-    fmt.format(product.profit),
-  ]),
-  theme: 'grid',
-  styles: { fontSize: 9, cellPadding: 4 },
-  headStyles: { fillColor: [22, 163, 74] },
-})
+    autoTable(doc, {
+      startY: currentY,
+      head: [[t('Best Selling Product'), t('Qty Sold'), t('Revenue'), t('Gross Profit')]],
+      body: bestByQty.slice(0, 5).map((product) => [
+        product.name,
+        String(product.qty),
+        fmt.format(product.revenue),
+        fmt.format(product.profit),
+      ]),
+      theme: 'grid',
+      styles: { fontSize: 9, cellPadding: 4 },
+      headStyles: { fillColor: [22, 163, 74] },
+    })
 
-currentY = getLastAutoTableY(doc, currentY)
-currentY += 20
+    currentY = getLastAutoTableY(doc, currentY)
+    currentY += 20
 
-autoTable(doc, {
-  startY: currentY,
-  head: [['Expense Category', 'Amount']],
-  body: expenseBreakdown.slice(0, 5).map((item) => [
-    item.name,
-    fmt.format(item.total),
-  ]),
-  theme: 'grid',
-  styles: { fontSize: 9, cellPadding: 4 },
-  headStyles: { fillColor: [234, 88, 12] },
-})
+    autoTable(doc, {
+      startY: currentY,
+      head: [[t('Expense Category'), t('Amount')]],
+      body: expenseBreakdown.slice(0, 5).map((item) => [
+        item.name,
+        fmt.format(item.total),
+      ]),
+      theme: 'grid',
+      styles: { fontSize: 9, cellPadding: 4 },
+      headStyles: { fillColor: [234, 88, 12] },
+    })
 
-currentY = getLastAutoTableY(doc, currentY)
-currentY += 20
+    currentY = getLastAutoTableY(doc, currentY)
+    currentY += 20
 
-autoTable(doc, {
-  startY: currentY,
-  head: [['Low Stock Product', 'Qty', 'Status']],
-  body: stockSummary.lowStock.slice(0, 10).map((item) => [
-    item.name,
-    String(item.qty),
-    item.qty <= 5 ? 'Low Stock' : 'OK',
-  ]),
-  theme: 'grid',
-  styles: { fontSize: 9, cellPadding: 4 },
-  headStyles: { fillColor: [220, 38, 38] },
-})
+    autoTable(doc, {
+      startY: currentY,
+      head: [[t('Low Stock Product'), t('Qty'), t('Status')]],
+      body: stockSummary.lowStock.slice(0, 10).map((item) => [
+        item.name,
+        String(item.qty),
+        item.qty <= 5 ? t('Low Stock') : t('OK'),
+      ]),
+      theme: 'grid',
+      styles: { fontSize: 9, cellPadding: 4 },
+      headStyles: { fillColor: [220, 38, 38] },
+    })
 
-currentY = getLastAutoTableY(doc, currentY)
-currentY += 20
+    currentY = getLastAutoTableY(doc, currentY)
+    currentY += 20
 
-const recentTransactions = filteredTransactions.slice(0, 10)
+    const recentTransactions = filteredTransactions.slice(0, 10)
 
-if (recentTransactions.length > 0) {
-  autoTable(doc, {
-    startY: currentY,
-    head: [['Date', 'Product', 'Qty', 'Revenue', 'Gross Profit']],
-    body: recentTransactions.map((transaction) => {
-      const grossProfit =
-        transaction.profit != null
-          ? transaction.profit
-          : safeNumber(transaction.total) -
-            safeNumber(transaction.harga_modal) * safeNumber(transaction.qty)
+    if (recentTransactions.length > 0) {
+      autoTable(doc, {
+        startY: currentY,
+        head: [[t('Date'), t('Product'), t('Qty'), t('Revenue'), t('Gross Profit')]],
+        body: recentTransactions.map((transaction) => {
+          const grossProfit =
+            transaction.profit != null
+              ? transaction.profit
+              : safeNumber(transaction.total) -
+                safeNumber(transaction.harga_modal) * safeNumber(transaction.qty)
 
-      return [
-        formatCsvDate(transaction.created_at),
-        transaction.product_name ?? 'Manual Sale',
-        String(transaction.qty ?? ''),
-        fmt.format(transaction.total ?? 0),
-        fmt.format(grossProfit),
-      ]
-    }),
-    theme: 'grid',
-    styles: { fontSize: 9, cellPadding: 4 },
-    headStyles: { fillColor: [71, 85, 105] },
-  })
-}
+          return [
+            formatCsvDate(transaction.created_at),
+            transaction.product_name ?? t('Manual Sale'),
+            String(transaction.qty ?? ''),
+            fmt.format(transaction.total ?? 0),
+            fmt.format(grossProfit),
+          ]
+        }),
+        theme: 'grid',
+        styles: { fontSize: 9, cellPadding: 4 },
+        headStyles: { fillColor: [71, 85, 105] },
+      })
+    }
 
     const fileName = filterType === 'today'
       ? `business-report-today-${startDate}.pdf`
@@ -414,11 +421,12 @@ if (recentTransactions.length > 0) {
   }
 
   const previewInsights = generateReportInsights({
-    currentTotals,
-    stockSummary,
-    bestByQty,
-    filteredTransactions,
-  })
+      currentTotals,
+      stockSummary,
+      bestByQty,
+      filteredTransactions,
+      t,
+    })
 
   const averageTransaction = currentTotals.transactionsCount
     ? currentTotals.revenue / currentTotals.transactionsCount
@@ -432,10 +440,10 @@ if (recentTransactions.length > 0) {
         <div className="mb-8 overflow-hidden rounded-[30px] border border-slate-200 bg-white/90 p-6 shadow-xl shadow-slate-900/10 transition-colors dark:border-slate-700 dark:bg-slate-950/95">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div>
-              <p className="text-sm uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">Reports</p>
-              <h1 className="mt-3 text-4xl font-semibold text-slate-900 dark:text-white">Financial intelligence and inventory performance</h1>
+              <p className="text-sm uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">{t('Reports')}</p>
+              <h1 className="mt-3 text-4xl font-semibold text-slate-900 dark:text-white">{t('Financial intelligence and inventory performance')}</h1>
               <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-400">
-                Monitor revenue, expenses, profitability, product performance, and growth with a polished executive view.
+                {t('Monitor revenue, expenses, profitability, product performance, and growth with a polished executive view.')}
               </p>
             </div>
 
@@ -446,7 +454,7 @@ if (recentTransactions.length > 0) {
                 disabled={loading || (!filteredTransactions.length && !filteredExpenses.length && !stocks.length)}
                 className="inline-flex items-center justify-center rounded-2xl bg-sky-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-900/20 transition duration-200 hover:-translate-y-0.5 hover:bg-sky-700 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-600"
               >
-                Export Full Report CSV
+                {t('Export Full Report CSV')}
               </button>
 
               <button
@@ -455,7 +463,7 @@ if (recentTransactions.length > 0) {
                 disabled={loading || (!filteredTransactions.length && !filteredExpenses.length && !stocks.length)}
                 className="inline-flex items-center justify-center rounded-2xl border border-slate-700 bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-slate-500 hover:bg-slate-800 disabled:cursor-not-allowed disabled:border-slate-700 disabled:bg-slate-800 disabled:text-slate-400"
               >
-                Export PDF Business Report
+                {t('Export PDF Business Report')}
               </button>
 
               <button
@@ -463,7 +471,7 @@ if (recentTransactions.length > 0) {
                 onClick={() => setPreviewOpen((open) => !open)}
                 className="inline-flex items-center justify-center rounded-2xl border border-slate-700 bg-slate-800 px-5 py-3 text-sm font-semibold text-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-slate-500 hover:bg-slate-700"
               >
-                {previewOpen ? 'Hide Report Preview' : 'Preview Full Report'}
+                {previewOpen ? t('Hide Report Preview') : t('Preview Full Report')}
               </button>
             </div>
           </div>
@@ -473,10 +481,10 @@ if (recentTransactions.length > 0) {
           <section className="mb-8 overflow-hidden rounded-[30px] border border-slate-200 bg-white/90 p-6 shadow-xl shadow-slate-900/10 transition-colors dark:border-slate-700 dark:bg-slate-950/95">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-sm uppercase tracking-[0.35em] text-sky-400">Preview</p>
-                <h2 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">Full report preview</h2>
+                <p className="text-sm uppercase tracking-[0.35em] text-sky-400">{t('Preview')}</p>
+                <h2 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">{t('Full report preview')}</h2>
                 <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-400">
-                  look at the key insights, top products, and recent transactions that will be included in the full report. Use this preview to quickly assess the business performance before exporting the complete report.
+                  {t('look at the key insights, top products, and recent transactions that will be included in the full report. Use this preview to quickly assess the business performance before exporting the complete report.')}
                 </p>
               </div>
               <button
@@ -484,33 +492,33 @@ if (recentTransactions.length > 0) {
                 onClick={() => setPreviewOpen(false)}
                 className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 transition duration-200 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
               >
-                Close Preview
+                {t('Close Preview')}
               </button>
             </div>
 
             <div className="mt-8 grid gap-4 xl:grid-cols-4">
               <div className="rounded-[28px] border border-slate-200 bg-slate-50 p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-                <p className="text-sm font-semibold uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">Date range</p>
+                <p className="text-sm font-semibold uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">{t('Date range')}</p>
                 <p className="mt-3 text-lg font-semibold text-slate-900 dark:text-white">{dateRangeLabel}</p>
                 <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{filterTypeLabel}</p>
               </div>
               <div className="rounded-[28px] border border-slate-200 bg-slate-50 p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-                <p className="text-sm font-semibold uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">Revenue</p>
+                <p className="text-sm font-semibold uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">{t('Revenue')}</p>
                 <p className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">{fmt.format(currentTotals.revenue)}</p>
               </div>
               <div className="rounded-[28px] border border-slate-200 bg-slate-50 p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-                <p className="text-sm font-semibold uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">Gross profit</p>
+                <p className="text-sm font-semibold uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">{t('Gross profit')}</p>
                 <p className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">{fmt.format(currentTotals.grossProfit)}</p>
               </div>
               <div className="rounded-[28px] border border-slate-200 bg-slate-50 p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-                <p className="text-sm font-semibold uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">Net profit</p>
+                <p className="text-sm font-semibold uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">{t('Net profit')}</p>
                 <p className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">{fmt.format(currentTotals.grossProfit - currentTotals.expenses)}</p>
               </div>
             </div>
 
             <div className="mt-8 grid gap-6 xl:grid-cols-3">
               <div className="rounded-[28px] border border-slate-200 bg-slate-50 p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-                <p className="text-sm font-semibold uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">Business insights</p>
+                <p className="text-sm font-semibold uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">{t('Business insights')}</p>
                 <ul className="mt-4 space-y-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
                   {previewInsights.length > 0 ? (
                     previewInsights.slice(0, 5).map((insight) => (
@@ -520,26 +528,26 @@ if (recentTransactions.length > 0) {
                       </li>
                     ))
                   ) : (
-                    <li>No insights available for the selected period.</li>
+                    <li>{t('No insights available for the selected period.')}</li>
                   )}
                 </ul>
               </div>
 
               <div className="rounded-[28px] border border-slate-200 bg-slate-50 p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-                <p className="text-sm font-semibold uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">Best selling products</p>
+                <p className="text-sm font-semibold uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">{t('Best selling products')}</p>
                 <div className="mt-4 space-y-3 text-sm text-slate-700 dark:text-slate-200">
                   {bestByQty.slice(0, 5).map((product) => (
                     <div key={product.name} className="flex items-center justify-between rounded-2xl bg-white/80 p-3 shadow-sm dark:bg-slate-950/70">
                       <span className="font-medium">{product.name}</span>
-                      <span className="text-sm text-slate-500 dark:text-slate-400">{product.qty} pcs</span>
+                      <span className="text-sm text-slate-500 dark:text-slate-400">{product.qty} {t('pcs')}</span>
                     </div>
                   ))}
-                  {!bestByQty.length && <p className="text-slate-500 dark:text-slate-400">No best-selling products available.</p>}
+                  {!bestByQty.length && <p className="text-slate-500 dark:text-slate-400">{t('No best-selling products available.')}</p>}
                 </div>
               </div>
 
               <div className="rounded-[28px] border border-slate-200 bg-slate-50 p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-                <p className="text-sm font-semibold uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">Low stock</p>
+                <p className="text-sm font-semibold uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">{t('Low stock')}</p>
                 <div className="mt-4 space-y-3 text-sm text-slate-700 dark:text-slate-200">
                   {stockSummary.lowStock.slice(0, 5).map((item) => (
                     <div key={item.name} className="flex items-center justify-between rounded-2xl bg-white/80 p-3 shadow-sm dark:bg-slate-950/70">
@@ -547,37 +555,37 @@ if (recentTransactions.length > 0) {
                       <span className="text-sm text-rose-600 dark:text-rose-400">{item.qty}</span>
                     </div>
                   ))}
-                  {!stockSummary.lowStock.length && <p className="text-slate-500 dark:text-slate-400">No low stock items available.</p>}
+                  {!stockSummary.lowStock.length && <p className="text-slate-500 dark:text-slate-400">{t('No low stock items available.')}</p>}
                 </div>
               </div>
             </div>
 
             <div className="mt-8 grid gap-4 sm:grid-cols-2">
               <div className="rounded-[28px] border border-slate-200 bg-slate-50 p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-                <p className="text-sm font-semibold uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">Transactions</p>
+                <p className="text-sm font-semibold uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">{t('Transactions')}</p>
                 <p className="mt-3 text-3xl font-semibold text-slate-900 dark:text-white">{filteredTransactions.length}</p>
-                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Recent rows included in export preview.</p>
+                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{t('Recent rows included in export preview.')}</p>
               </div>
               <div className="rounded-[28px] border border-slate-200 bg-slate-50 p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-                <p className="text-sm font-semibold uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">Average transaction</p>
+                <p className="text-sm font-semibold uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">{t('Average transaction')}</p>
                 <p className="mt-3 text-3xl font-semibold text-slate-900 dark:text-white">{fmt.format(averageTransaction)}</p>
-                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Average transaction value for the selected period.</p>
+                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{t('Average transaction value for the selected period.')}</p>
               </div>
             </div>
 
-            <div className="mt-8 overflow-hidden rounded-[28px] border border-slate-200 bg-slate-50 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+              <div className="mt-8 overflow-hidden rounded-[28px] border border-slate-200 bg-slate-50 shadow-sm dark:border-slate-700 dark:bg-slate-900">
               <div className="border-b border-slate-200 px-5 py-4 text-sm font-semibold uppercase tracking-[0.35em] text-slate-600 dark:border-slate-700 dark:text-slate-400">
-                Transaction preview
+                {t('Transaction preview')}
               </div>
               <div className="overflow-x-auto px-5 pb-5 pt-3">
                 <table className="min-w-full divide-y divide-slate-200 text-sm text-slate-700 dark:divide-slate-700 dark:text-slate-200">
                   <thead className="bg-slate-100 text-left text-[0.8rem] uppercase tracking-[0.25em] text-slate-500 dark:bg-slate-800 dark:text-slate-400">
                     <tr>
-                      <th className="px-3 py-3">Date</th>
-                      <th className="px-3 py-3">Product</th>
-                      <th className="px-3 py-3">Qty</th>
-                      <th className="px-3 py-3">Revenue</th>
-                      <th className="px-3 py-3">Gross Profit</th>
+                      <th className="px-3 py-3">{t('Date')}</th>
+                      <th className="px-3 py-3">{t('Product')}</th>
+                      <th className="px-3 py-3">{t('Qty')}</th>
+                      <th className="px-3 py-3">{t('Revenue')}</th>
+                      <th className="px-3 py-3">{t('Gross Profit')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
@@ -591,7 +599,7 @@ if (recentTransactions.length > 0) {
                         return (
                           <tr key={`${transaction.created_at}-${transaction.product_name}-${transaction.qty}`}>
                             <td className="px-3 py-3">{formatCsvDate(transaction.created_at)}</td>
-                            <td className="px-3 py-3">{transaction.product_name ?? 'Manual Sale'}</td>
+                            <td className="px-3 py-3">{transaction.product_name ?? t('Manual Sale')}</td>
                             <td className="px-3 py-3">{String(transaction.qty ?? '')}</td>
                             <td className="px-3 py-3">{fmt.format(transaction.total ?? 0)}</td>
                             <td className="px-3 py-3">{fmt.format(grossProfit)}</td>
@@ -601,7 +609,7 @@ if (recentTransactions.length > 0) {
                     ) : (
                       <tr>
                         <td colSpan={5} className="px-3 py-5 text-center text-sm text-slate-500 dark:text-slate-400">
-                          No transactions available for the selected period.
+                          {t('No transactions available for the selected period.')}
                         </td>
                       </tr>
                     )}
@@ -639,7 +647,7 @@ if (recentTransactions.length > 0) {
             onClick={() => navigate(`/reports/growth?type=${filterType}&start=${startDate}&end=${endDate}`)}
             className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-medium transition-colors shadow-lg hover:shadow-xl"
           >
-            View Detailed Growth Analysis →
+            {t('View Detailed Growth Analysis →')}
           </button>
         </div>
 
@@ -682,7 +690,7 @@ if (recentTransactions.length > 0) {
             onClick={() => navigate(`/reports/trends?type=${filterType}&start=${startDate}&end=${endDate}`)}
             className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-medium transition-colors shadow-lg hover:shadow-xl"
           >
-            View Complete Trend Analysis →
+            {t('View Complete Trend Analysis →')}
           </button>
         </div>
 

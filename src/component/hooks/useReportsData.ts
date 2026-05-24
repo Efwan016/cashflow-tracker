@@ -1,12 +1,31 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from '../../lib/supabase'
+import { useLanguage } from '../providers/useLanguage'
 import { createCurrencyFormatter, createNumberFormatter, getTzOffset } from '../../lib/utils'
 import type { Expense, FilterType, Product, Stock, Transaction } from '../../types/types'
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24
 const ITEMS_PER_PAGE = 5
+const LANGUAGE_LOCALES = {
+  en: 'en-US',
+  id: 'id-ID',
+  es: 'es-ES',
+  zh: 'zh-CN',
+  fr: 'fr-FR',
+  de: 'de-DE',
+  ja: 'ja-JP',
+  pt: 'pt-PT',
+  ru: 'ru-RU',
+  ar: 'ar-SA',
+} as const
 
 const formatLocalDate = (date: Date) => date.toLocaleDateString('en-CA')
+const formatDisplayDate = (
+  date: Date,
+  language: keyof typeof LANGUAGE_LOCALES,
+  options: Intl.DateTimeFormatOptions
+) => date.toLocaleDateString(LANGUAGE_LOCALES[language], options)
+
 const parseLocalDate = (value: string) => {
   const [year, month, day] = value.split('-')
   return new Date(Number(year), Number(month) - 1, Number(day))
@@ -113,6 +132,7 @@ const normalizeProductName = (rawName: string) => {
 }
 
 export function useReportsData(initialFilterType?: FilterType, initialStartDate?: string, initialEndDate?: string) {
+  const { t, language } = useLanguage()
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [stocks, setStocks] = useState<Stock[]>([])
@@ -151,40 +171,40 @@ export function useReportsData(initialFilterType?: FilterType, initialStartDate?
 
   const dateRangeLabel = useMemo(() => {
     if (currentRange.start === currentRange.end) {
-      return new Date(currentRange.start).toLocaleDateString(undefined, {
+      return formatDisplayDate(parseLocalDate(currentRange.start), language, {
         day: 'numeric',
         month: 'short',
         year: 'numeric',
       })
     }
-    return `${new Date(currentRange.start).toLocaleDateString(undefined, {
+    return `${formatDisplayDate(parseLocalDate(currentRange.start), language, {
       day: 'numeric',
       month: 'short',
-    })} - ${new Date(currentRange.end).toLocaleDateString(undefined, {
+    })} - ${formatDisplayDate(parseLocalDate(currentRange.end), language, {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
     })}`
-  }, [currentRange])
+  }, [currentRange, language])
 
   const filterTypeLabel = useMemo(() => {
     switch (filterType) {
       case 'today':
-        return 'Today'
+        return t('Today')
       case 'last7':
-        return 'Last 7 days'
+        return t('Last 7 days')
       case 'thisMonth':
-        return 'This month'
+        return t('This month')
       case 'last3month':
-        return 'Last 3 months'
+        return t('Last 3 months')
       case 'specific':
-        return 'Pick a date'
+        return t('Pick a date')
       case 'range':
-        return 'Custom range'
+        return t('Custom range')
       default:
-        return 'Date range'
+        return t('Date range')
     }
-  }, [filterType])
+  }, [filterType, t])
 
   const fmt = useMemo(() => createCurrencyFormatter(), [])
   const num = useMemo(() => createNumberFormatter(), [])
@@ -196,8 +216,8 @@ export function useReportsData(initialFilterType?: FilterType, initialStartDate?
 
   const getProductName = useCallback(
     (transaction: Transaction) =>
-      (transaction.product_id ? productDetails.get(transaction.product_id)?.name : null) ?? transaction.product_name ?? 'Manual Sale',
-    [productDetails]
+      (transaction.product_id ? productDetails.get(transaction.product_id)?.name : null) ?? transaction.product_name ?? t('Manual Sale'),
+    [productDetails, t]
   )
 
   const filterByRange = useCallback(
@@ -330,99 +350,99 @@ export function useReportsData(initialFilterType?: FilterType, initialStartDate?
   const summaryCards = useMemo(
     () => [
       {
-        title: 'Revenue',
+        title: t('Revenue'),
         value: fmt.format(currentTotals.revenue),
-        helpText: 'Sum of all filtered transaction totals.',
+        helpText: t('Sum of all filtered transaction totals.'),
         badgeClass: 'inline-flex rounded-3xl bg-sky-50 px-3 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-sky-700',
       },
       {
-        title: 'Gross profit',
+        title: t('Gross profit'),
         value: fmt.format(currentTotals.grossProfit),
-        helpText: 'Aggregate of transaction profit values.',
+        helpText: t('Aggregate of transaction profit values.'),
         badgeClass: 'inline-flex rounded-3xl bg-emerald-50 px-3 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700',
       },
       {
-        title: 'Expenses',
+        title: t('Expenses'),
         value: fmt.format(currentTotals.expenses),
-        helpText: 'Total expense amount in the selected window.',
+        helpText: t('Total expense amount in the selected window.'),
         badgeClass: 'inline-flex rounded-3xl bg-rose-50 px-3 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-rose-700',
       },
       {
-        title: 'Net profit',
+        title: t('Net profit'),
         value: fmt.format(currentTotals.grossProfit - currentTotals.expenses),
-        helpText: 'Gross profit minus total expenses.',
+        helpText: t('Gross profit minus total expenses.'),
         badgeClass: 'inline-flex rounded-3xl bg-indigo-50 px-3 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-indigo-700',
       },
     ],
-    [currentTotals, fmt]
+    [currentTotals, fmt, t]
   )
 
   const growthCards = useMemo(
     () => [
       {
-        title: 'Revenue Growth',
+        title: t('Revenue Growth'),
         displayValue: fmt.format(currentTotals.revenue),
         growthLabel: formatPercentage(revenueGrowth),
         growthClass: revenueGrowth >= 0 ? 'rounded-3xl bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700' : 'rounded-3xl bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700',
-        helpText: 'Current period compared to the previous period.',
+        helpText: t('Current period compared to the previous period.'),
       },
       {
-        title: 'Profit Growth',
+        title: t('Profit Growth'),
         displayValue: fmt.format(currentTotals.grossProfit),
         growthLabel: formatPercentage(profitGrowth),
         growthClass: profitGrowth >= 0 ? 'rounded-3xl bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700' : 'rounded-3xl bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700',
-        helpText: 'Higher profit is positive for business health.',
+        helpText: t('Higher profit is positive for business health.'),
       },
       {
-        title: 'Expense Growth',
+        title: t('Expense Growth'),
         displayValue: fmt.format(currentTotals.expenses),
         growthLabel: formatPercentage(expenseGrowth),
         growthClass:
           expenseGrowth <= 0
             ? 'rounded-3xl bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700'
             : 'rounded-3xl bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-700',
-        helpText: 'Lower expense growth is generally healthier.',
+        helpText: t('Lower expense growth is generally healthier.'),
       },
       {
-        title: 'Transaction Growth',
+        title: t('Transaction Growth'),
         displayValue: num.format(currentTotals.transactionsCount),
         growthLabel: formatPercentage(transactionGrowth),
         growthClass: transactionGrowth >= 0 ? 'rounded-3xl bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700' : 'rounded-3xl bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700',
-        helpText: 'Volume change in transaction count.',
+        helpText: t('Volume change in transaction count.'),
       },
     ],
-    [currentTotals, expenseGrowth, fmt, num, profitGrowth, revenueGrowth, transactionGrowth]
+    [currentTotals, expenseGrowth, fmt, num, profitGrowth, revenueGrowth, t, transactionGrowth]
   )
 
   const averageCards = useMemo(
     () => [
       {
-        title: 'Average Order',
+        title: t('Average Order'),
         value: currentTotals.transactionsCount ? fmt.format(currentTotals.revenue / currentTotals.transactionsCount) : fmt.format(0),
-        subtitle: 'Average revenue per transaction.',
+        subtitle: t('Average revenue per transaction.'),
       },
       {
-        title: 'Average Expense',
+        title: t('Average Expense'),
         value: filteredExpenses.length ? fmt.format(currentTotals.expenses / filteredExpenses.length) : fmt.format(0),
-        subtitle: 'Average cost per expense entry.',
+        subtitle: t('Average cost per expense entry.'),
       },
       {
-        title: 'Average Profit',
+        title: t('Average Profit'),
         value: currentTotals.transactionsCount ? fmt.format(currentTotals.grossProfit / currentTotals.transactionsCount) : fmt.format(0),
-        subtitle: 'Average gross profit per sale.',
+        subtitle: t('Average gross profit per sale.'),
       },
       {
-        title: 'Daily Profit Avg',
+        title: t('Daily Profit Avg'),
         value: daysInRange ? fmt.format((currentTotals.grossProfit - currentTotals.expenses) / daysInRange) : fmt.format(0),
-        subtitle: 'Average profit per day in range.',
+        subtitle: t('Average profit per day in range.'),
       },
       {
-        title: 'Avg Trx / Daily',
-        value: daysInRange ? `${(currentTotals.transactionsCount / daysInRange).toFixed(1)} trx` : '0 trx',
-        subtitle: 'Average transaction count per day.',
+        title: t('Avg Trx / Daily'),
+        value: daysInRange ? `${(currentTotals.transactionsCount / daysInRange).toFixed(1)} ${t('trx')}` : `0 ${t('trx')}`,
+        subtitle: t('Average transaction count per day.'),
       },
     ],
-    [currentTotals, daysInRange, fmt, filteredExpenses]
+    [currentTotals, daysInRange, fmt, filteredExpenses, t]
   )
 
   const trendChartData = useMemo(() => {
@@ -455,7 +475,7 @@ export function useReportsData(initialFilterType?: FilterType, initialStartDate?
     while (cursor <= end) {
       const key = formatLocalDate(cursor)
       const entry = map.get(key) ?? { revenue: 0, expense: 0, grossProfit: 0 }
-      labels.push(key)
+      labels.push(formatDisplayDate(cursor, language, { day: 'numeric', month: 'short', year: 'numeric' }))
       revenue.push(entry.revenue)
       expense.push(entry.expense)
       netProfit.push(entry.grossProfit - entry.expense)
@@ -463,7 +483,7 @@ export function useReportsData(initialFilterType?: FilterType, initialStartDate?
     }
 
     return { labels, revenue, expense, netProfit }
-  }, [filteredTransactions, filteredExpenses, currentRange])
+  }, [filteredTransactions, filteredExpenses, currentRange, language])
 
   const dayOfWeekData = useMemo(() => {
     const dailyData = new Array(7).fill(0).map(() => ({
@@ -517,23 +537,23 @@ export function useReportsData(initialFilterType?: FilterType, initialStartDate?
     })
 
     return {
-      labels: orderedLabels,
+      labels: orderedLabels.map((label) => t(label)),
       revenue: averageRevenue,
       expense: averageExpense,
       netProfit: averageNetProfit,
     }
-  }, [filteredTransactions, filteredExpenses, currentRange])
+  }, [filteredTransactions, filteredExpenses, currentRange, t])
 
   const monthlyComparisonChartData = useMemo(() => {
     const previousNetProfit = previousMonthTotals.grossProfit - previousMonthTotals.expenses
     const currentNetProfit = currentMonthTotals.grossProfit - currentMonthTotals.expenses
     return {
-      labels: ['Last month', 'This month'],
+      labels: [t('Last month'), t('This month')],
       revenue: [previousMonthTotals.revenue, currentMonthTotals.revenue],
       expense: [previousMonthTotals.expenses, currentMonthTotals.expenses],
       netProfit: [previousNetProfit, currentNetProfit],
     }
-  }, [currentMonthTotals, previousMonthTotals])
+  }, [currentMonthTotals, previousMonthTotals, t])
 
   const comparisonChartData = useMemo(() => {
     const buckets: { label: string; value: number }[] = []
@@ -559,7 +579,7 @@ export function useReportsData(initialFilterType?: FilterType, initialStartDate?
         while (cursor <= end) {
           const bucketEnd = addDays(cursor, 6)
           const lastDay = bucketEnd <= end ? bucketEnd : end
-          const label = `${cursor.toLocaleDateString(undefined, { day: 'numeric', month: 'short' })} - ${lastDay.toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}`
+          const label = `${formatDisplayDate(cursor, language, { day: 'numeric', month: 'short' })} - ${formatDisplayDate(lastDay, language, { day: 'numeric', month: 'short' })}`
           const bucketStartKey = formatLocalDate(cursor)
           const bucketEndKey = formatLocalDate(lastDay)
           const value = filteredTransactions.reduce((sum, tx) => {
@@ -573,7 +593,7 @@ export function useReportsData(initialFilterType?: FilterType, initialStartDate?
         const monthMap = new Map<string, number>()
         filteredTransactions.forEach((tx) => {
           const date = new Date(tx.created_at)
-          const label = date.toLocaleDateString(undefined, { month: 'short', year: 'numeric' })
+          const label = formatDisplayDate(date, language, { month: 'short', year: 'numeric' })
           monthMap.set(label, (monthMap.get(label) ?? 0) + safeNumber(tx.total))
         })
         Array.from(monthMap.entries()).forEach(([label, value]) => buckets.push({ label, value }))
@@ -586,7 +606,7 @@ export function useReportsData(initialFilterType?: FilterType, initialStartDate?
       expense: [],
       netProfit: [],
     }
-  }, [currentRange, filteredTransactions, filterType])
+  }, [currentRange, filteredTransactions, filterType, language])
 
   const productPerformance = useMemo(() => {
     const map = new Map<string, { name: string; qty: number; revenue: number; profit: number }>()
@@ -629,14 +649,14 @@ export function useReportsData(initialFilterType?: FilterType, initialStartDate?
   const expenseBreakdown = useMemo(() => {
     const map = new Map<string, number>()
     filteredExpenses.forEach((expense) => {
-      const label = expense.description?.trim() || 'Expense'
+      const label = expense.description?.trim() || t('Expense')
       map.set(label, (map.get(label) ?? 0) + safeNumber(expense.total))
     })
     return Array.from(map.entries())
       .map(([name, total]) => ({ name, total }))
       .sort((a, b) => b.total - a.total)
       .slice(0, 5)
-  }, [filteredExpenses])
+  }, [filteredExpenses, t])
 
   const maxExpenseCategory = useMemo(() => Math.max(1, ...expenseBreakdown.map((item) => item.total)), [expenseBreakdown])
 
@@ -680,13 +700,25 @@ export function useReportsData(initialFilterType?: FilterType, initialStartDate?
   }, [stockSummary.lowStock, lowStockPage])
 
   const comparisonTitle = useMemo(() => {
-    if (filterType === 'today') return 'Hour over Hour momentum'
-    if (filterType === 'last7') return daysInRange <= 1 ? 'Day over Day momentum' : 'Week over Week momentum'
-    if (filterType === 'thisMonth' || filterType === 'last3month') return 'Month over Month momentum'
-    return daysInRange <= 45 ? 'Week over Week momentum' : 'Month over Month momentum'
-  }, [filterType, daysInRange])
+    if (filterType === 'today') return t('Hour over Hour momentum')
+    if (filterType === 'last7') return daysInRange <= 1 ? t('Day over Day momentum') : t('Week over Week momentum')
+    if (filterType === 'thisMonth' || filterType === 'last3month') return t('Month over Month momentum')
+    return daysInRange <= 45 ? t('Week over Week momentum') : t('Month over Month momentum')
+  }, [filterType, daysInRange, t])
 
-  const monthComparisonSubtitle = `This month vs last month · ${currentMonthRange.start} - ${currentMonthRange.end}`
+  const monthComparisonSubtitle = useMemo(
+    () =>
+      `${t('This month vs last month')} · ${formatDisplayDate(parseLocalDate(currentMonthRange.start), language, {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      })} - ${formatDisplayDate(parseLocalDate(currentMonthRange.end), language, {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      })}`,
+    [currentMonthRange, language, t]
+  )
 
   const fetchPaged = useCallback(async () => {
     try {
@@ -752,7 +784,7 @@ export function useReportsData(initialFilterType?: FilterType, initialStartDate?
       const { data: authData } = await supabase.auth.getUser()
       const user = authData?.user
       if (!user) {
-        setError('User not authenticated.')
+        setError(t('User not authenticated.'))
         return
       }
 
@@ -811,7 +843,7 @@ export function useReportsData(initialFilterType?: FilterType, initialStartDate?
 
       if (transactionError || expenseError || stockError) {
         setError(
-          'Unable to load report data: ' +
+          `${t('Unable to load report data')}: ` +
             [transactionError?.message, expenseError?.message, stockError?.message].filter(Boolean).join(' | ')
         )
       } else {
@@ -824,12 +856,12 @@ export function useReportsData(initialFilterType?: FilterType, initialStartDate?
         setProducts(productData ?? [])
       }
     } catch {
-      setError('Unable to load report data.')
+      setError(t('Unable to load report data.'))
     } finally {
       setLoading(false)
       setIsRefreshing(false)
     }
-  }, [currentMonthRange, currentRange, previousMonthComparisonRange, previousRange])
+  }, [currentMonthRange, currentRange, previousMonthComparisonRange, previousRange, t])
 
   const createChannel = useCallback(async () => {
     const { data: authData } = await supabase.auth.getUser()

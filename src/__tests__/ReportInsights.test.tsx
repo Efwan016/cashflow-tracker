@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
+import { LanguageProvider } from '../component/providers/LanguageProvider'
 import ReportInsights from '../component/pages/Reports/ReportInsights'
 import type { ReportInsightsProps } from '../types/types'
 
@@ -47,9 +48,11 @@ const defaultProps: ReportInsightsProps = {
 describe('ReportInsights component', () => {
   test('renders product insight cards and expense sections', () => {
     render(
-      <MemoryRouter>
-        <ReportInsights {...defaultProps} />
-      </MemoryRouter>
+      <LanguageProvider>
+        <MemoryRouter>
+          <ReportInsights {...defaultProps} />
+        </MemoryRouter>
+      </LanguageProvider>
     )
 
     expect(screen.getByText('Best seller by quantity')).toBeInTheDocument()
@@ -64,9 +67,11 @@ describe('ReportInsights component', () => {
 
   test('renders stock summary and low stock info', () => {
     render(
-      <MemoryRouter>
-        <ReportInsights {...defaultProps} />
-      </MemoryRouter>
+      <LanguageProvider>
+        <MemoryRouter>
+          <ReportInsights {...defaultProps} />
+        </MemoryRouter>
+      </LanguageProvider>
     )
 
     expect(screen.getByText('Stock value')).toBeInTheDocument()

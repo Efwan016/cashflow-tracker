@@ -3,9 +3,12 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { useReportsData } from "../../../hooks/useReportsData"
 import { Pagination } from "../../../components/Pagination"
+import { useLanguage } from '../../../providers/useLanguage'
 import type { FilterType } from '../../../../types/types'
 
 export default function ProductBestByQuantityPage() {
+  const { t } = useLanguage()
+
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
@@ -39,19 +42,19 @@ export default function ProductBestByQuantityPage() {
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <p className="text-xs sm:text-sm uppercase tracking-[0.2em] text-sky-600 dark:text-sky-300/80 font-bold">Product Insights</p>
-              <h1 className="mt-2 text-xl sm:text-3xl font-semibold text-slate-900 dark:text-white">Best Seller by Quantity</h1>
+              <p className="text-xs sm:text-sm uppercase tracking-[0.2em] text-sky-600 dark:text-sky-300/80 font-bold">{t('Product Insights')}</p>
+              <h1 className="mt-2 text-xl sm:text-3xl font-semibold text-slate-900 dark:text-white">{t('Best Seller by Quantity')}</h1>
             </div>
           </div>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            Detailed breakdown of products with the highest sales volume.
+            {t('Detailed breakdown of products with the highest sales volume.')}
           </p>
         </div>
 
         {loading && (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
             <div className="h-10 w-10 animate-spin rounded-full border-4 border-sky-500 border-t-transparent"></div>
-            <p className="text-sm text-slate-500">Loading product data...</p>
+            <p className="text-sm text-slate-500">{t('Loading product data...')}</p>
           </div>
         )}
 
@@ -63,24 +66,24 @@ export default function ProductBestByQuantityPage() {
 
         {!loading && !error && sortedProducts.length === 0 && (
           <div className="mb-10 rounded-[40px] border border-slate-200 bg-white p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-950/80">
-            No product sales recorded for this period.
+            {t('No product sales recorded for this period.')}
           </div>
         )}
 
         {!loading && !error && sortedProducts.length > 0 && (
           <section className="mb-10 rounded-3xl sm:rounded-[40px] border border-slate-200 bg-white overflow-hidden dark:border-slate-700 dark:bg-slate-950/80 shadow-xl">
             <div className="p-6 sm:p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
-              <h2 className="text-xl font-semibold">Sorted by Quantity</h2>
+                <h2 className="text-xl font-semibold">{t('Sorted by Quantity')}</h2>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left min-w-[700px]">
                 <thead className="bg-slate-50 dark:bg-slate-900/50 text-xs uppercase tracking-wider text-slate-500 font-bold">
                   <tr>
-                    <th className="px-6 py-5">Rank</th>
-                    <th className="px-6 py-5">Product Name</th>
-                    <th className="px-6 py-5 text-center">Quantity Sold</th>
-                    <th className="px-6 py-5">Total Revenue</th>
-                    <th className="px-6 py-5">Total Profit</th>
+                    <th className="px-6 py-5">{t('Rank')}</th>
+                    <th className="px-6 py-5">{t('Product Name')}</th>
+                    <th className="px-6 py-5 text-center">{t('Quantity Sold')}</th>
+                    <th className="px-6 py-5">{t('Total Revenue')}</th>
+                    <th className="px-6 py-5">{t('Total Profit')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-sm">

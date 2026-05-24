@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { Pagination } from '../../components/Pagination'
+import { useLanguage } from '../../providers/useLanguage'
 import type { ReportTablesProps } from '../../../types/types'
 
 export default function ReportTables({
@@ -20,6 +21,7 @@ export default function ReportTables({
   productDetails,
 }: ReportTablesProps) {
   const navigate = useNavigate()
+  const { t } = useLanguage()
   const safeNumber = (value: number | null | undefined) => Number(value ?? 0)
 
   return (
@@ -27,16 +29,16 @@ export default function ReportTables({
       <div className="rounded-[40px] border border-slate-200 bg-white p-8 shadow-xl dark:border-slate-700 dark:bg-slate-950/80">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-sm uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">Revenue report</p>
-            <h2 className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">Recent transactions</h2>
+            <p className="text-sm uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">{t('Revenue report')}</p>
+            <h2 className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">{t('Recent transactions')}</h2>
           </div>
           <div className="flex flex-col gap-2 sm:items-end">
-            <p className="text-sm text-slate-500 dark:text-slate-400">Latest sales within your selected period.</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">{t('Latest sales within your selected period.')}</p>
             <button
               onClick={() => navigate('/transactions')}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium transition-colors"
             >
-              View All Transactions →
+              {t('View All Transactions →')}
             </button>
           </div>
         </div>
@@ -45,18 +47,18 @@ export default function ReportTables({
           <table className="min-w-full text-left text-sm text-slate-600 dark:text-slate-200">
             <thead className="border-b border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-400">
               <tr>
-                <th className="px-4 py-4">Product</th>
-                <th className="px-4 py-4">Qty</th>
-                <th className="px-4 py-4">Sale</th>
-                <th className="px-4 py-4">Profit</th>
-                <th className="px-4 py-4">Total</th>
-                <th className="px-4 py-4">Date</th>
+                <th className="px-4 py-4">{t('Product')}</th>
+                <th className="px-4 py-4">{t('Qty')}</th>
+                <th className="px-4 py-4">{t('Sale')}</th>
+                <th className="px-4 py-4">{t('Profit')}</th>
+                <th className="px-4 py-4">{t('Total')}</th>
+                <th className="px-4 py-4">{t('Date')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-sm text-slate-400">Loading report data...</td>
+                  <td colSpan={6} className="px-4 py-8 text-center text-sm text-slate-400">{t('Loading report data...')}</td>
                 </tr>
               ) : error ? (
                 <tr>
@@ -64,7 +66,7 @@ export default function ReportTables({
                 </tr>
               ) : txTotal === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-sm text-slate-400">No transactions available for this date range.</td>
+                  <td colSpan={6} className="px-4 py-8 text-center text-sm text-slate-400">{t('No transactions available for this date range.')}</td>
                 </tr>
               ) : (
                 pagedTransactions.map((item) => (
@@ -96,16 +98,16 @@ export default function ReportTables({
       <div className="rounded-[40px] border border-slate-200 bg-white p-8 shadow-xl dark:border-slate-700 dark:bg-slate-950/80">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-sm uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">Inventory report</p>
-            <h2 className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">Current stock overview</h2>
+            <p className="text-sm uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">{t('Inventory report')}</p>
+            <h2 className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">{t('Current stock overview')}</h2>
           </div>
           <div className="flex flex-col gap-2 sm:items-end">
-            <p className="text-sm text-slate-500 dark:text-slate-400">Active stock details and valuation.</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">{t('Active stock details and valuation.')}</p>
             <button
               onClick={() => navigate('/inventory')}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium transition-colors"
             >
-              View All Stock →
+              {t('View All Stock →')}
             </button>
           </div>
         </div>
@@ -114,16 +116,16 @@ export default function ReportTables({
           <table className="min-w-full text-left text-sm text-slate-600 dark:text-slate-200">
             <thead className="border-b border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-400">
               <tr>
-                <th className="px-4 py-4">Product</th>
-                <th className="px-4 py-4">Qty</th>
-                <th className="px-4 py-4">Cost value</th>
-                <th className="px-4 py-4">Retail value</th>
+                <th className="px-4 py-4">{t('Product')}</th>
+                <th className="px-4 py-4">{t('Qty')}</th>
+                <th className="px-4 py-4">{t('Cost value')}</th>
+                <th className="px-4 py-4">{t('Retail value')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {loading ? (
                 <tr>
-                  <td colSpan={4} className="px-4 py-8 text-center text-sm text-slate-400">Loading stock data...</td>
+                  <td colSpan={4} className="px-4 py-8 text-center text-sm text-slate-400">{t('Loading stock data...')}</td>
                 </tr>
               ) : error ? (
                 <tr>
@@ -131,7 +133,7 @@ export default function ReportTables({
                 </tr>
               ) : stockTotal === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-4 py-8 text-center text-sm text-slate-400">No stock records found.</td>
+                  <td colSpan={4} className="px-4 py-8 text-center text-sm text-slate-400">{t('No stock records found.')}</td>
                 </tr>
               ) : (
                 pagedStocks.map((item) => {
