@@ -1,6 +1,27 @@
 import { supabase } from '../../lib/supabase';
 import type { Transaction, TransactionFilter } from '../../types/types';
 
+type SmartCashierAlertRecord = {
+  user_id: string;
+  total: number;
+  product_name: string;
+  harga_modal: number;
+  harga_jual: number;
+};
+
+const warnSmartCashierAlert = async (record: SmartCashierAlertRecord) => {
+  try {
+    const { error } = await supabase.functions.invoke('smart-cashier-alert', {
+      body: { record }
+    });
+
+    if (error) {
+      console.warn('Smart cashier alert failed:', error.message);
+    }
+  } catch (error) {
+    console.warn('Smart cashier alert failed:', error);
+  }
+};
 
 export const transactionService = {
   async fetchTransactions(userId: string, filters: TransactionFilter): Promise<Transaction[]> {
@@ -42,11 +63,37 @@ export const transactionService = {
 
     // 3. Update Stock & Log jika perlu
     if (transaction.product_id) {
-      await supabase.rpc('update_stock', {
+      const { error: stockError } = await supabase.rpc('update_stock', {
         p_product_id: transaction.product_id,
         p_qty: -(transaction.qty || 0),
         p_user_id: userId
       });
+
+      if (stockError) throw stockError;
+
+      const { data: updatedStock, error: updatedStockError } = await supabase
+        .from('Stock')
+        .select('total')
+        .eq('product_id', transaction.product_id)
+        .eq('user_id', userId)
+        .single();
+
+      if (updatedStockError) {
+        console.warn('Failed to read updated stock for smart cashier alert:', updatedStockError.message);
+        return;
+      }
+
+      const updatedStockTotal = Number(updatedStock?.total);
+
+      if (Number.isFinite(updatedStockTotal) && updatedStockTotal <= 2) {
+        await warnSmartCashierAlert({
+          user_id: userId,
+          total: updatedStockTotal,
+          product_name: transaction.product_name || 'Produk tanpa nama',
+          harga_modal: transaction.harga_modal ?? 0,
+          harga_jual: transaction.harga_jual ?? 0
+        });
+      }
     }
   },
 
