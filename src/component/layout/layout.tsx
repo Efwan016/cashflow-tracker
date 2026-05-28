@@ -116,7 +116,7 @@ export default function Layout({ children }: { children: ReactNode }) {
 
       // Initial data fetch
       await fetchData();
-
+      
       if (!isMounted) return
 
       // Consolidate into a single channel and use a unique ID to avoid Strict Mode collisions
@@ -126,7 +126,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         .on('postgres_changes', {
           event: '*',
           schema: 'public',
-          table: 'Transactions',
+          table: 'transactions',
           filter: `user_id=eq.${user.id}`
         }, () => {
           clearTimeout(timeout)

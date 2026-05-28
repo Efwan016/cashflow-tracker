@@ -18,6 +18,8 @@ const supportedLanguages = {
 
 type InsightLanguage = keyof typeof supportedLanguages
 
+type TelegramStatus = 'sent' | 'not_configured' | 'misconfigured' | 'failed'
+
 type ReportInsightPayload = {
   revenue?: number
   grossProfit?: number
@@ -28,6 +30,7 @@ type ReportInsightPayload = {
   mostProfitableProduct?: string | null
   lowStockCount?: number
   language?: string
+  reportPeriod?: string
 }
 
 const isFiniteNumber = (value: unknown): value is number =>
@@ -41,6 +44,69 @@ const isSupportedLanguage = (value: unknown): value is InsightLanguage =>
 
 const getInsightLanguage = (value: unknown): InsightLanguage =>
   isSupportedLanguage(value) ? value : 'en'
+
+const formatRupiah = (value: number) =>
+  new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    maximumFractionDigits: 0,
+  }).format(value)
+
+const compactMessageText = (value: string | null | undefined, fallback: string) =>
+  value?.trim().slice(0, 120) || fallback
+
+const buildTelegramReportMessage = (
+  body: ReportInsightPayload,
+  insight: string,
+  generatedAt: string,
+) => {
+  const period = compactMessageText(body.reportPeriod, 'Periode terpilih')
+  const bestSeller = compactMessageText(body.bestSellingProduct, '-')
+  const profitableProduct = compactMessageText(body.mostProfitableProduct, '-')
+  const safeInsight = insight.trim().slice(0, 2500)
+
+  return [
+    'Laporan Insight AI Cashflow',
+    `Periode: ${period}`,
+    `Dibuat: ${new Date(generatedAt).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })} WIB`,
+    '',
+    `Pendapatan: ${formatRupiah(body.revenue ?? 0)}`,
+    `Laba kotor: ${formatRupiah(body.grossProfit ?? 0)}`,
+    `Pengeluaran: ${formatRupiah(body.expenses ?? 0)}`,
+    `Laba bersih: ${formatRupiah(body.netProfit ?? 0)}`,
+    `Rasio pengeluaran: ${(body.expenseRatio ?? 0).toFixed(1)}%`,
+    `Produk terlaris: ${bestSeller}`,
+    `Produk paling menguntungkan: ${profitableProduct}`,
+    `Produk stok rendah: ${body.lowStockCount ?? 0}`,
+    '',
+    'Insight AI:',
+    safeInsight,
+  ].join('\n')
+}
+
+const sendTelegramMessage = async (
+  botToken: string,
+  chatId: string,
+  text: string,
+) => {
+  const telegramRes = await fetch(
+    `https://api.telegram.org/bot${botToken}/sendMessage`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text,
+        disable_web_page_preview: true,
+      }),
+    },
+  )
+
+  if (!telegramRes.ok) {
+    const errorText = await telegramRes.text()
+    throw new Error(`Telegram request failed: ${telegramRes.status} ${errorText}`)
+  }
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -117,6 +183,9 @@ Deno.serve(async (req) => {
     if (!isFiniteNumber(body.lowStockCount)) invalidFields.push('lowStockCount')
     if (!isNullableString(body.bestSellingProduct)) invalidFields.push('bestSellingProduct')
     if (!isNullableString(body.mostProfitableProduct)) invalidFields.push('mostProfitableProduct')
+    if (body.reportPeriod !== undefined && typeof body.reportPeriod !== 'string') {
+      invalidFields.push('reportPeriod')
+    }
 
     if (invalidFields.length > 0) {
       return new Response(
@@ -199,11 +268,31 @@ Low Stock Count: ${body.lowStockCount ?? 0}
     const insight =
       result?.candidates?.[0]?.content?.parts?.[0]?.text ??
       fallbackText
+    const generatedAt = new Date().toISOString()
+    const telegramBotToken = Deno.env.get('TELEGRAM_BOT_TOKEN')
+    const telegramChatId = Deno.env.get('TELEGRAM_CHAT_ID')
+    let telegramStatus: TelegramStatus = 'not_configured'
+
+    if (telegramBotToken && telegramChatId) {
+      try {
+        const message = buildTelegramReportMessage(body, insight, generatedAt)
+        await sendTelegramMessage(telegramBotToken, telegramChatId, message)
+        telegramStatus = 'sent'
+      } catch (error) {
+        telegramStatus = 'failed'
+        console.error('Failed to send report insight to Telegram:', error)
+      }
+    } else if (telegramBotToken || telegramChatId) {
+      telegramStatus = 'misconfigured'
+      console.error('Telegram notification is disabled because one Telegram secret is missing.')
+    }
 
     return new Response(
       JSON.stringify({
         insight,
-        generatedAt: new Date().toISOString(),
+        generatedAt,
+        telegramNotified: telegramStatus === 'sent',
+        telegramStatus,
       }),
       {
         status: 200,

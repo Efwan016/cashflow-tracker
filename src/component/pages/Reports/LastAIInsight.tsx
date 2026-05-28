@@ -12,6 +12,7 @@ interface LastAIInsightProps {
   bestSellingProduct: string | null
   mostProfitableProduct: string | null
   lowStockCount: number
+  reportPeriod: string
 }
 
 export default function LastAIInsight({
@@ -23,10 +24,14 @@ export default function LastAIInsight({
   bestSellingProduct,
   mostProfitableProduct,
   lowStockCount,
+  reportPeriod,
 }: LastAIInsightProps) {
   const { language, t } = useLanguage()
   const [insight, setInsight] = useState<string | null>(null)
   const [generatedAt, setGeneratedAt] = useState<string | null>(null)
+  const [telegramStatus, setTelegramStatus] = useState<
+    NonNullable<ReportInsightResponse['telegramStatus']> | 'unavailable' | null
+  >(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -49,6 +54,7 @@ export default function LastAIInsight({
   const handleGenerateInsight = async () => {
     setLoading(true)
     setError(null)
+    setTelegramStatus(null)
 
     try {
       const { data, error: invokeError } = await supabase.functions.invoke(
@@ -64,6 +70,7 @@ export default function LastAIInsight({
             mostProfitableProduct,
             lowStockCount,
             language,
+            reportPeriod,
           },
         },
       )
@@ -80,6 +87,7 @@ export default function LastAIInsight({
 
       setInsight(response.insight)
       setGeneratedAt(response.generatedAt)
+      setTelegramStatus(response.telegramStatus ?? 'unavailable')
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : t('Failed to generate insight')
       setError(errorMessage)
@@ -274,6 +282,21 @@ export default function LastAIInsight({
                 >
                   {t('Regenerate')}
                 </button>
+              </div>
+            )}
+
+            {telegramStatus === 'sent' && (
+              <div className="rounded-[20px] border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200">
+                {t('Telegram report sent successfully.')}
+              </div>
+            )}
+
+            {telegramStatus && telegramStatus !== 'sent' && (
+              <div className="rounded-[20px] border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-700 dark:border-orange-500/30 dark:bg-orange-500/10 dark:text-orange-200">
+                {telegramStatus === 'not_configured' && t('Telegram is not configured. Add TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID to the Supabase function secrets.')}
+                {telegramStatus === 'misconfigured' && t('Telegram configuration is incomplete. Both TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID are required.')}
+                {telegramStatus === 'failed' && t('Telegram delivery failed. Check the bot token, chat ID, and Supabase function logs.')}
+                {telegramStatus === 'unavailable' && t('Telegram status is unavailable. Deploy the updated generate-report-insight function first.')}
               </div>
             )}
           </div>

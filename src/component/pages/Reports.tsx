@@ -664,6 +664,7 @@ export default function Reports() {
           bestSellingProduct={bestByQty[0]?.name ?? null}
           mostProfitableProduct={mostProfitable[0]?.name ?? null}
           lowStockCount={stockSummary.lowStock.length}
+          reportPeriod={dateRangeLabel}
         />
 
         <ReportOverview
