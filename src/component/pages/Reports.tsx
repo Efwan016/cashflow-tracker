@@ -1,7 +1,5 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import jsPDF from 'jspdf'
-import autoTable from 'jspdf-autotable'
 import { useLanguage } from '../providers/useLanguage'
 import ReportControls from './Reports/ReportControls'
 import ReportOverview from './Reports/ReportOverview'
@@ -11,17 +9,18 @@ import ReportTables from './Reports/ReportTables'
 import { ReportSummary, ReportGrowth, ReportAverages } from './Reports/ReportCards'
 import LastAIInsight from './Reports/LastAIInsight'
 import { useReportsData } from '../hooks/useReportsData'
+import type { jsPDF as JsPDFDocument } from 'jspdf'
 import type { Transaction } from '../../types/types'
 
 type Translate = (key: string) => string
 
-type JsPdfWithAutoTable = jsPDF & {
+type JsPdfWithAutoTable = JsPDFDocument & {
   lastAutoTable?: {
     finalY: number
   }
 }
 
-const getLastAutoTableY = (doc: jsPDF, fallback: number) => {
+const getLastAutoTableY = (doc: JsPDFDocument, fallback: number) => {
   return (doc as JsPdfWithAutoTable).lastAutoTable?.finalY ?? fallback
 }
 
@@ -279,7 +278,11 @@ export default function Reports() {
     downloadCsv(fileName, csv)
   }
 
-  const handleExportFullReportPdf = () => {
+  const handleExportFullReportPdf = async () => {
+    const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+      import('jspdf'),
+      import('jspdf-autotable'),
+    ])
     const doc = new jsPDF({ unit: 'pt', format: 'a4' })
     const title = t('Business Report')
     const reportDate = filterType === 'today' ? `${t('Date')}: ${dateRangeLabel}` : `${t('Date range')}: ${dateRangeLabel}`

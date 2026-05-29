@@ -49,7 +49,7 @@ export default function Transaction() {
         revenue: 0,
         profit: 0,
       }
-
+      
       existing.qty += tx.qty ?? 0
       existing.revenue += tx.total ?? 0
       existing.profit += tx.profit ?? 0
@@ -106,6 +106,8 @@ export default function Transaction() {
     const pro = transactions.reduce((s: number, t: TransactionType) => s + (t.profit ?? 0), 0);
     return { qty, rev, pro };
   }, [transactions]);
+
+
 
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
