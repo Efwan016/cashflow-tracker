@@ -15,7 +15,6 @@ import {
   toDateKey,
   createCurrencyFormatter,
   createNumberFormatter,
-  ago,
 } from '../../lib/utils'
 import { useLanguage } from '../providers/useLanguage'
 import type {
@@ -33,7 +32,8 @@ import Skeleton from '../components/Skeleton'
 function useDashboardData(
   filter: FilterType,
   startDate: string,
-  endDate: string
+  endDate: string,
+  t: (key: string) => string
 ) {
   const [data, setData] = useState<{
     transactions: Transaction[]
@@ -169,11 +169,11 @@ function useDashboardData(
       })
     } catch (err) {
       console.error(err)
-      setError('Failed to fetch dashboard data')
+      setError(t('Failed to fetch dashboard data'))
     } finally {
       setLoading(false)
     }
-  }, [filter, startDate, endDate])
+  }, [filter, startDate, endDate, t])
 
   useEffect(() => {
     let isMounted = true
@@ -404,6 +404,7 @@ function FeedRow({
   badge,
   bc,
   time,
+  emptyValueText,
 }: {
   ibg: string
   ic: string
@@ -415,6 +416,7 @@ function FeedRow({
   badge?: string
   bc?: string
   time: string
+  emptyValueText?: string
 }) {
   return (
     <div className="group rounded-2xl border border-slate-200 bg-slate-50/80 p-4 transition-all duration-200 hover:border-sky-400/30 hover:bg-white hover:shadow-lg hover:shadow-sky-500/5 dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/[0.07]">
@@ -457,7 +459,7 @@ function FeedRow({
           </p>
         ) : (
           <span className="text-xs font-bold text-slate-400">
-            Stock activity
+            {emptyValueText}
           </span>
         )}
 
@@ -486,7 +488,7 @@ export default function Dashboard() {
     loading,
     error,
     refetch,
-  } = useDashboardData(filter, startDate, endDate)
+  } = useDashboardData(filter, startDate, endDate, t)
 
   const fmt = useMemo(() => createCurrencyFormatter(), [])
   const num = useMemo(() => createNumberFormatter(), [])
@@ -592,7 +594,7 @@ export default function Dashboard() {
 
     transactions.forEach((transaction) => {
       // KUNCI UTAMA: Trim spasi gaib dan samakan kapitalisasi ke huruf besar semua saat pengelompokan
-      const rawName = transaction.product_name || 'Product'
+      const rawName = transaction.product_name || t('Product')
       const cleanKey = rawName.trim().toUpperCase()
 
       // Buat format tampilan yang rapi (Title Case atau sesuaikan)
@@ -611,7 +613,7 @@ export default function Dashboard() {
     return Object.values(map)
       .sort((a, b) => b.qty - a.qty)
       .slice(0, 5)
-  }, [transactions])
+  }, [transactions, t])
 
 const bestSellingChartData = useMemo(
     () => {
@@ -673,7 +675,18 @@ const bestSellingChartData = useMemo(
   }, [transactions, expenses, stockLogs])
 
   const pos = metrics.netProfit >= 0
-  const firstName = profile?.full_name?.split(' ')[0] ?? 'there'
+  const firstName = profile?.full_name?.split(' ')[0] ?? t('there')
+  const formatActivityTime = useCallback(
+    (dateString: string) => {
+      const diff = Date.now() - new Date(dateString).getTime()
+      const minutes = Math.max(0, Math.floor(diff / 60000))
+      if (minutes < 60) return `${minutes}${t('m ago')}`
+      const hours = Math.floor(minutes / 60)
+      if (hours < 24) return `${hours}${t('h ago')}`
+      return `${Math.floor(hours / 24)}${t('d ago')}`
+    },
+    [t]
+  )
 
   return (
     <main className="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-sky-500/20 dark:bg-slate-950 dark:text-slate-100">
@@ -690,17 +703,17 @@ const bestSellingChartData = useMemo(
           <div className="min-w-0">
             <div className="mb-4 flex flex-wrap items-center gap-3">
               <span className="inline-flex items-center rounded-full border border-sky-500/20 bg-sky-500/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-sky-500">
-                Finance Dashboard
+                {t('Finance Dashboard')}
               </span>
 
               <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-emerald-500">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                {loading ? 'Syncing...' : 'Live'}
+                {loading ? t('Syncing...') : t('Live')}
               </span>
             </div>
 
             <h1 className="text-3xl font-black tracking-tight text-slate-950 dark:text-white sm:text-5xl">
-              Hello,{' '}
+              {t('Hello')},{' '}
               <span className="bg-gradient-to-r from-sky-400 via-indigo-400 to-fuchsia-400 bg-clip-text text-transparent">
                 {firstName}
               </span>{' '}
@@ -708,8 +721,7 @@ const bestSellingChartData = useMemo(
             </h1>
 
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">
-              Track revenue, expenses, profit, stock movement, and business
-              activity in real time.
+              {t('Track revenue, expenses, profit, stock movement, and business activity in real time.')}
             </p>
           </div>
 
@@ -720,12 +732,12 @@ const bestSellingChartData = useMemo(
                 onChange={(event) => setFilter(event.target.value as FilterType)}
                 className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-xs font-black text-slate-700 outline-none transition focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-500/10 dark:border-white/10 dark:bg-slate-950/50 dark:text-slate-100 dark:focus:bg-slate-950"
               >
-                <option value="today">Today</option>
-                <option value="last7">Last 7 Days</option>
-                <option value="thisMonth">This Month</option>
-                <option value="last3month">Last 3 Months</option>
-                <option value="specific">Pick a Date</option>
-                <option value="range">Date Range</option>
+                <option value="today">{t('Today')}</option>
+                <option value="last7">{t('Last 7 Days')}</option>
+                <option value="thisMonth">{t('This Month')}</option>
+                <option value="last3month">{t('Last 3 Months')}</option>
+                <option value="specific">{t('Pick a Date')}</option>
+                <option value="range">{t('Date Range')}</option>
               </select>
 
               <button
@@ -737,7 +749,7 @@ const bestSellingChartData = useMemo(
                 <span className={loading ? 'animate-spin' : ''}>
                   <IC.Refresh />
                 </span>
-                <span>{loading ? 'Syncing...' : 'Refresh'}</span>
+                <span>{loading ? t('Syncing...') : t('Refresh')}</span>
               </button>
             </div>
 
@@ -753,7 +765,7 @@ const bestSellingChartData = useMemo(
                 {filter === 'range' && (
                   <>
                     <span className="hidden text-center text-[10px] font-black uppercase tracking-widest text-slate-400 sm:block">
-                      to
+                      {t('to')}
                     </span>
 
                     <input
@@ -772,7 +784,7 @@ const bestSellingChartData = useMemo(
         {/* ERROR */}
         {error && (
           <div className="mb-6 rounded-2xl border border-rose-500/20 bg-rose-500/10 px-5 py-4 text-sm text-rose-500">
-            <strong className="font-black">Error: </strong>
+            <strong className="font-black">{t('Error')}: </strong>
             {error}
           </div>
         )}
@@ -957,10 +969,10 @@ const bestSellingChartData = useMemo(
                 <div className="mb-6 flex items-center justify-between gap-4">
                   <div>
                     <p className="mb-1 text-[11px] font-black uppercase tracking-widest text-slate-400 transition-colors group-hover:text-emerald-500">
-                      Sales
+                      {t('Sales')}
                     </p>
                     <h2 className="text-xl font-black text-slate-950 transition-colors group-hover:text-emerald-500 dark:text-white">
-                      Daily Sales Volume
+                      {t('Daily Sales Volume')}
                     </h2>
                   </div>
 
@@ -979,10 +991,10 @@ const bestSellingChartData = useMemo(
                 <div className="mb-6 flex items-center justify-between gap-4">
                   <div>
                     <p className="mb-1 text-[11px] font-black uppercase tracking-widest text-slate-400 transition-colors group-hover:text-amber-500">
-                      Performance
+                      {t('Performance')}
                     </p>
                     <h2 className="text-xl font-black text-slate-950 transition-colors group-hover:text-amber-500 dark:text-white">
-                      Best Sellers Revenue
+                      {t('Best Sellers Revenue')}
                     </h2>
                   </div>
 
@@ -1001,10 +1013,10 @@ const bestSellingChartData = useMemo(
                 <div className="mb-6 flex items-center justify-between gap-4">
                   <div>
                     <p className="mb-1 text-[11px] font-black uppercase tracking-widest text-slate-400 transition-colors group-hover:text-sky-500">
-                      Inventory
+                      {t('Inventory')}
                     </p>
                     <h2 className="text-xl font-black text-slate-950 transition-colors group-hover:text-sky-500 dark:text-white">
-                      Live Stock Distribution
+                      {t('Live Stock Distribution')}
                     </h2>
                   </div>
 
@@ -1023,17 +1035,17 @@ const bestSellingChartData = useMemo(
             {/* Net Profit Breakdown */}
             <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.04]">
               <p className="mb-1 text-[11px] font-black uppercase tracking-widest text-slate-400">
-                Profit Calculation
+                {t('Profit Calculation')}
               </p>
 
               <h2 className="mb-5 text-xl font-black text-slate-950 dark:text-white">
-                Net Profit Breakdown
+                {t('Net Profit Breakdown')}
               </h2>
 
               <div className="space-y-3">
                 <div className="flex items-center justify-between gap-3 rounded-2xl border border-sky-500/10 bg-sky-500/5 px-5 py-4">
                   <span className="text-sm font-bold text-slate-500 dark:text-slate-400">
-                    Gross Profit
+                    {t('Gross Profit')}
                   </span>
                   <span className="text-sm font-black text-sky-500">
                     +{fmt.format(metrics.grossProfit)}
@@ -1042,7 +1054,7 @@ const bestSellingChartData = useMemo(
 
                 <div className="flex items-center justify-between gap-3 rounded-2xl border border-rose-500/10 bg-rose-500/5 px-5 py-4">
                   <span className="text-sm font-bold text-slate-500 dark:text-slate-400">
-                    Total Expenses
+                    {t('Total Expenses')}
                   </span>
                   <span className="text-sm font-black text-rose-500">
                     −{fmt.format(metrics.totalExpense)}
@@ -1058,7 +1070,7 @@ const bestSellingChartData = useMemo(
                     }`}
                 >
                   <span className="text-sm font-black text-slate-800 dark:text-white">
-                    Net Profit
+                    {t('Net Profit')}
                   </span>
 
                   <span
@@ -1077,11 +1089,11 @@ const bestSellingChartData = useMemo(
               <div className="mb-5 flex items-center justify-between gap-4">
                 <div>
                   <p className="mb-1 text-[11px] font-black uppercase tracking-widest text-slate-400">
-                    Activities
+                    {t('Activities')}
                   </p>
 
                   <h2 className="text-xl font-black text-slate-950 dark:text-white">
-                    Live Feed
+                    {t('Live Feed')}
                   </h2>
                 </div>
 
@@ -1095,7 +1107,7 @@ const bestSellingChartData = useMemo(
                 <Skeleton n={5} />
               ) : feed.length === 0 ? (
                 <p className="rounded-2xl border border-slate-200 bg-slate-50 py-8 text-center text-sm font-bold text-slate-500 dark:border-white/10 dark:bg-white/[0.03] dark:text-slate-400">
-                  No activities yet
+                  {t('No activities yet')}
                 </p>
               ) : (
                 <div className="max-h-[420px] space-y-2 overflow-y-auto pr-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
@@ -1109,13 +1121,13 @@ const bestSellingChartData = useMemo(
                           ibg="rgba(52,211,153,0.1)"
                           ic="#34d399"
                           icon={<IC.Tx />}
-                          title={transaction.product_name ?? 'Sale'}
-                          sub={`${num.format(transaction.qty ?? 0)} pcs`}
+                          title={transaction.product_name ?? t('Sale')}
+                          sub={`${num.format(transaction.qty ?? 0)} ${t('pcs')}`}
                           val={fmt.format(transaction.total ?? 0)}
                           vc="#34d399"
                           badge="sale"
                           bc="rgba(52,211,153,0.12)"
-                          time={ago(transaction.created_at)}
+                          time={formatActivityTime(transaction.created_at)}
                         />
                       )
                     }
@@ -1129,12 +1141,12 @@ const bestSellingChartData = useMemo(
                           ibg="rgba(251,113,133,0.1)"
                           ic="#fb7185"
                           icon={<IC.Expense />}
-                          title={expense.description ?? 'Expense'}
+                          title={expense.description ?? t('Expense')}
                           val={fmt.format(expense.total ?? 0)}
                           vc="#fb7185"
                           badge="expense"
                           bc="rgba(251,113,133,0.12)"
-                          time={ago(expense.created_at)}
+                          time={formatActivityTime(expense.created_at)}
                         />
                       )
                     }
@@ -1152,17 +1164,18 @@ const bestSellingChartData = useMemo(
                         }
                         ic={isIn ? '#a78bfa' : '#fbbf24'}
                         icon={<IC.Log />}
-                        title={stockLog.product?.name ?? 'Stock'}
-                        sub={`${stockLog.type ?? 'update'} · ${num.format(
+                        title={stockLog.product?.name ?? t('Stock')}
+                        sub={`${t(stockLog.type ?? 'update')} · ${num.format(
                           stockLog.qty ?? 0
-                        )} units`}
-                        badge={stockLog.type ?? 'log'}
+                        )} ${t('units')}`}
+                        badge={t(stockLog.type ?? 'log')}
                         bc={
                           isIn
                             ? 'rgba(167,139,250,0.12)'
                             : 'rgba(251,191,36,0.12)'
                         }
-                        time={ago(stockLog.created_at)}
+                        time={formatActivityTime(stockLog.created_at)}
+                        emptyValueText={t('Stock activity')}
                       />
                     )
                   })}
@@ -1173,35 +1186,35 @@ const bestSellingChartData = useMemo(
             {/* Quick Menu */}
             <div>
               <p className="mb-4 px-1 text-[11px] font-black uppercase tracking-widest text-slate-400">
-                Quick Menu
+                {t('Quick Menu')}
               </p>
 
               <div className="space-y-2">
                 {[
                   {
                     to: '/transactions',
-                    label: 'Transactions',
+                    label: t('Transactions'),
                     icon: <IC.Tx />,
                     ic: '#34d399',
                     ibg: 'rgba(52,211,153,0.1)',
                   },
                   {
                     to: '/expenses',
-                    label: 'Expenses',
+                    label: t('Expenses'),
                     icon: <IC.Expense />,
                     ic: '#fb7185',
                     ibg: 'rgba(251,113,133,0.1)',
                   },
                   {
                     to: '/inventory',
-                    label: 'Stock',
+                    label: t('Stock'),
                     icon: <IC.Box />,
                     ic: '#fbbf24',
                     ibg: 'rgba(251,191,36,0.1)',
                   },
                   {
                     to: '/reports',
-                    label: 'Reports',
+                    label: t('Reports'),
                     icon: <IC.Report />,
                     ic: '#a78bfa',
                     ibg: 'rgba(167,139,250,0.1)',
