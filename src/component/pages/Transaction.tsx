@@ -9,9 +9,23 @@ import { createCurrencyFormatter, createNumberFormatter } from '../../lib/utils'
 import { supabase } from '../../lib/supabase'
 import type { Transaction as TransactionType } from '../../types/types'
 import { useLanguage } from '../providers/useLanguage'
+import type { Language } from '../../lib/i18n'
+
+const LANGUAGE_LOCALES: Record<Language, string> = {
+  en: 'en-US',
+  id: 'id-ID',
+  es: 'es-ES',
+  zh: 'zh-CN',
+  fr: 'fr-FR',
+  de: 'de-DE',
+  ja: 'ja-JP',
+  pt: 'pt-PT',
+  ru: 'ru-RU',
+  ar: 'ar-SA',
+}
 
 export default function Transaction() {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const [filterType, setFilterType] = useState('today')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
@@ -41,7 +55,7 @@ export default function Transaction() {
       const key =
         tx.product_name ||
         products.find((p) => p.id === tx.product_id)?.name ||
-        'Manual Sale'
+        t('Manual Sale')
 
       const existing = productSales.get(key) || {
         name: key,
@@ -58,7 +72,7 @@ export default function Transaction() {
     })
 
     return Array.from(productSales.values()).sort((a, b) => b.qty - a.qty)
-  }, [transactions, products])
+  }, [transactions, products, t])
 
   const paginatedBestSelling = useMemo(() => {
     return bestSelling.slice((bestSellingCurrentPage - 1) * itemsPerPageBestSelling, bestSellingCurrentPage * itemsPerPageBestSelling)
@@ -95,6 +109,11 @@ export default function Transaction() {
 
   const fmt = useMemo(() => createCurrencyFormatter(), [])
   const num = useMemo(() => createNumberFormatter(), [])
+  const formatDisplayDate = useCallback(
+    (date: string, options: Intl.DateTimeFormatOptions) =>
+      new Date(date).toLocaleDateString(LANGUAGE_LOCALES[language], options),
+    [language]
+  )
 
   const paginatedTransactions = useMemo(() => {
     return transactions.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
@@ -142,7 +161,7 @@ export default function Transaction() {
               </li>
               <li className="flex gap-3">
                 <span className="text-sky-600 dark:text-sky-400 font-bold">02</span>
-                <span className="text-slate-600 dark:text-slate-400">{t('Profit is calculated as')} <code>(Sale - Cost) * Qty</code>.</span>
+                <span className="text-slate-600 dark:text-slate-400">{t('Profit is calculated as')} <code>({t('Sale')} - {t('Cost')}) * {t('Qty')}</code>.</span>
               </li>
               <li className="flex gap-3">
                 <span className="text-sky-600 dark:text-sky-400 font-bold">03</span>
@@ -164,8 +183,8 @@ export default function Transaction() {
                 {filterType === 'today' && t("Today's Sales")}
                 {filterType === 'last7' && t('Last 7 Days')}
                 {filterType === 'thisMonth' && t('This Month')}
-                {filterType === 'specific' && (startDate ? `${t('Sales on')} ${new Date(startDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}` : t('Specific Date'))}
-                {filterType === 'range' && (startDate && endDate ? `${t('Sales from')} ${new Date(startDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })} ${t('to')} ${new Date(endDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}` : t('Date Range'))}
+                {filterType === 'specific' && (startDate ? `${t('Sales on')} ${formatDisplayDate(startDate, { day: 'numeric', month: 'long', year: 'numeric' })}` : t('Specific Date'))}
+                {filterType === 'range' && (startDate && endDate ? `${t('Sales from')} ${formatDisplayDate(startDate, { day: 'numeric', month: 'short', year: 'numeric' })} ${t('to')} ${formatDisplayDate(endDate, { day: 'numeric', month: 'short', year: 'numeric' })}` : t('Date Range'))}
               </h2>
             </div>
 
@@ -229,29 +248,29 @@ export default function Transaction() {
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/30">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-10 text-center text-slate-500">Memuat data...</td>
+                    <td colSpan={6} className="px-6 py-10 text-center text-slate-500">{t('Loading transactions...')}</td>
                   </tr>
                 ) : transactions.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-10 text-center text-slate-500">
-                      No transactions recorded for this period.
+                    <td colSpan={6} className="px-6 py-10 text-center text-slate-500">
+                      {t('No transactions recorded for this period.')}
                     </td>
                   </tr>
                 ) : (
-                  paginatedTransactions.map((t) => (
-                    <tr key={t.id} className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors group">
-                      <td className="px-6 py-4 font-medium text-slate-900 dark:text-slate-100">{t.product_name || 'Manual Sale'}</td>
-                      <td className="px-6 py-4 text-center font-mono">{num.format(t.qty)}</td>
-                      <td className="px-6 py-4">{fmt.format(t.total)}</td>
-                      <td className="px-6 py-4">{fmt.format(t.harga_modal || 0)}</td>
-                      <td className="px-6 py-4 text-emerald-600 dark:text-emerald-400 font-semibold">{fmt.format(t.profit || 0)}</td>
+                  paginatedTransactions.map((transaction) => (
+                    <tr key={transaction.id} className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors group">
+                      <td className="px-6 py-4 font-medium text-slate-900 dark:text-slate-100">{transaction.product_name || t('Manual Sale')}</td>
+                      <td className="px-6 py-4 text-center font-mono">{num.format(transaction.qty)}</td>
+                      <td className="px-6 py-4">{fmt.format(transaction.total)}</td>
+                      <td className="px-6 py-4">{fmt.format(transaction.harga_modal || 0)}</td>
+                      <td className="px-6 py-4 text-emerald-600 dark:text-emerald-400 font-semibold">{fmt.format(transaction.profit || 0)}</td>
                       <td className="px-6 py-4 text-right">
                         <button
-                          onClick={() => removeTransaction(t)}
+                          onClick={() => removeTransaction(transaction)}
                           disabled={isLoading}
                           className="rounded-xl border border-rose-500/10 bg-rose-500/5 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-rose-400 transition hover:bg-rose-500/20 disabled:opacity-50"
                         >
-                          Delete
+                          {t('Delete')}
                         </button>
                       </td>
                     </tr>
@@ -261,7 +280,7 @@ export default function Transaction() {
               {transactions.length > 0 && (
                 <tfoot className="border-t border-slate-200 dark:border-slate-800/50 bg-slate-50 dark:bg-sky-900/50 text-slate-900 dark:text-slate-200 transition-colors font-bold">
                   <tr>
-                    <td className="px-6 py-4">Total</td>
+                    <td className="px-6 py-4">{t('Total')}</td>
                     <td className="px-6 py-4 text-center font-mono">{num.format(summary.qty)}</td>
                     <td className="px-6 py-4">{fmt.format(summary.rev)}</td>
                     <td className="px-6 py-4"></td>
@@ -285,15 +304,15 @@ export default function Transaction() {
         {/* Best Selling Performance */}
         <div className="mt-10 grid gap-6 lg:grid-cols-2">
           <div className="rounded-3xl sm:rounded-[40px] border border-slate-900/90 dark:border-slate-200 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-6 sm:p-8 shadow-2xl dark:shadow-slate-950/20 backdrop-blur-xl transition-colors overflow-hidden">
-            <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-6">Best Selling Performance</h3>
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-6">{t('Best Selling Performance')}</h3>
             <div className="max-h-[500px] overflow-auto rounded-3xl border border-slate-200 dark:border-slate-800/50 bg-slate-50 dark:bg-gradient-to-br dark:from-slate-950/20 dark:to-slate-900/40 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden transition-colors">
               <table className="w-full text-left text-xs sm:text-sm text-slate-600 dark:text-slate-300">
                 <thead className="border-b border-slate-900/900 dark:border-slate-200 bg-white dark:bg-slate-900/90 text-[10px] uppercase tracking-widest text-slate-400">
                   <tr>
-                    <th className="px-6 py-5 font-medium">Product</th>
-                    <th className="px-6 py-5 font-medium text-center">Qty Sold</th>
-                    <th className="px-6 py-5 font-medium">Revenue</th>
-                    <th className="px-6 py-5 font-medium">Profit</th>
+                    <th className="px-6 py-5 font-medium">{t('Product')}</th>
+                    <th className="px-6 py-5 font-medium text-center">{t('Qty Sold')}</th>
+                    <th className="px-6 py-5 font-medium">{t('Revenue')}</th>
+                    <th className="px-6 py-5 font-medium">{t('Profit')}</th>
                   </tr>
                 </thead>
                 <tbody className="border border-slate-900/90 dark:border-slate-200 divide-y divide-slate-100 dark:divide-slate-900/90 bg-white dark:bg-slate-900/90 ">
@@ -330,7 +349,7 @@ export default function Transaction() {
           </div>
 
           <div className="rounded-3xl sm:rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-6 sm:p-8 shadow-2xl dark:shadow-slate-950/20 backdrop-blur-xl transition-colors">
-            <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-6">Sales Performance Chart</h3>
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-6">{t('Sales Performance Chart')}</h3>
             <div className="h-80">
               <ChartComponent data={bestSellingChartData} variant="bar" />
             </div>

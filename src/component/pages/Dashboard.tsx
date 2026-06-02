@@ -779,7 +779,7 @@ const bestSellingChartData = useMemo(
               </div>
             )}
           </div>
-        </header>
+        </header> 
 
         {/* ERROR */}
         {error && (
@@ -890,20 +890,20 @@ const bestSellingChartData = useMemo(
         </section>
 
         {/* MAIN GRID */}
-        <section className="grid gap-5 xl:grid-cols-[1fr_360px]">
+        <section className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(320px,360px)]">
           {/* LEFT */}
-          <div className="space-y-5">
+          <div className="min-w-0 space-y-5">
             {/* Cashflow Breakdown */}
-            <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.04] sm:p-8">
+            <div className="min-w-0 overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.04] sm:p-8">
               <p className="mb-1 text-[11px] font-black uppercase tracking-widest text-slate-400">
                 {t('Overview')}
               </p>
 
-              <h2 className="mb-6 text-xl font-black text-slate-950 dark:text-white">
+              <h2 className="mb-6 break-words text-lg font-black text-slate-950 dark:text-white sm:text-xl">
                 {t('Cashflow Breakdown')}
               </h2>
 
-              <div className="mb-6 h-[240px] rounded-3xl border border-slate-200 bg-slate-50/70 p-3 dark:border-white/10 dark:bg-slate-950/40 sm:h-[320px] sm:p-4">
+              <div className="mb-6 h-[220px] min-w-0 overflow-hidden rounded-3xl border border-slate-200 bg-slate-50/70 p-2 dark:border-white/10 dark:bg-slate-950/40 sm:h-[280px] sm:p-4 lg:h-[320px]">
                 <ChartComponent data={chartData} />
               </div>
 
@@ -932,16 +932,16 @@ const bestSellingChartData = useMemo(
                   },
                 ].map((row) => (
                   <div key={row.label}>
-                    <div className="mb-1.5 flex items-center justify-between gap-3 text-xs">
-                      <span className="flex items-center gap-2 font-bold text-slate-500 dark:text-slate-400">
+                    <div className="mb-1.5 flex min-w-0 items-center justify-between gap-3 text-xs">
+                      <span className="flex min-w-0 items-center gap-2 font-bold text-slate-500 dark:text-slate-400">
                         <span
                           className="h-1.5 w-1.5 shrink-0 rounded-full"
                           style={{ background: row.dot }}
                         />
-                        {row.label}
+                        <span className="min-w-0 truncate">{row.label}</span>
                       </span>
 
-                      <span className="font-black text-slate-700 dark:text-slate-200">
+                      <span className="shrink-0 whitespace-nowrap font-black text-slate-700 dark:text-slate-200">
                         {row.val}
                       </span>
                     </div>
@@ -961,69 +961,69 @@ const bestSellingChartData = useMemo(
             </div>
 
             {/* Visual Analytics */}
-            <div className="grid gap-5 lg:grid-cols-2">
+            <div className="grid min-w-0 gap-5 md:grid-cols-2">
               <NavLink
                 to="/transactions"
-                className="group rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm backdrop-blur-2xl transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-400/40 hover:bg-slate-50 hover:shadow-xl hover:shadow-emerald-500/5 dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-white/[0.07] sm:p-8"
+                className="group min-w-0 overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm backdrop-blur-2xl transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-400/40 hover:bg-slate-50 hover:shadow-xl hover:shadow-emerald-500/5 dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-white/[0.07] sm:p-8"
               >
-                <div className="mb-6 flex items-center justify-between gap-4">
-                  <div>
+                <div className="mb-6 flex min-w-0 items-start justify-between gap-4 sm:items-center">
+                  <div className="min-w-0">
                     <p className="mb-1 text-[11px] font-black uppercase tracking-widest text-slate-400 transition-colors group-hover:text-emerald-500">
                       {t('Sales')}
                     </p>
-                    <h2 className="text-xl font-black text-slate-950 transition-colors group-hover:text-emerald-500 dark:text-white">
+                    <h2 className="break-words text-lg font-black text-slate-950 transition-colors group-hover:text-emerald-500 dark:text-white sm:text-xl">
                       {t('Daily Sales Volume')}
                     </h2>
                   </div>
 
-                  <IC.Arrow />
+                  <span className="shrink-0"><IC.Arrow /></span>
                 </div>
 
-                <div className="h-[180px] rounded-3xl border border-slate-200 bg-slate-50/70 p-3 dark:border-white/10 dark:bg-slate-950/40 sm:h-[200px]">
+                <div className="h-[170px] min-w-0 overflow-hidden rounded-3xl border border-slate-200 bg-slate-50/70 p-2 dark:border-white/10 dark:bg-slate-950/40 sm:h-[200px] sm:p-3">
                   <ChartComponent data={chartData} variant="bar" />
                 </div>
               </NavLink>
 
               <NavLink
                 to="/reports"
-                className="group rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm backdrop-blur-2xl transition-all duration-300 hover:-translate-y-0.5 hover:border-amber-400/40 hover:bg-slate-50 hover:shadow-xl hover:shadow-amber-500/5 dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-white/[0.07] sm:p-8"
+                className="group min-w-0 overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm backdrop-blur-2xl transition-all duration-300 hover:-translate-y-0.5 hover:border-amber-400/40 hover:bg-slate-50 hover:shadow-xl hover:shadow-amber-500/5 dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-white/[0.07] sm:p-8"
               >
-                <div className="mb-6 flex items-center justify-between gap-4">
-                  <div>
+                <div className="mb-6 flex min-w-0 items-start justify-between gap-4 sm:items-center">
+                  <div className="min-w-0">
                     <p className="mb-1 text-[11px] font-black uppercase tracking-widest text-slate-400 transition-colors group-hover:text-amber-500">
                       {t('Performance')}
                     </p>
-                    <h2 className="text-xl font-black text-slate-950 transition-colors group-hover:text-amber-500 dark:text-white">
+                    <h2 className="break-words text-lg font-black text-slate-950 transition-colors group-hover:text-amber-500 dark:text-white sm:text-xl">
                       {t('Best Sellers Revenue')}
                     </h2>
                   </div>
 
-                  <IC.Arrow />
+                  <span className="shrink-0"><IC.Arrow /></span>
                 </div>
 
-                <div className="h-[200px] rounded-3xl border border-slate-200 bg-slate-50/70 p-3 dark:border-white/10 dark:bg-slate-950/40">
+                <div className="h-[180px] min-w-0 overflow-hidden rounded-3xl border border-slate-200 bg-slate-50/70 p-2 dark:border-white/10 dark:bg-slate-950/40 sm:h-[200px] sm:p-3">
                   <ChartComponent data={bestSellingChartData} variant="bar" />
                 </div>
               </NavLink>
 
               <NavLink
                 to="/inventory"
-                className="group rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm backdrop-blur-2xl transition-all duration-300 hover:-translate-y-0.5 hover:border-sky-400/40 hover:bg-slate-50 hover:shadow-xl hover:shadow-sky-500/5 dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-white/[0.07] sm:p-8 lg:col-span-2"
+                className="group min-w-0 overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm backdrop-blur-2xl transition-all duration-300 hover:-translate-y-0.5 hover:border-sky-400/40 hover:bg-slate-50 hover:shadow-xl hover:shadow-sky-500/5 dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-white/[0.07] sm:p-8 md:col-span-2"
               >
-                <div className="mb-6 flex items-center justify-between gap-4">
-                  <div>
+                <div className="mb-6 flex min-w-0 items-start justify-between gap-4 sm:items-center">
+                  <div className="min-w-0">
                     <p className="mb-1 text-[11px] font-black uppercase tracking-widest text-slate-400 transition-colors group-hover:text-sky-500">
                       {t('Inventory')}
                     </p>
-                    <h2 className="text-xl font-black text-slate-950 transition-colors group-hover:text-sky-500 dark:text-white">
+                    <h2 className="break-words text-lg font-black text-slate-950 transition-colors group-hover:text-sky-500 dark:text-white sm:text-xl">
                       {t('Live Stock Distribution')}
                     </h2>
                   </div>
 
-                  <IC.Arrow />
+                  <span className="shrink-0"><IC.Arrow /></span>
                 </div>
 
-                <div className="h-[190px] rounded-3xl border border-slate-200 bg-slate-50/70 p-3 dark:border-white/10 dark:bg-slate-950/40 sm:h-[220px]">
+                <div className="h-[180px] min-w-0 overflow-hidden rounded-3xl border border-slate-200 bg-slate-50/70 p-2 dark:border-white/10 dark:bg-slate-950/40 sm:h-[220px] sm:p-3">
                   <ChartComponent data={stockChartData} variant="bar" />
                 </div>
               </NavLink>
@@ -1031,32 +1031,32 @@ const bestSellingChartData = useMemo(
           </div>
 
           {/* RIGHT */}
-          <aside className="space-y-5">
+          <aside className="min-w-0 space-y-5">
             {/* Net Profit Breakdown */}
-            <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.04]">
+            <div className="min-w-0 overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.04] sm:p-6">
               <p className="mb-1 text-[11px] font-black uppercase tracking-widest text-slate-400">
                 {t('Profit Calculation')}
               </p>
 
-              <h2 className="mb-5 text-xl font-black text-slate-950 dark:text-white">
+              <h2 className="mb-5 break-words text-lg font-black text-slate-950 dark:text-white sm:text-xl">
                 {t('Net Profit Breakdown')}
               </h2>
 
               <div className="space-y-3">
-                <div className="flex items-center justify-between gap-3 rounded-2xl border border-sky-500/10 bg-sky-500/5 px-5 py-4">
-                  <span className="text-sm font-bold text-slate-500 dark:text-slate-400">
+                <div className="flex min-w-0 items-center justify-between gap-3 rounded-2xl border border-sky-500/10 bg-sky-500/5 px-4 py-4 sm:px-5">
+                  <span className="min-w-0 break-words text-sm font-bold text-slate-500 dark:text-slate-400">
                     {t('Gross Profit')}
                   </span>
-                  <span className="text-sm font-black text-sky-500">
+                  <span className="shrink-0 whitespace-nowrap text-sm font-black text-sky-500">
                     +{fmt.format(metrics.grossProfit)}
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between gap-3 rounded-2xl border border-rose-500/10 bg-rose-500/5 px-5 py-4">
-                  <span className="text-sm font-bold text-slate-500 dark:text-slate-400">
+                <div className="flex min-w-0 items-center justify-between gap-3 rounded-2xl border border-rose-500/10 bg-rose-500/5 px-4 py-4 sm:px-5">
+                  <span className="min-w-0 break-words text-sm font-bold text-slate-500 dark:text-slate-400">
                     {t('Total Expenses')}
                   </span>
-                  <span className="text-sm font-black text-rose-500">
+                  <span className="shrink-0 whitespace-nowrap text-sm font-black text-rose-500">
                     −{fmt.format(metrics.totalExpense)}
                   </span>
                 </div>
@@ -1064,17 +1064,17 @@ const bestSellingChartData = useMemo(
                 <div className="my-1 h-px bg-slate-200 dark:bg-white/10" />
 
                 <div
-                  className={`flex items-center justify-between gap-3 rounded-2xl border px-5 py-5 ${pos
+                  className={`flex min-w-0 items-center justify-between gap-3 rounded-2xl border px-4 py-5 sm:px-5 ${pos
                     ? 'border-emerald-500/15 bg-emerald-500/10'
                     : 'border-rose-500/15 bg-rose-500/10'
                     }`}
                 >
-                  <span className="text-sm font-black text-slate-800 dark:text-white">
+                  <span className="min-w-0 break-words text-sm font-black text-slate-800 dark:text-white">
                     {t('Net Profit')}
                   </span>
 
                   <span
-                    className={`text-xl font-black ${pos ? 'text-emerald-500' : 'text-rose-500'
+                    className={`shrink-0 whitespace-nowrap text-lg font-black sm:text-xl ${pos ? 'text-emerald-500' : 'text-rose-500'
                       }`}
                   >
                     {pos ? '+' : ''}
@@ -1085,19 +1085,19 @@ const bestSellingChartData = useMemo(
             </div>
 
             {/* Live Feed */}
-            <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.04]">
-              <div className="mb-5 flex items-center justify-between gap-4">
-                <div>
+            <div className="min-w-0 overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.04] sm:p-6">
+              <div className="mb-5 flex min-w-0 items-start justify-between gap-4 sm:items-center">
+                <div className="min-w-0">
                   <p className="mb-1 text-[11px] font-black uppercase tracking-widest text-slate-400">
                     {t('Activities')}
                   </p>
 
-                  <h2 className="text-xl font-black text-slate-950 dark:text-white">
+                  <h2 className="break-words text-lg font-black text-slate-950 dark:text-white sm:text-xl">
                     {t('Live Feed')}
                   </h2>
                 </div>
 
-                <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[10px] font-black text-emerald-500">
+                <span className="inline-flex shrink-0 items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[10px] font-black text-emerald-500">
                   <span className="h-1 w-1 rounded-full bg-emerald-400 animate-pulse" />
                   {feed.length}
                 </span>
@@ -1110,7 +1110,7 @@ const bestSellingChartData = useMemo(
                   {t('No activities yet')}
                 </p>
               ) : (
-                <div className="max-h-[420px] space-y-2 overflow-y-auto pr-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                <div className="max-h-[360px] space-y-2 overflow-y-auto pr-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden xl:max-h-[420px]">
                   {feed.map((item) => {
                     if (item.kind === 'tx') {
                       const transaction = item.data as Transaction
@@ -1184,7 +1184,7 @@ const bestSellingChartData = useMemo(
             </div>
 
             {/* Quick Menu */}
-            <div>
+            <div className="min-w-0">
               <p className="mb-4 px-1 text-[11px] font-black uppercase tracking-widest text-slate-400">
                 {t('Quick Menu')}
               </p>
@@ -1223,9 +1223,9 @@ const bestSellingChartData = useMemo(
                   <NavLink
                     key={to}
                     to={to}
-                    className="group flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-4 font-bold text-slate-700 backdrop-blur-xl transition-all duration-200 hover:-translate-y-0.5 hover:border-sky-400/40 hover:bg-slate-50 hover:shadow-lg hover:shadow-sky-500/5 dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-200 dark:hover:bg-white/[0.08]"
+                    className="group flex min-w-0 items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 font-bold text-slate-700 backdrop-blur-xl transition-all duration-200 hover:-translate-y-0.5 hover:border-sky-400/40 hover:bg-slate-50 hover:shadow-lg hover:shadow-sky-500/5 dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-200 dark:hover:bg-white/[0.08]"
                   >
-                    <span className="flex items-center gap-3">
+                    <span className="flex min-w-0 items-center gap-3">
                       <span
                         className="flex h-9 w-9 items-center justify-center rounded-xl transition-transform group-hover:rotate-12"
                         style={{ background: ibg, color: ic }}
@@ -1233,10 +1233,10 @@ const bestSellingChartData = useMemo(
                         {icon}
                       </span>
 
-                      {label}
+                      <span className="min-w-0 truncate">{label}</span>
                     </span>
 
-                    <IC.Arrow />
+                    <span className="shrink-0"><IC.Arrow /></span>
                   </NavLink>
                 ))}
               </div>
