@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { useLanguage } from '../providers/useLanguage'
 
 const footerLinks = [
   { label: 'Terms', path: '/terms' },
@@ -24,6 +25,7 @@ const footerStats = [
 ]
 
 export default function Footer() {
+  const { t } = useLanguage()
   const currentYear = new Date().getFullYear()
 
   return (
@@ -46,17 +48,16 @@ export default function Footer() {
 
               <div>
                 <p className="text-[11px] font-black uppercase tracking-[0.32em] text-slate-900 dark:text-white">
-                  Cashflow <span className="text-sky-500">Premium</span>
+                  Cashflow <span className="text-sky-500">{t('Premium')}</span>
                 </p>
                 <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
-                  Finance Control System
+                  {t('Finance Control System')}
                 </p>
               </div>
             </div>
 
             <p className="max-w-md text-sm leading-6 text-slate-500 dark:text-slate-400">
-              Manage personal and business finances in one secure, fast, and
-              focused platform built for clarity, control, and long-term growth.
+              {t('Manage personal and business finances in one secure, fast, and focused platform built for clarity, control, and long-term growth.')}
             </p>
           </div>
 
@@ -66,14 +67,14 @@ export default function Footer() {
               const cardContent = (
                 <>
                   <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400 transition-colors group-hover:text-sky-500">
-                    {item.label}
+                    {t(item.label)}
                   </p>
 
                   <p className="mt-2 flex items-center gap-2 truncate text-xs font-bold text-slate-700 dark:text-slate-200">
                     {item.live && (
                       <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400/50 animate-pulse" />
                     )}
-                    {item.value}
+                    {t(item.value)}
                   </p>
                 </>
               )
@@ -114,7 +115,7 @@ export default function Footer() {
             <span className="font-black text-slate-800 dark:text-white">
               Cashflow App
             </span>
-            . All rights reserved.
+            . {t('All rights reserved.')}
           </p>
 
           <div className="flex flex-wrap items-center gap-4 sm:gap-6">
@@ -124,7 +125,7 @@ export default function Footer() {
                 to={link.path}
                 className="text-[11px] font-bold tracking-wide text-slate-500 transition hover:text-sky-500 dark:text-slate-400 dark:hover:text-sky-400"
               >
-                {link.label}
+                {t(link.label)}
               </Link>
             ))}
           </div>

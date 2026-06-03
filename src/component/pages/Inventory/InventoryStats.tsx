@@ -1,6 +1,7 @@
 import { Package2, BarChart3, ArrowLeftRight, AlertTriangle } from 'lucide-react'
 import { StatCardSkeleton } from '../../components/InventorySkeleton'
 import type { StatCardProps } from '../../../types/types'
+import { useLanguage } from '../../providers/useLanguage'
 
 // ─── InventoryStats ───────────────────────────────────────────────────────────
 
@@ -69,35 +70,37 @@ export function InventoryStats({
   lowStockCount,
   loading,
 }: InventoryStatsProps) {
+  const { t } = useLanguage()
+
   const stats: Omit<StatCardProps, 'loading'>[] = [
     {
-      label: 'Total Products',
+      label: t('Total Products'),
       value: totalProducts.toLocaleString(),
-      subtext: 'unique SKUs tracked',
+      subtext: t('unique SKUs tracked'),
       icon: <Package2 className="h-4.5 w-4.5" />,
       accentClass: 'text-sky-400',
       borderClass: 'border-sky-500/20',
     },
     {
-      label: 'Total Stock Qty',
+      label: t('Total Stock Qty'),
       value: totalStockQty.toLocaleString(),
-      subtext: 'units across all products',
+      subtext: t('units across all products'),
       icon: <BarChart3 className="h-4.5 w-4.5" />,
       accentClass: 'text-violet-400',
       borderClass: 'border-violet-500/20',
     },
     {
-      label: 'Stock Movements',
+      label: t('Stock Movements'),
       value: totalMovements.toLocaleString(),
-      subtext: 'logged IN/OUT events',
+      subtext: t('logged IN/OUT events'),
       icon: <ArrowLeftRight className="h-4.5 w-4.5" />,
       accentClass: 'text-indigo-400',
       borderClass: 'border-indigo-500/20',
     },
     {
-      label: 'Low Stock Alerts',
+      label: t('Low Stock Alerts'),
       value: lowStockCount.toLocaleString(),
-      subtext: lowStockCount > 0 ? 'products need restocking' : 'all products healthy',
+      subtext: lowStockCount > 0 ? t('products need restocking') : t('all products healthy'),
       icon: <AlertTriangle className="h-4.5 w-4.5" />,
       accentClass: lowStockCount > 0 ? 'text-rose-400' : 'text-emerald-400',
       borderClass: lowStockCount > 0 ? 'border-rose-500/20' : 'border-emerald-500/20',
@@ -106,7 +109,7 @@ export function InventoryStats({
 
   return (
     <section
-      aria-label="Inventory statistics"
+      aria-label={t('Inventory statistics')}
       className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
     >
       {stats.map((stat) => (

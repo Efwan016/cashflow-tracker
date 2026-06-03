@@ -3,22 +3,39 @@ import { TableSkeleton } from '../../components/InventorySkeleton'
 import { EmptyState } from '../../components/EmptyState'
 import { Pagination } from '../../components/Pagination'
 import type { StockLogRecord, SortOption, ProductName, StockLogForm } from '../../../types/types'
+import { useLanguage } from '../../providers/useLanguage'
+import type { Language } from '../../../lib/i18n'
+
+const LANGUAGE_LOCALES: Record<Language, string> = {
+  en: 'en-US',
+  id: 'id-ID',
+  es: 'es-ES',
+  zh: 'zh-CN',
+  fr: 'fr-FR',
+  de: 'de-DE',
+  ja: 'ja-JP',
+  pt: 'pt-PT',
+  ru: 'ru-RU',
+  ar: 'ar-SA',
+}
 
 // ─── TypeBadge ────────────────────────────────────────────────────────────────
 
 function TypeBadge({ type }: { type: 'IN' | 'OUT' }) {
+  const { t } = useLanguage()
+
   if (type === 'IN') {
     return (
       <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400">
         <ArrowDown className="h-2.5 w-2.5" />
-        IN
+        {t('IN')}
       </span>
     )
   }
   return (
     <span className="inline-flex items-center gap-1 rounded-full border border-rose-500/30 bg-rose-500/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-rose-400">
       <ArrowUp className="h-2.5 w-2.5" />
-      OUT
+      {t('OUT')}
     </span>
   )
 }
@@ -44,10 +61,12 @@ export function StockLogsForm({
   error,
   success,
 }: StockLogsFormProps) {
+  const { t } = useLanguage()
+
   return (
     <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 p-4">
       <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
-        Record Movement
+        {t('Record Movement')}
       </p>
 
       {error && (
@@ -65,7 +84,7 @@ export function StockLogsForm({
         {/* Product */}
         <div className="space-y-1">
           <label htmlFor="log-product" className="block text-[11px] font-semibold text-slate-500">
-            Product
+            {t('Product')}
           </label>
           <select
             id="log-product"
@@ -73,7 +92,7 @@ export function StockLogsForm({
             onChange={(e) => onFormChange({ ...form, productId: e.target.value })}
             className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 outline-none transition-all focus:border-sky-500/60 focus:ring-2 focus:ring-sky-500/15"
           >
-            <option value="">Select product…</option>
+            <option value="">{t('Select product...')}</option>
             {products.map((p) => (
               <option key={p.id} value={p.id}>{p.name}</option>
             ))}
@@ -83,7 +102,7 @@ export function StockLogsForm({
         {/* Quantity */}
         <div className="space-y-1">
           <label htmlFor="log-qty" className="block text-[11px] font-semibold text-slate-500">
-            Quantity
+            {t('Quantity')}
           </label>
           <input
             id="log-qty"
@@ -99,7 +118,7 @@ export function StockLogsForm({
         {/* Type + Submit */}
         <div className="space-y-1">
           <label htmlFor="log-type" className="block text-[11px] font-semibold text-slate-500">
-            Type
+            {t('Type')}
           </label>
           <div className="flex gap-2">
             <select
@@ -117,7 +136,7 @@ export function StockLogsForm({
               disabled={loading || !form.productId || !form.qty}
               className="rounded-xl bg-sky-500 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-sky-500/20 transition-all hover:bg-sky-400 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {loading ? '…' : 'Save'}
+              {loading ? '…' : t('Save')}
             </button>
           </div>
         </div>
@@ -176,6 +195,8 @@ export function StockLogsTable({
   formError,
   formSuccess,
 }: StockLogsTableProps) {
+  const { t, language } = useLanguage()
+
   return (
     <div className="flex flex-col gap-3">
       {/* Log Entry Form */}
@@ -193,40 +214,40 @@ export function StockLogsTable({
       <div className="flex flex-wrap items-center justify-between gap-2">
         {/* Filter Tabs */}
         <div className="flex rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950/60 p-0.5">
-          {(['ALL', 'IN', 'OUT'] as const).map((t) => (
+          {(['ALL', 'IN', 'OUT'] as const).map((tabType) => (
             <button
-              key={t}
+              key={tabType}
               type="button"
-              onClick={() => onFilterTypeChange(t)}
-              aria-pressed={filterType === t}
+              onClick={() => onFilterTypeChange(tabType)}
+              aria-pressed={filterType === tabType}
               className={`rounded-lg px-3 py-1.5 text-[11px] font-bold transition-all ${
-                filterType === t
-                  ? t === 'IN'
+                filterType === tabType
+                  ? tabType === 'IN'
                     ? 'bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
-                    : t === 'OUT'
+                    : tabType === 'OUT'
                     ? 'bg-rose-500/10 dark:bg-rose-500/15 text-rose-600 dark:text-rose-400'
                     : 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-200 shadow-sm'
                   : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
               }`}
             >
-              {t === 'ALL' ? 'All' : t}
+              {tabType === 'ALL' ? t('All') : t(tabType)}
             </button>
           ))}
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-[11px] text-slate-600">Sort:</span>
+          <span className="text-[11px] text-slate-600">{t('Sort')}:</span>
           <select
             value={sortBy}
             onChange={(e) => onSortChange(e.target.value as SortOption)}
             className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/60 px-3 py-1.5 text-[11px] text-slate-600 dark:text-slate-300 outline-none transition-all hover:border-slate-300 dark:hover:border-slate-700 focus:border-sky-500/50"
           >
-            <option value="date-desc">Newest first</option>
-            <option value="date-asc">Oldest first</option>
-            <option value="name-asc">Name (A → Z)</option>
-            <option value="name-desc">Name (Z → A)</option>
-            <option value="qty-desc">Qty (High → Low)</option>
-            <option value="qty-asc">Qty (Low → High)</option>
+            <option value="date-desc">{t('Newest first')}</option>
+            <option value="date-asc">{t('Oldest first')}</option>
+            <option value="name-asc">{t('Name (A-Z)')}</option>
+            <option value="name-desc">{t('Name (Z-A)')}</option>
+            <option value="qty-desc">{t('Qty (High-Low)')}</option>
+            <option value="qty-asc">{t('Qty (Low-High)')}</option>
           </select>
         </div>
       </div>
@@ -234,23 +255,23 @@ export function StockLogsTable({
       {/* Table */}
       <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/80">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm" aria-label="Stock movement logs">
+          <table className="w-full text-left text-sm" aria-label={t('Stock movement logs')}>
             <thead className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60">
               <tr>
                 <th className="px-5 py-3.5 text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                  Product
+                  {t('Product')}
                 </th>
                 <th className="px-5 py-3.5 text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                  Type
+                  {t('Type')}
                 </th>
                 <th className="px-5 py-3.5 text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                  Qty
+                  {t('Qty')}
                 </th>
                 <th className="px-5 py-3.5 text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                  Date
+                  {t('Date')}
                 </th>
                 <th className="px-5 py-3.5 text-right text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                  Action
+                  {t('Action')}
                 </th>
               </tr>
             </thead>
@@ -259,8 +280,8 @@ export function StockLogsTable({
                 <TableSkeleton rows={6} cols={5} />
               ) : logs.length === 0 ? (
                 <EmptyState
-                  title="No stock logs found"
-                  description="Record IN/OUT movements to see the history here."
+                  title={t('No stock logs found')}
+                  description={t('Record IN/OUT movements to see the history here.')}
                 />
               ) : (
                 paginatedLogs.map((log, idx) => (
@@ -280,7 +301,7 @@ export function StockLogsTable({
                       {formatter.format(log.qty)}
                     </td>
                     <td className="px-5 py-3.5 text-xs text-slate-500">
-                      {new Date(log.created_at).toLocaleDateString('en-US', {
+                      {new Date(log.created_at).toLocaleDateString(LANGUAGE_LOCALES[language], {
                         month: 'short',
                         day: 'numeric',
                         year: 'numeric',
@@ -293,11 +314,11 @@ export function StockLogsTable({
                         type="button"
                         onClick={() => onDelete(log.id, log.product_id, log.qty, log.type)}
                         disabled={isDeleting}
-                        aria-label="Delete stock log"
+                        aria-label={t('Delete stock log')}
                         className="inline-flex items-center gap-1.5 rounded-xl border border-rose-500/20 bg-rose-500/8 px-3 py-1.5 text-[11px] font-bold text-rose-400 opacity-0 transition-all group-hover:opacity-100 hover:bg-rose-500/15 disabled:cursor-not-allowed disabled:opacity-40"
                       >
                         <Trash2 className="h-3 w-3" />
-                        Delete
+                        {t('Delete')}
                       </button>
                     </td>
                   </tr>

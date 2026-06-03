@@ -2,12 +2,14 @@ import { useEffect, useMemo, useState, useCallback } from 'react'
 import { supabase } from '../../lib/supabase'
 import { createNumberFormatter } from '../../lib/utils'
 import type { StockRecord, ProductName, StockUpdateForm, SortOption } from '../../types/types'
+import { useLanguage } from '../providers/useLanguage'
 
 // ─── useInventory ─────────────────────────────────────────────────────────────
 // Manages stock inventory data: fetching, realtime sync, CRUD operations,
 // sorting, filtering, pagination, and derived stats.
 
 export function useInventory() {
+  const { t } = useLanguage()
   // ── Data State ──────────────────────────────────────────────────────────────
   const [stockItems, setStockItems] = useState<StockRecord[]>([])
   const [products, setProducts] = useState<ProductName[]>([])
@@ -44,7 +46,7 @@ export function useInventory() {
         data: { user },
       } = await supabase.auth.getUser()
       if (!user) {
-        setError('User not authenticated')
+        setError(t('User not authenticated'))
         return
       }
 
@@ -77,11 +79,11 @@ export function useInventory() {
 
       setStockItems(merged)
     } catch {
-      setError('Unable to load stock data. Please refresh.')
+      setError(t('Unable to load stock data. Please refresh.'))
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [t])
 
   // ── Realtime Subscription ────────────────────────────────────────────────────
   useEffect(() => {
@@ -178,13 +180,13 @@ export function useInventory() {
 
     const { productId, quantity, movementType } = form
     if (!productId || !quantity) {
-      setError('Please select a product and enter a quantity.')
+      setError(t('Please select a product and enter a quantity.'))
       return
     }
 
     const parsedQty = Number(quantity)
     if (!Number.isFinite(parsedQty) || parsedQty <= 0) {
-      setError('Quantity must be a positive number.')
+      setError(t('Quantity must be a positive number.'))
       return
     }
 
@@ -195,7 +197,7 @@ export function useInventory() {
       const {
         data: { user },
       } = await supabase.auth.getUser()
-      if (!user) { setError('User not authenticated.'); return }
+      if (!user) { setError(t('User not authenticated.')); return }
 
       const { error: rpcError } = await supabase.rpc('update_stock', {
         p_product_id: productId,
@@ -204,7 +206,7 @@ export function useInventory() {
       })
       if (rpcError) throw rpcError
 
-      setSuccess(`Stock ${movementType === 'add' ? 'added' : 'reduced'} successfully.`)
+      setSuccess(movementType === 'add' ? t('Stock added successfully.') : t('Stock reduced successfully.'))
       setForm({ productId: '', quantity: '', movementType: 'add' })
     } catch (err) {
       console.error('UPDATE STOCK ERROR:', err)
@@ -212,12 +214,12 @@ export function useInventory() {
       if (err instanceof Error) {
         setError(err.message)
       } else {
-        setError('Failed to update stock.')
+        setError(t('Failed to update stock.'))
       }
     } finally {
       setSubmitting(false)
     }
-  }, [form])
+  }, [form, t])
 
   // ── Inline Edit Submit ───────────────────────────────────────────────────────
   const handleEdit = useCallback(
@@ -226,16 +228,16 @@ export function useInventory() {
       setSuccess('')
 
       const newTotal = Number(editQty)
-      if (editQty === '') { setError('Quantity cannot be empty.'); return }
-      if (!Number.isFinite(newTotal)) { setError('Invalid quantity.'); return }
+      if (editQty === '') { setError(t('Quantity cannot be empty.')); return }
+      if (!Number.isFinite(newTotal)) { setError(t('Invalid quantity.')); return }
 
       const delta = newTotal - item.total
       if (delta === 0 && editName === item.product_name) {
-        setError('No changes detected.')
+        setError(t('No changes detected.'))
         return
       }
       if (editName !== item.product_name && !editName.trim()) {
-        setError('Product name cannot be empty.')
+        setError(t('Product name cannot be empty.'))
         return
       }
 
@@ -243,7 +245,7 @@ export function useInventory() {
         const {
           data: { user },
         } = await supabase.auth.getUser()
-        if (!user) { setError('User not found.'); return }
+        if (!user) { setError(t('User not found.')); return }
 
         if (editName !== item.product_name) {
           const { error: nameErr } = await supabase
@@ -263,7 +265,7 @@ export function useInventory() {
           if (stockErr) throw stockErr
         }
 
-        setSuccess('Product updated successfully.')
+        setSuccess(t('Product updated successfully.'))
         setEditingId(null)
         setEditQty('')
         setEditName('')
@@ -274,13 +276,13 @@ export function useInventory() {
         if (err instanceof Error) {
           setError(err.message)
         } else {
-          setError('Failed to update product or stock.')
+          setError(t('Failed to update product or stock.'))
         }
       } finally {
         setSubmitting(false)
       }
     },
-    [editQty, editName, loadStock]
+    [editQty, editName, loadStock, t]
   )
 
   // ── Edit Helpers ─────────────────────────────────────────────────────────────
@@ -302,7 +304,7 @@ export function useInventory() {
   const handleQuickAdjust = useCallback(
     (delta: number) => {
       if (!form.productId) {
-        setError('Please select a product first.')
+        setError(t('Please select a product first.'))
         return
       }
       setForm((prev) => ({
@@ -311,7 +313,7 @@ export function useInventory() {
         movementType: delta > 0 ? 'add' : 'reduce',
       }))
     },
-    [form.productId]
+    [form.productId, t]
   )
 
   return {

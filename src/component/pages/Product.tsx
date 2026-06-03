@@ -4,8 +4,10 @@ import { supabase } from '../../lib/supabase'
 import { createCurrencyFormatter } from '../../lib/utils'
 import { Pagination } from '../components/Pagination'
 import type { Product } from '../../types/types'
+import { useLanguage } from '../providers/useLanguage'
 
 export default function ProductPage() {
+  const { t } = useLanguage()
   const [products, setProducts] = useState<Product[]>([])
   const [name, setName] = useState('')
   const [costPrice, setCostPrice] = useState('')
@@ -103,12 +105,12 @@ export default function ProductPage() {
 
     const userId = await getUserId()
     if (!userId) {
-      setError('User not found')
+      setError(t('User not found'))
       return
     }
 
     if (!name.trim() || !costPrice || !salePrice) {
-      setError('Please fill in all product fields.')
+      setError(t('Please fill in all product fields.'))
       return
     }
 
@@ -121,7 +123,7 @@ export default function ProductPage() {
       !Number.isFinite(parsedSale) ||
       parsedSale < 0
     ) {
-      setError('Harga tidak valid.')
+      setError(t('Invalid price.'))
       return
     }
 
@@ -149,7 +151,7 @@ export default function ProductPage() {
 
         if (error) throw error
 
-        setSuccess('Product updated.')
+        setSuccess(t('Product updated.'))
       } else {
         const { error } = await supabase
           .from('Product')
@@ -164,7 +166,7 @@ export default function ProductPage() {
 
         if (error) throw error
 
-        setSuccess('Product created.')
+        setSuccess(t('Product created.'))
       }
 
       await fetchProducts()
@@ -173,7 +175,7 @@ export default function ProductPage() {
       setCostPrice('')
       setSalePrice('')
     } catch {
-      setError('Something went wrong')
+      setError(t('Something went wrong'))
     } finally {
       setSubmitting(false)
     }
@@ -184,7 +186,7 @@ export default function ProductPage() {
 
     const userId = await getUserId()
     if (!userId) {
-      setError('User not found')
+      setError(t('User not found'))
       return
     }
 
@@ -199,13 +201,13 @@ export default function ProductPage() {
 
       if (error) throw error
 
-      setSuccess('Product deleted.')
-      toast.success('Product deleted successfully 🚀')
+      setSuccess(t('Product deleted.'))
+      toast.success(t('Product deleted successfully.'))
 
       await fetchProducts()
     } catch {
-      setError('Failed to delete product')
-      toast.error('Failed to delete product')
+      setError(t('Failed to delete product'))
+      toast.error(t('Failed to delete product'))
     } finally {
       setSubmitting(false)
     }
@@ -215,7 +217,7 @@ export default function ProductPage() {
     const customId = "confirm-delete-product";
     toast.info(
       <div className="space-y-4">
-        <p className="font-medium text-slate-100">Yakin mau hapus product ini?</p>
+        <p className="font-medium text-slate-100">{t('Delete this product?')}</p>
         <div className="flex gap-2">
           <button
             type="button"
@@ -225,14 +227,14 @@ export default function ProductPage() {
               handleDeleteConfirmed(id)
             }}
           >
-            Hapus
+            {t('Delete')}
           </button>
           <button
             type="button"
             className="rounded-3xl border border-slate-700 bg-slate-900 px-4 py-2 text-xs font-semibold text-slate-200 hover:bg-slate-800 transition"
             onClick={() => toast.dismiss(customId)}
           >
-            Batal
+            {t('Cancel')}
           </button>
         </div>
       </div>,
@@ -244,10 +246,10 @@ export default function ProductPage() {
     <main className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="mb-10 rounded-3xl sm:rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-gradient-to-br dark:from-slate-900/90 dark:to-slate-950/80 p-6 sm:p-8 shadow-xl dark:shadow-[0_30px_120px_-50px_rgba(15,23,42,0.85)] backdrop-blur-xl transition-colors">
-          <p className="text-sm uppercase tracking-[0.35em] text-sky-600 dark:text-sky-300/80">Product catalog</p>
-          <h1 className="mt-3 text-2xl sm:text-4xl font-semibold text-slate-900 dark:text-white">Manage your products</h1>
+          <p className="text-sm uppercase tracking-[0.35em] text-sky-600 dark:text-sky-300/80">{t('Product catalog')}</p>
+          <h1 className="mt-3 text-2xl sm:text-4xl font-semibold text-slate-900 dark:text-white">{t('Manage your products')}</h1>
           <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">
-            Add or update product records with cost and sale prices. All pages will use this product catalog for stock and transaction workflows.
+            {t('Add or update product records with cost and sale prices. All pages will use this product catalog for stock and transaction workflows.')}
           </p>
         </div>
 
@@ -263,16 +265,16 @@ export default function ProductPage() {
 
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="grid gap-3 text-left">
-                  <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">Product name</span>
+                  <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">{t('Product name')}</span>
                   <input
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Product name"
+                    placeholder={t('Product name')}
                     className="rounded-3xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/90 px-4 py-4 text-slate-900 dark:text-white outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20"
                   />
                 </label>
                 <label className="grid gap-3 text-left">
-                  <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">Harga modal</span>
+                  <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">{t('Cost price')}</span>
                   <input
                     type="number"
                     min="0"
@@ -283,7 +285,7 @@ export default function ProductPage() {
                   />
                 </label>
                 <label className="grid gap-3 text-left">
-                  <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">Harga jual</span>
+                  <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">{t('Sale price')}</span>
                   <input
                     type="number"
                     min="0"
@@ -296,14 +298,14 @@ export default function ProductPage() {
               </div>
 
               <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm text-slate-500 dark:text-slate-400">Product catalog uses <span className="font-semibold text-slate-900 dark:text-white">Product</span> table.</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">{t('Product catalog uses the Product table.')}</p>
                 <button
                   type="button"
                   onClick={handleSubmit}
                   disabled={loading || submitting}
                   className="inline-flex items-center justify-center rounded-3xl bg-gradient-to-r from-sky-500 to-indigo-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:from-sky-400 hover:to-indigo-400 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {submitting ? 'Saving…' : 'Save product'}
+                  {submitting ? t('Saving...') : t('Save product')}
                 </button>
               </div>
             </div>
@@ -312,15 +314,15 @@ export default function ProductPage() {
           <aside className="rounded-3xl sm:rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 p-6 sm:p-8 shadow-2xl dark:shadow-slate-950/20 transition-colors">
             <div className="space-y-5">
               <div>
-                <p className="text-sm uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">Catalog tips</p>
-                <h2 className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">Product-driven workflow</h2>
+                <p className="text-sm uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">{t('Catalog tips')}</p>
+                <h2 className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">{t('Product-driven workflow')}</h2>
               </div>
               <div className="space-y-4 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                <p>Use products to standardize stock, transactions, and reporting across the app.</p>
-                <p>When product data is available, stock and transaction pages can auto-fill prices.</p>
+                <p>{t('Use products to standardize stock, transactions, and reporting across the app.')}</p>
+                <p>{t('When product data is available, stock and transaction pages can auto-fill prices.')}</p>
               </div>
               <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/90 p-5 text-sm text-slate-600 dark:text-slate-300 transition-colors">
-                Product IDs should be unique. Updating an existing ID will overwrite its name and prices.
+                {t('Product IDs should be unique. Updating an existing ID will overwrite its name and prices.')}
               </div>
             </div>
           </aside>
@@ -329,22 +331,22 @@ export default function ProductPage() {
         <div className="mt-10 rounded-3xl sm:rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 p-6 sm:p-8 shadow-2xl dark:shadow-slate-950/20 transition-colors">
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm uppercase tracking-[0.35em] text-sky-600 dark:text-sky-300/80">Product list</p>
-              <h2 className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">Current catalog</h2>
+              <p className="text-sm uppercase tracking-[0.35em] text-sky-600 dark:text-sky-300/80">{t('Product list')}</p>
+              <h2 className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">{t('Current catalog')}</h2>
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-xs text-slate-500">Sort:</span>
+              <span className="text-xs text-slate-500">{t('Sort')}:</span>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
                 className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/50 px-4 py-2 text-xs text-slate-900 dark:text-white outline-none focus:border-sky-500/50 hover:bg-slate-50 dark:hover:bg-slate-900/80 cursor-pointer transition-colors"
               >
-                <option value="name-asc">Alphabet (A-Z)</option>
-                <option value="name-desc">Alphabet (Z-A)</option>
-                <option value="modal-desc">Modal (High-Low)</option>
-                <option value="modal-asc">Modal (Low-High)</option>
-                <option value="sale-desc">Jual (High-Low)</option>
-                <option value="sale-asc">Jual (Low-High)</option>
+                <option value="name-asc">{t('Alphabet (A-Z)')}</option>
+                <option value="name-desc">{t('Alphabet (Z-A)')}</option>
+                <option value="modal-desc">{t('Cost (High-Low)')}</option>
+                <option value="modal-asc">{t('Cost (Low-High)')}</option>
+                <option value="sale-desc">{t('Sale (High-Low)')}</option>
+                <option value="sale-asc">{t('Sale (Low-High)')}</option>
               </select>
             </div>
           </div>
@@ -353,24 +355,24 @@ export default function ProductPage() {
             <table className="w-full text-left text-sm text-slate-600 dark:text-slate-200">
               <thead className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/90 text-slate-500 dark:text-slate-400">
                 <tr>
-                  <th className="px-4 py-4">Product ID</th>
-                  <th className="px-4 py-4">Name</th>
-                  <th className="px-4 py-4">Harga modal</th>
-                  <th className="px-4 py-4">Harga jual</th>
-                  <th className="px-4 py-4 text-right">Action</th>
+                  <th className="px-4 py-4">{t('Product ID')}</th>
+                  <th className="px-4 py-4">{t('Name')}</th>
+                  <th className="px-4 py-4">{t('Cost price')}</th>
+                  <th className="px-4 py-4">{t('Sale price')}</th>
+                  <th className="px-4 py-4 text-right">{t('Action')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {loading ? (
                   <tr>
                     <td colSpan={5} className="px-4 py-6 text-sm text-slate-500 dark:text-slate-400">
-                      Loading product catalog...
+                      {t('Loading product catalog...')}
                     </td>
                   </tr>
                 ) : products.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="px-4 py-6 text-sm text-slate-500 dark:text-slate-400">
-                      No products found.
+                      {t('No products found.')}
                     </td>
                   </tr>
                 ) : (
@@ -386,7 +388,7 @@ export default function ProductPage() {
                           disabled={submitting}
                           className="rounded-xl bg-rose-500/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 transition-colors disabled:opacity-50"
                         >
-                          Delete
+                          {t('Delete')}
                         </button>
                       </td>
 

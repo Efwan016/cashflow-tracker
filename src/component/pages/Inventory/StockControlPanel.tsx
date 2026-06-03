@@ -1,5 +1,6 @@
 import { Loader2, TrendingUp, TrendingDown, Zap } from 'lucide-react'
 import type { StockControlPanelProps } from '../../../types/types'
+import { useLanguage } from '../../providers/useLanguage'
 // ─── StockControlPanel ────────────────────────────────────────────────────────
 
 
@@ -14,21 +15,22 @@ export function StockControlPanel({
   error,
   success,
 }: StockControlPanelProps) {
+  const { t } = useLanguage()
   const isAdd = form.movementType === 'add'
 
   return (
     <aside
-      aria-label="Stock control panel"
+      aria-label={t('Stock control panel')}
       className="flex flex-col gap-5 rounded-2xl border border-black/5 dark:border-slate-800 bg-white dark:bg-slate-900/70 p-5 shadow-xl dark:shadow-slate-950/30 transition-colors"
     >
       {/* Panel Header */}
       <div className="border-b border-slate-100 dark:border-slate-800 pb-4">
         <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500">
-          Control Panel
+          {t('Control Panel')}
         </p>
-        <h2 className="mt-1 text-base font-bold text-slate-900 dark:text-slate-100">Stock Update</h2>
+        <h2 className="mt-1 text-base font-bold text-slate-900 dark:text-slate-100">{t('Stock Update')}</h2>
         <p className="mt-0.5 text-xs text-slate-400 dark:text-slate-500">
-          Adjust inventory levels per product.
+          {t('Adjust inventory levels per product.')}
         </p>
       </div>
 
@@ -55,7 +57,7 @@ export function StockControlPanel({
         {/* Product Select */}
         <div className="space-y-1.5">
           <label htmlFor="stock-product" className="block text-xs font-semibold text-slate-400">
-            Product
+            {t('Product')}
           </label>
           <select
             id="stock-product"
@@ -63,7 +65,7 @@ export function StockControlPanel({
             onChange={(e) => onFormChange({ ...form, productId: e.target.value })}
             className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/80 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 outline-none transition-all focus:border-sky-500/70 focus:ring-2 focus:ring-sky-500/15 hover:border-slate-300 dark:hover:border-slate-600 cursor-pointer"
           >
-            <option value="">Select a product…</option>
+            <option value="">{t('Select a product...')}</option>
             {products.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name}
@@ -74,7 +76,7 @@ export function StockControlPanel({
 
         {/* Movement Type Toggle */}
         <div className="space-y-1.5">
-          <span className="block text-xs font-semibold text-slate-400">Type</span>
+          <span className="block text-xs font-semibold text-slate-400">{t('Type')}</span>
           <div className="grid grid-cols-2 gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 p-1">
             <button
               type="button"
@@ -87,7 +89,7 @@ export function StockControlPanel({
               }`}
             >
               <TrendingUp className="h-3.5 w-3.5" />
-              Add Stock
+              {t('Add Stock')}
             </button>
             <button
               type="button"
@@ -100,7 +102,7 @@ export function StockControlPanel({
               }`}
             >
               <TrendingDown className="h-3.5 w-3.5" />
-              Reduce
+              {t('Reduce')}
             </button>
           </div>
         </div>
@@ -108,7 +110,7 @@ export function StockControlPanel({
         {/* Quantity Input */}
         <div className="space-y-1.5">
           <label htmlFor="stock-qty" className="block text-xs font-semibold text-slate-400">
-            Quantity
+            {t('Quantity')}
           </label>
           <input
             id="stock-qty"
@@ -117,7 +119,7 @@ export function StockControlPanel({
             value={form.quantity}
             onChange={(e) => onFormChange({ ...form, quantity: e.target.value })}
             onKeyDown={(e) => e.key === 'Enter' && onSubmit()}
-            placeholder="Enter amount…"
+            placeholder={t('Enter amount...')}
             className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/80 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 outline-none placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all focus:border-sky-500/70 focus:ring-2 focus:ring-sky-500/15 hover:border-slate-300 dark:hover:border-slate-600"
           />
         </div>
@@ -136,10 +138,10 @@ export function StockControlPanel({
           {submitting ? (
             <span className="flex items-center justify-center gap-2">
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              Updating…
+              {t('Updating...')}
             </span>
           ) : (
-            `${isAdd ? 'Add' : 'Reduce'} Stock`
+            `${isAdd ? t('Add') : t('Reduce')} ${t('Stock')}`
           )}
         </button>
       </div>
@@ -152,7 +154,7 @@ export function StockControlPanel({
         <div className="flex items-center gap-1.5">
           <Zap className="h-3.5 w-3.5 text-sky-400" />
           <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
-            Quick Adjust
+            {t('Quick Adjust')}
           </span>
         </div>
         <div className="grid grid-cols-3 gap-1.5">
@@ -168,7 +170,7 @@ export function StockControlPanel({
               key={label}
               type="button"
               onClick={() => onQuickAdjust(delta)}
-              title={`Quick adjust ${label}`}
+              title={`${t('Quick adjust')} ${label}`}
               className={`rounded-xl border py-2 text-xs font-bold transition-all hover:scale-105 active:scale-95 ${
                 delta > 0
                   ? 'border-emerald-500/20 bg-emerald-500/8 text-emerald-400 hover:bg-emerald-500/15'
@@ -180,7 +182,7 @@ export function StockControlPanel({
           ))}
         </div>
         <p className="text-[10px] text-slate-600">
-          Select a product above before using quick adjust.
+          {t('Select a product above before using quick adjust.')}
         </p>
       </div>
     </aside>

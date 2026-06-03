@@ -1,5 +1,6 @@
 import { Layers, History } from 'lucide-react'
 import type { ActiveTab } from '../../../types/types'
+import { useLanguage } from '../../providers/useLanguage'
 
 // ─── InventoryTabs ────────────────────────────────────────────────────────────
 
@@ -25,16 +26,18 @@ export function InventoryTabs({
   logsCount,
   children,
 }: InventoryTabsProps) {
+  const { t } = useLanguage()
+
   const tabs: Tab[] = [
     {
       id: 'inventory',
-      label: 'Current Inventory',
+      label: t('Current Inventory'),
       icon: <Layers className="h-3.5 w-3.5" />,
       count: inventoryCount,
     },
     {
       id: 'logs',
-      label: 'Movement Logs',
+      label: t('Movement Logs'),
       icon: <History className="h-3.5 w-3.5" />,
       count: logsCount,
     },
@@ -45,7 +48,7 @@ export function InventoryTabs({
       {/* Tab Navigation */}
       <nav
         role="tablist"
-        aria-label="Inventory sections"
+        aria-label={t('Inventory sections')}
         className="flex gap-1 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900/60 p-1"
       >
         {tabs.map((tab) => (

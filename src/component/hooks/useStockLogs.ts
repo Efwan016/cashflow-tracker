@@ -4,12 +4,14 @@ import { supabase } from '../../lib/supabase'
 import { createNumberFormatter, formatDateTimeLocal } from '../../lib/utils'
 import type { StockLogRecord, ProductName, StockLogForm, SortOption } from '../../types/types'
 import ConfirmToast from '../components/ConfirmToast'
+import { useLanguage } from '../providers/useLanguage'
 
 // ─── useStockLogs ─────────────────────────────────────────────────────────────
 // Manages stock movement logs: fetch, insert, delete (with inventory reversal),
 // sorting, filtering, and pagination.
 
 export function useStockLogs(searchQuery: string) {
+  const { t } = useLanguage()
   // ── Data State ──────────────────────────────────────────────────────────────
   const [stockLogs, setStockLogs] = useState<StockLogRecord[]>([])
   const [products, setProducts] = useState<ProductName[]>([])
@@ -81,11 +83,11 @@ export function useStockLogs(searchQuery: string) {
       setStockLogs((logRes.data ?? []) as StockLogRecord[])
       setProducts((productRes.data ?? []) as ProductName[])
     } catch {
-      setError('Unable to load stock logs. Please refresh.')
+      setError(t('Unable to load stock logs. Please refresh.'))
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [t])
 
   useEffect(() => {
     if (userId) loadLogs(userId)
@@ -191,7 +193,7 @@ export function useStockLogs(searchQuery: string) {
       qtyToRestore: number,
       typeToReverse: 'IN' | 'OUT'
     ) => {
-      if (!userId) { toast.error('User not authenticated'); return }
+      if (!userId) { toast.error(t('User not authenticated')); return }
       setIsDeleting(true)
       setError('')
       setSuccess('')
@@ -214,27 +216,27 @@ export function useStockLogs(searchQuery: string) {
         })
         if (stockErr) throw stockErr
 
-        setSuccess('Stock log deleted and inventory reversed.')
-        toast.success('Stock log deleted successfully.')
+        setSuccess(t('Stock log deleted and inventory reversed.'))
+        toast.success(t('Stock log deleted successfully.'))
         await refreshLogs()
       } catch {
-        setError('Failed to delete stock log.')
-        toast.error('Failed to delete stock log.')
+        setError(t('Failed to delete stock log.'))
+        toast.error(t('Failed to delete stock log.'))
       } finally {
         setIsDeleting(false)
       }
     },
-    [userId, refreshLogs]
+    [userId, refreshLogs, t]
   )
 
   const handleDelete = useCallback(
     (logId: string, productId: string, qty: number, type: 'IN' | 'OUT') => {
       confirmAction(
-        'Delete this stock log and reverse its inventory effect?',
+        t('Delete this stock log and reverse its inventory effect?'),
         () => handleDeleteConfirmed(logId, productId, qty, type)
       )
     },
-    [confirmAction, handleDeleteConfirmed]
+    [confirmAction, handleDeleteConfirmed, t]
   )
 
   // ── Insert Stock Log ─────────────────────────────────────────────────────────
@@ -244,17 +246,17 @@ export function useStockLogs(searchQuery: string) {
 
     const { productId, qty, type } = form
     if (!productId || !qty) {
-      setError('Please select a product and enter a quantity.')
+      setError(t('Please select a product and enter a quantity.'))
       return
     }
 
     const parsedQty = Number(qty)
     if (!Number.isFinite(parsedQty) || parsedQty <= 0) {
-      setError('Quantity must be greater than zero.')
+      setError(t('Quantity must be greater than zero.'))
       return
     }
 
-    if (!userId) { toast.error('User not authenticated'); return }
+    if (!userId) { toast.error(t('User not authenticated')); return }
 
     setLoading(true)
 
@@ -280,15 +282,15 @@ export function useStockLogs(searchQuery: string) {
       })
       if (stockErr) throw stockErr
 
-      setSuccess('Stock log saved and inventory updated.')
+      setSuccess(t('Stock log saved and inventory updated.'))
       setForm({ productId: '', qty: '', type: 'IN' })
       await refreshLogs()
     } catch {
-      setError('Unable to save stock log.')
+      setError(t('Unable to save stock log.'))
     } finally {
       setLoading(false)
     }
-  }, [form, userId, refreshLogs])
+  }, [form, userId, refreshLogs, t])
 
   return {
     // Data

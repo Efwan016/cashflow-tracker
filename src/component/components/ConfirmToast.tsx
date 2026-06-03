@@ -1,5 +1,6 @@
 import { toast } from 'react-toastify'
 import type { ConfirmToastProps } from '../../types/types'
+import { useLanguage } from '../providers/useLanguage'
 
 
 export default function ConfirmToast({
@@ -7,6 +8,8 @@ export default function ConfirmToast({
   toastId,
   onConfirm,
 }: ConfirmToastProps) {
+  const { t } = useLanguage()
+
   return (
     <div className="space-y-3">
       <p className="text-sm text-slate-100">{message}</p>
@@ -20,7 +23,7 @@ export default function ConfirmToast({
             onConfirm()
           }}
         >
-          Confirm
+          {t('Confirm')}
         </button>
 
         <button
@@ -28,7 +31,7 @@ export default function ConfirmToast({
           className="rounded-xl border border-slate-700 bg-slate-900 px-4 py-1.5 text-xs font-bold text-slate-300 transition-colors hover:bg-slate-800"
           onClick={() => toast.dismiss(toastId)}
         >
-          Cancel
+          {t('Cancel')}
         </button>
       </div>
     </div>
