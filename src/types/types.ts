@@ -383,6 +383,7 @@ export type ReportTrendSectionProps = {
 export type ReportInsightResponse = {
   insight: string
   generatedAt: string
+  geminiStatus?: 'generated' | 'fallback'
   telegramNotified?: boolean
   telegramStatus?: 'sent' | 'not_configured' | 'misconfigured' | 'failed'
   error?: string

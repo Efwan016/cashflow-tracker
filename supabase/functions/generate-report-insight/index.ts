@@ -19,6 +19,7 @@ const supportedLanguages = {
 type InsightLanguage = keyof typeof supportedLanguages
 
 type TelegramStatus = 'sent' | 'not_configured' | 'misconfigured' | 'failed'
+type GeminiStatus = 'generated' | 'fallback'
 
 type ReportInsightPayload = {
   revenue?: number
@@ -54,6 +55,87 @@ const formatRupiah = (value: number) =>
 
 const compactMessageText = (value: string | null | undefined, fallback: string) =>
   value?.trim().slice(0, 120) || fallback
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+const shouldRetryGemini = (status: number) =>
+  status === 429 || status === 500 || status === 502 || status === 503 || status === 504
+
+const buildFallbackInsight = (
+  body: ReportInsightPayload,
+  language: InsightLanguage,
+) => {
+  const netProfit = body.netProfit ?? 0
+  const expenseRatio = body.expenseRatio ?? 0
+  const lowStockCount = body.lowStockCount ?? 0
+  const bestSeller = compactMessageText(body.bestSellingProduct, '-')
+
+  if (language === 'id') {
+    return [
+      `Ringkasan sementara: Gemini sedang tidak tersedia, jadi insight ini dibuat dari data laporan yang ada.`,
+      `Profitabilitas: Laba bersih saat ini ${formatRupiah(netProfit)} dengan rasio pengeluaran ${expenseRatio.toFixed(1)}%.`,
+      `Produk utama: Produk terlaris periode ini adalah ${bestSeller}.`,
+      `Inventaris: Ada ${lowStockCount} produk stok rendah yang perlu dipantau.`,
+    ].join('\n')
+  }
+
+  return [
+    'Temporary summary: Gemini is currently unavailable, so this insight was generated from the available report data.',
+    `Profitability: Current net profit is ${formatRupiah(netProfit)} with an expense ratio of ${expenseRatio.toFixed(1)}%.`,
+    `Product focus: The best-selling product for this period is ${bestSeller}.`,
+    `Inventory: There are ${lowStockCount} low-stock products to monitor.`,
+  ].join('\n')
+}
+
+const requestGeminiInsight = async (
+  geminiApiKey: string,
+  prompt: string,
+) => {
+  let lastStatus = 500
+  let lastErrorText = ''
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const geminiRes = await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-goog-api-key': geminiApiKey,
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [{ text: prompt }],
+            },
+          ],
+        }),
+      },
+    )
+
+    if (geminiRes.ok) {
+      return {
+        ok: true as const,
+        result: await geminiRes.json(),
+      }
+    }
+
+    lastStatus = geminiRes.status
+    lastErrorText = await geminiRes.text()
+
+    if (!shouldRetryGemini(geminiRes.status) || attempt === 2) {
+      break
+    }
+
+    await sleep(400 * (attempt + 1))
+  }
+
+  return {
+    ok: false as const,
+    status: lastStatus,
+    errorText: lastErrorText,
+  }
+}
 
 const buildTelegramReportMessage = (
   body: ReportInsightPayload,
@@ -231,43 +313,36 @@ Most Profitable Product: ${body.mostProfitableProduct ?? 'N/A'}
 Low Stock Count: ${body.lowStockCount ?? 0}
 `
 
-    const geminiRes = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-goog-api-key': geminiApiKey,
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [{ text: prompt }],
-            },
-          ],
-        }),
-      },
-    )
+    const geminiResponse = await requestGeminiInsight(geminiApiKey, prompt)
+    let geminiStatus: GeminiStatus = 'generated'
+    let insight = fallbackText
 
-    if (!geminiRes.ok) {
-      const errorText = await geminiRes.text()
-
-      return new Response(
-        JSON.stringify({
-          error: 'Failed to generate insight',
-          details: errorText,
-        }),
-        {
-          status: geminiRes.status,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        },
+    if (!geminiResponse.ok) {
+      console.error(
+        `Gemini insight generation failed after retries: ${geminiResponse.status} ${geminiResponse.errorText}`,
       )
+
+      if (shouldRetryGemini(geminiResponse.status)) {
+        geminiStatus = 'fallback'
+        insight = buildFallbackInsight(body, language)
+      } else {
+        return new Response(
+          JSON.stringify({
+            error: 'Failed to generate insight',
+            details: geminiResponse.errorText,
+          }),
+          {
+            status: geminiResponse.status,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          },
+        )
+      }
+    } else {
+      insight =
+        geminiResponse.result?.candidates?.[0]?.content?.parts?.[0]?.text ??
+        fallbackText
     }
 
-    const result = await geminiRes.json()
-    const insight =
-      result?.candidates?.[0]?.content?.parts?.[0]?.text ??
-      fallbackText
     const generatedAt = new Date().toISOString()
     const telegramBotToken = Deno.env.get('TELEGRAM_BOT_TOKEN')
     const telegramChatId = Deno.env.get('TELEGRAM_CHAT_ID')
@@ -291,6 +366,7 @@ Low Stock Count: ${body.lowStockCount ?? 0}
       JSON.stringify({
         insight,
         generatedAt,
+        geminiStatus,
         telegramNotified: telegramStatus === 'sent',
         telegramStatus,
       }),

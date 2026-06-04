@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { supabase } from '../../../lib/supabase'
+import { useLanguage } from '../../providers/useLanguage'
 
 import EyeOpen from '../../../assets/Icon/eyeOpen'
 import EyeClosed from '../../../assets/Icon/eyeClosed'
 import LockIcon from '../../../assets/Icon/LockIcon'
 
 export default function ResetPassword() {
+    const { t } = useLanguage()
     const navigate = useNavigate()
 
     const [password, setPassword] = useState('')
@@ -23,7 +25,7 @@ export default function ResetPassword() {
             const { data } = await supabase.auth.getSession()
 
             if (!data.session) {
-                toast.error('Reset session expired. Please request a new reset link.')
+                toast.error(t('Reset session expired. Please request a new reset link.'))
                 navigate('/forgot-password')
                 return
             }
@@ -32,24 +34,24 @@ export default function ResetPassword() {
         }
 
         checkSession()
-    }, [navigate])
+    }, [navigate, t])
 
     const handleUpdatePassword = async (e: React.FormEvent) => {
         e.preventDefault()
         setError('')
 
         if (!password || !confirmPassword) {
-            setError('Password and confirm password are required')
+            setError(t('Password and confirm password are required'))
             return
         }
 
         if (password.length < 6) {
-            setError('Password must be at least 6 characters')
+            setError(t('Password must be at least 6 characters'))
             return
         }
 
         if (password !== confirmPassword) {
-            setError("Passwords don't match")
+            setError(t("Passwords don't match"))
             return
         }
 
@@ -67,7 +69,7 @@ export default function ResetPassword() {
             return
         }
 
-        toast.success('Password updated successfully. Please login again.')
+        toast.success(t('Password updated successfully. Please login again.'))
 
         await supabase.auth.signOut()
         navigate('/auth')
@@ -77,7 +79,7 @@ export default function ResetPassword() {
         return (
             <main className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-white">
                 <p className="text-sm text-slate-500 dark:text-slate-400">
-                    Checking reset session...
+                    {t('Checking reset session...')}
                 </p>
             </main>
         )
@@ -101,20 +103,20 @@ export default function ResetPassword() {
                     <div className="mb-8 text-center">
                         <img
                             src="/IconCashflow.png"
-                            alt="Cashflow App"
+                            alt={t('Cashflow App')}
                             className="mx-auto mb-6 h-16 w-16 rounded-2xl object-cover shadow-lg"
                         />
 
                         <span className="inline-flex rounded-full bg-sky-500/10 px-3 py-1 text-xs uppercase tracking-[0.35em] text-sky-600 dark:text-sky-300">
-                            Reset Password
+                            {t('Reset Password')}
                         </span>
 
                         <h1 className="mt-5 text-3xl font-semibold text-slate-900 dark:text-white sm:text-4xl">
-                            Create new password
+                            {t('Create new password')}
                         </h1>
 
                         <p className="mt-4 text-sm leading-6 text-slate-500 dark:text-slate-400 sm:text-base">
-                            Enter your new password below to secure your account.
+                            {t('Enter your new password below to secure your account.')}
                         </p>
                     </div>
 
@@ -136,7 +138,7 @@ export default function ResetPassword() {
                                 />
 
                                 <span className="pointer-events-none absolute left-12 -top-2 z-10 rounded-xl bg-white px-2 text-sm text-slate-500 transition-all duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-500 peer-focus:-top-2 peer-focus:-translate-y-0 peer-focus:text-xs peer-focus:text-sky-600 dark:bg-slate-900 dark:peer-focus:text-sky-300">
-                                    New Password
+                                    {t('New Password')}
                                 </span>
 
                                 <button
@@ -169,7 +171,7 @@ export default function ResetPassword() {
                                 />
 
                                 <span className="pointer-events-none absolute left-12 -top-2 z-10 rounded-xl bg-white px-2 text-sm text-slate-500 transition-all duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-500 peer-focus:-top-2 peer-focus:-translate-y-0 peer-focus:text-xs peer-focus:text-sky-600 dark:bg-slate-900 dark:peer-focus:text-sky-300">
-                                    Confirm New Password
+                                    {t('Confirm New Password')}
                                 </span>
 
                                 <button
@@ -196,17 +198,17 @@ export default function ResetPassword() {
                             disabled={loading}
                             className="w-full rounded-[28px] bg-gradient-to-r from-sky-500 to-indigo-500 px-5 py-4 text-base font-semibold text-white shadow-lg shadow-sky-500/20 transition duration-200 hover:from-sky-400 hover:to-indigo-400 disabled:cursor-not-allowed disabled:opacity-60"
                         >
-                            {loading ? 'Updating password...' : 'Update Password'}
+                            {loading ? t('Updating password...') : t('Update Password')}
                         </button>
                     </form>
 
                     <div className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">
-                        Back to{' '}
+                        {t('Back to')}{' '}
                         <Link
                             to="/"
                             className="font-medium text-sky-600 transition hover:text-sky-500 dark:text-sky-300 dark:hover:text-sky-200"
                         >
-                            login
+                            {t('login')}
                         </Link>
                     </div>
                 </section>

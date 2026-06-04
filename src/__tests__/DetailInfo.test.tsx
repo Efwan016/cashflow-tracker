@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { vi } from 'vitest'
 import DetailInfo from '../component/pages/Setting/DetailInfo'
+import { LanguageProvider } from '../component/providers/LanguageProvider'
 
 vi.mock('../lib/supabase', () => {
   const mockSingle = vi.fn(async () => ({ data: { full_name: 'Test User' } }))
@@ -33,9 +34,11 @@ vi.mock('../lib/supabase', () => {
 describe('DetailInfo component', () => {
   test('renders account info after loading', async () => {
     render(
-      <MemoryRouter>
-        <DetailInfo />
-      </MemoryRouter>
+      <LanguageProvider>
+        <MemoryRouter>
+          <DetailInfo />
+        </MemoryRouter>
+      </LanguageProvider>
     )
 
     expect(screen.getByText(/Loading.../i)).toBeInTheDocument()

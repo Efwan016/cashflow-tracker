@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
+import { useLanguage } from '../providers/useLanguage'
 
 export default function Settings() {
+    const { t } = useLanguage()
     const navigate = useNavigate()
     const [loading, setLoading] = useState(true)
 
@@ -24,14 +26,14 @@ export default function Settings() {
 
     const handleLogout = async () => {
         await supabase.auth.signOut()
-        toast.success('Logged out')
+        toast.success(t('Logged out'))
         navigate('/')
     }
 
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center text-slate-400">
-                Loading...
+                {t('Loading...')}
             </div>
         )
     }
@@ -43,34 +45,33 @@ export default function Settings() {
                 {/* HEADER */}
                 <div>
                     <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
-                        Settings
+                        {t('Settings')}
                     </h1>
                     <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-                        Manage your account, privacy, and application preferences
+                        {t('Manage your account, privacy, and application preferences')}
                     </p>
                 </div>
 
                 {/* ACCOUNT */}
                 <div className="rounded-2xl border border-black/5 dark:border-white/10 bg-white dark:bg-white/5 p-6 backdrop-blur-xl transition hover:bg-slate-50 dark:hover:bg-white/10 shadow-sm">
-                    <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Account Info</h2>
+                    <h2 className="text-lg font-semibold text-slate-900 dark:text-white">{t('Account Info')}</h2>
                     <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
-                        View your account details including email, username, and membership info.
+                        {t('View your account details including email, username, and membership info.')}
                     </p>
 
                     <button
                         onClick={() => navigate('/detailinfo')}
                         className="mt-5 inline-flex items-center justify-center rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 px-5 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 transition hover:bg-slate-50 dark:hover:bg-white/10"
                     >
-                        View Account Details →
+                        {t('View Account Details')} →
                     </button>
                 </div>
 
                 {/* TERMS */}
                 <div className="rounded-2xl border border-black/5 dark:border-white/10 bg-white dark:bg-white/5 p-6 backdrop-blur-xl shadow-sm">
-                    <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Legal</h2>
+                    <h2 className="text-lg font-semibold text-slate-900 dark:text-white">{t('Legal')}</h2>
                     <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
-                        By using this application, you agree to our terms and privacy policy.
-                        This app is designed for personal finance tracking only.
+                        {t('By using this application, you agree to our terms and privacy policy. This app is designed for personal finance tracking only.')}
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-3 mt-5">
@@ -78,14 +79,14 @@ export default function Settings() {
                             onClick={() => navigate('/privacy')}
                             className="flex-1 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 px-5 py-2.5 text-sm text-slate-700 dark:text-slate-200 transition hover:bg-slate-50 dark:hover:bg-white/10"
                         >
-                            Privacy Policy
+                            {t('Privacy Policy')}
                         </button>
 
                         <button
                             onClick={() => navigate('/terms')}
                             className="flex-1 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 px-5 py-2.5 text-sm text-slate-700 dark:text-slate-200 transition hover:bg-slate-50 dark:hover:bg-white/10"
                         >
-                            Terms of Service
+                            {t('Terms of Service')}
                         </button>
                     </div>
                 </div>
@@ -93,18 +94,18 @@ export default function Settings() {
                 {/* ACTION */}
                 <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-6 backdrop-blur-xl">
                     <h2 className="text-lg font-semibold text-red-300">
-                        Danger Zone
+                        {t('Danger Zone')}
                     </h2>
 
                     <p className="text-sm text-red-200/70 mt-2">
-                        Logout from your account on this device.
+                        {t('Logout from your account on this device.')}
                     </p>
 
                     <button
                         onClick={handleLogout}
                         className="mt-5 w-full rounded-xl px-5 py-3 text-sm font-semibold bg-red-600 hover:bg-red-500 transition"
                     >
-                        Logout
+                        {t('Logout')}
                     </button>
                 </div>
 

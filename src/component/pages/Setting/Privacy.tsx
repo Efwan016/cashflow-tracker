@@ -1,31 +1,35 @@
+import { useLanguage } from '../../providers/useLanguage'
+
 export default function Privacy() {
+  const { t } = useLanguage()
+
   return (
     <main className="page">
       <div className="container">
-        <h1>Privacy Policy</h1>
+        <h1>{t('Privacy Policy')}</h1>
 
         <p>
-          This application ("Cashflow App") respects your privacy.
+          {t('This application ("Cashflow App") respects your privacy.')}
         </p>
 
-        <h2>Information We Collect</h2>
+        <h2>{t('Information We Collect')}</h2>
         <p>
-          We may collect your email and basic profile information when you sign in.
+          {t('We may collect your email and basic profile information when you sign in.')}
         </p>
 
-        <h2>How We Use Data</h2>
+        <h2>{t('How We Use Data')}</h2>
         <p>
-          Your data is used only to provide and improve the service. We do not sell or share your data with third parties.
+          {t('Your data is used only to provide and improve the service. We do not sell or share your data with third parties.')}
         </p>
 
-        <h2>Data Security</h2>
+        <h2>{t('Data Security')}</h2>
         <p>
-          Your data is stored securely using Supabase infrastructure.
+          {t('Your data is stored securely using Supabase infrastructure.')}
         </p>
 
-        <h2>Contact</h2>
+        <h2>{t('Contact')}</h2>
         <p>
-          If you have any questions, contact: chaniezfdw@gmail.com
+          {t('If you have any questions, contact:')} chaniezfdw@gmail.com
         </p>
       </div>
 

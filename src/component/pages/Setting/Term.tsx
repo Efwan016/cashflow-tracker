@@ -1,31 +1,35 @@
+import { useLanguage } from '../../providers/useLanguage'
+
 export default function Terms() {
+  const { t } = useLanguage()
+
   return (
     <main className="page">
       <div className="container">
-        <h1>Terms of Service</h1>
+        <h1>{t('Terms of Service')}</h1>
 
         <p>
-          By using this application, you agree to the following terms.
+          {t('By using this application, you agree to the following terms.')}
         </p>
 
-        <h2>Usage</h2>
+        <h2>{t('Usage')}</h2>
         <p>
-          This app is intended for personal financial tracking only.
+          {t('This app is intended for personal financial tracking only.')}
         </p>
 
-        <h2>Account Responsibility</h2>
+        <h2>{t('Account Responsibility')}</h2>
         <p>
-          You are responsible for maintaining the security of your account.
+          {t('You are responsible for maintaining the security of your account.')}
         </p>
 
-        <h2>Limitation</h2>
+        <h2>{t('Limitation')}</h2>
         <p>
-          We are not responsible for any financial decisions made using this app.
+          {t('We are not responsible for any financial decisions made using this app.')}
         </p>
 
-        <h2>Changes</h2>
+        <h2>{t('Changes')}</h2>
         <p>
-          We may update these terms at any time.
+          {t('We may update these terms at any time.')}
         </p>
       </div>
 

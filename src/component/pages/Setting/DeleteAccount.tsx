@@ -1,20 +1,23 @@
+import { useLanguage } from '../../providers/useLanguage'
+
 export default function DeleteAccount() {
+  const { t } = useLanguage()
+
   return (
     <main className="page">
       <div className="container">
-        <h1>Delete Account</h1>
+        <h1>{t('Delete Account')}</h1>
 
         <p>
-          If you wish to delete your account and all associated data, please contact us via email:
+          {t('If you wish to delete your account and all associated data, please contact us via email:')}
         </p>
 
-        <h2>Email</h2>
+        <h2>{t('Email')}</h2>
         <p>chaniezfdw@gmail.com</p>
 
-        <h2>Instructions</h2>
+        <h2>{t('Instructions')}</h2>
         <p>
-          Send an email with the subject "Delete Account" and include your registered email.
-          We will process your request within 3-5 business days.
+          {t('Send an email with the subject "Delete Account" and include your registered email. We will process your request within 3-5 business days.')}
         </p>
       </div>
 
