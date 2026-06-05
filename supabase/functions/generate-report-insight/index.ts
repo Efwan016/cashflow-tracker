@@ -79,6 +79,78 @@ const buildFallbackInsight = (
     ].join('\n')
   }
 
+  if (language === 'es') {
+    return [
+      'Resumen temporal: Gemini no está disponible, por lo que este insight se generó con los datos del informe.',
+      `Rentabilidad: La ganancia neta actual es ${formatRupiah(netProfit)} con una relación de gastos de ${expenseRatio.toFixed(1)}%.`,
+      `Producto principal: El producto más vendido en este período es ${bestSeller}.`,
+      `Inventario: Hay ${lowStockCount} productos con bajo stock para supervisar.`,
+    ].join('\n')
+  }
+
+  if (language === 'zh') {
+    return [
+      '临时摘要：Gemini 当前不可用，因此此洞察基于现有报表数据生成。',
+      `盈利能力：当前净利润为 ${formatRupiah(netProfit)}，费用率为 ${expenseRatio.toFixed(1)}%。`,
+      `重点商品：本期间最畅销的商品是 ${bestSeller}。`,
+      `库存：有 ${lowStockCount} 个低库存商品需要关注。`,
+    ].join('\n')
+  }
+
+  if (language === 'fr') {
+    return [
+      'Résumé temporaire : Gemini est actuellement indisponible, cet aperçu a donc été généré à partir des données du rapport.',
+      `Rentabilité : Le bénéfice net actuel est de ${formatRupiah(netProfit)} avec un ratio de dépenses de ${expenseRatio.toFixed(1)}%.`,
+      `Produit clé : Le produit le plus vendu sur cette période est ${bestSeller}.`,
+      `Inventaire : ${lowStockCount} produits à faible stock doivent être surveillés.`,
+    ].join('\n')
+  }
+
+  if (language === 'de') {
+    return [
+      'Vorläufige Zusammenfassung: Gemini ist derzeit nicht verfügbar, daher wurde dieser Einblick aus den vorhandenen Berichtsdaten erstellt.',
+      `Rentabilität: Der aktuelle Nettogewinn beträgt ${formatRupiah(netProfit)} bei einer Ausgabenquote von ${expenseRatio.toFixed(1)}%.`,
+      `Produktfokus: Das meistverkaufte Produkt in diesem Zeitraum ist ${bestSeller}.`,
+      `Inventar: Es gibt ${lowStockCount} Produkte mit niedrigem Bestand, die überwacht werden sollten.`,
+    ].join('\n')
+  }
+
+  if (language === 'ja') {
+    return [
+      '一時的な概要: Gemini が現在利用できないため、このインサイトは利用可能なレポートデータから生成されました。',
+      `収益性: 現在の純利益は ${formatRupiah(netProfit)}、経費率は ${expenseRatio.toFixed(1)}% です。`,
+      `主要商品: この期間のベストセラー商品は ${bestSeller} です。`,
+      `在庫: 監視が必要な低在庫商品が ${lowStockCount} 件あります。`,
+    ].join('\n')
+  }
+
+  if (language === 'pt') {
+    return [
+      'Resumo temporário: O Gemini está indisponível no momento, então este insight foi gerado a partir dos dados disponíveis do relatório.',
+      `Rentabilidade: O lucro líquido atual é ${formatRupiah(netProfit)} com uma relação de despesas de ${expenseRatio.toFixed(1)}%.`,
+      `Produto em foco: O produto mais vendido neste período é ${bestSeller}.`,
+      `Inventário: Há ${lowStockCount} produtos com baixo stock para monitorar.`,
+    ].join('\n')
+  }
+
+  if (language === 'ru') {
+    return [
+      'Временная сводка: Gemini сейчас недоступен, поэтому этот инсайт создан на основе доступных данных отчета.',
+      `Прибыльность: Текущая чистая прибыль составляет ${formatRupiah(netProfit)}, доля расходов — ${expenseRatio.toFixed(1)}%.`,
+      `Ключевой продукт: Самый продаваемый продукт за период — ${bestSeller}.`,
+      `Запасы: Нужно отслеживать ${lowStockCount} товаров с низким остатком.`,
+    ].join('\n')
+  }
+
+  if (language === 'ar') {
+    return [
+      'ملخص مؤقت: Gemini غير متاح حالياً، لذلك تم إنشاء هذه الرؤية من بيانات التقرير المتاحة.',
+      `الربحية: صافي الربح الحالي هو ${formatRupiah(netProfit)} مع نسبة مصروفات ${expenseRatio.toFixed(1)}%.`,
+      `المنتج الرئيسي: المنتج الأكثر مبيعاً في هذه الفترة هو ${bestSeller}.`,
+      `المخزون: هناك ${lowStockCount} منتجات منخفضة المخزون تحتاج إلى متابعة.`,
+    ].join('\n')
+  }
+
   return [
     'Temporary summary: Gemini is currently unavailable, so this insight was generated from the available report data.',
     `Profitability: Current net profit is ${formatRupiah(netProfit)} with an expense ratio of ${expenseRatio.toFixed(1)}%.`,

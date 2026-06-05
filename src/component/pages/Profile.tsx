@@ -2,8 +2,23 @@ import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { supabase } from '../../lib/supabase'
+import { useLanguage } from '../providers/useLanguage'
+
+const LANGUAGE_LOCALES = {
+  en: 'en-US',
+  id: 'id-ID',
+  es: 'es-ES',
+  zh: 'zh-CN',
+  fr: 'fr-FR',
+  de: 'de-DE',
+  ja: 'ja-JP',
+  pt: 'pt-PT',
+  ru: 'ru-RU',
+  ar: 'ar-SA',
+} as const
 
 export default function Profile() {
+  const { t, language } = useLanguage()
   const navigate = useNavigate()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -20,7 +35,7 @@ export default function Profile() {
   const [uploading, setUploading] = useState(false)
 
   const initials = useMemo(() => {
-    if (!name.trim()) return 'U'
+    if (!name.trim()) return t('U')
 
     return name
       .trim()
@@ -29,17 +44,17 @@ export default function Profile() {
       .map((word) => word[0])
       .join('')
       .toUpperCase()
-  }, [name])
+  }, [name, t])
 
   const memberSince = useMemo(() => {
     if (!createdAt) return '-'
 
-    return new Date(createdAt).toLocaleDateString('id-ID', {
+    return new Date(createdAt).toLocaleDateString(LANGUAGE_LOCALES[language], {
       day: '2-digit',
       month: 'long',
       year: 'numeric',
     })
-  }, [createdAt])
+  }, [createdAt, language])
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -77,7 +92,7 @@ export default function Profile() {
           return
         }
 
-        const defaultName = user.email?.split('@')[0] || 'User'
+        const defaultName = user.email?.split('@')[0] || t('User')
 
         const { error: insertError } = await supabase.from('profiles').insert({
           id: user.id,
@@ -91,14 +106,14 @@ export default function Profile() {
         setAvatarUrl(null)
       } catch (err) {
         console.error(err)
-        toast.error('Gagal mengambil data profile')
+        toast.error(t('Failed to load profile data'))
       } finally {
         setLoading(false)
       }
     }
 
     loadProfile()
-  }, [navigate])
+  }, [navigate, t])
 
   const handleSave = async () => {
     const cleanName = name.trim()
@@ -106,7 +121,7 @@ export default function Profile() {
     if (!userId) return
 
     if (!cleanName) {
-      toast.error('Nama tidak boleh kosong')
+      toast.error(t('Name cannot be empty'))
       return
     }
 
@@ -131,14 +146,14 @@ export default function Profile() {
       if (updateUserError) throw updateUserError
 
       setName(cleanName)
-      toast.success('Profile berhasil diperbarui')
+      toast.success(t('Profile updated successfully'))
     } catch (err) {
       console.error(err)
 
       if (err instanceof Error) {
         toast.error(err.message)
       } else {
-        toast.error('Gagal menyimpan profile')
+        toast.error(t('Failed to save profile'))
       }
     } finally {
       setSaving(false)
@@ -152,21 +167,21 @@ export default function Profile() {
       const file = event.target.files?.[0]
 
       if (!file) {
-        throw new Error('No file selected')
+        throw new Error(t('No file selected'))
       }
 
       if (!userId) {
-        throw new Error('User belum siap')
+        throw new Error(t('User is not ready'))
       }
 
       const allowedTypes = ['image/jpeg', 'image/png', 'image/webp']
 
       if (!allowedTypes.includes(file.type)) {
-        throw new Error('Format gambar harus JPG, PNG, atau WEBP')
+        throw new Error(t('Image format must be JPG, PNG, or WEBP'))
       }
 
       if (file.size > 2 * 1024 * 1024) {
-        throw new Error('Ukuran gambar maksimal 2MB')
+        throw new Error(t('Maximum image size is 2MB'))
       }
 
       const fileExt = file.name.split('.').pop()
@@ -183,14 +198,14 @@ export default function Profile() {
       const { data } = supabase.storage.from('avatars').getPublicUrl(filePath)
 
       setAvatarUrl(data.publicUrl)
-      toast.success('Avatar berhasil diupload 🚀')
+      toast.success(t('Avatar uploaded successfully'))
     } catch (err) {
       console.error(err)
 
       if (err instanceof Error) {
         toast.error(err.message)
       } else {
-        toast.error('Gagal upload avatar')
+        toast.error(t('Failed to upload avatar'))
       }
     } finally {
       setUploading(false)
@@ -226,21 +241,21 @@ export default function Profile() {
           <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <div className="mb-4 inline-flex rounded-full border border-slate-200 bg-white/70 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-slate-500 backdrop-blur dark:border-white/10 dark:bg-white/10 dark:text-slate-300">
-                Account Center
+                {t('Account Center')}
               </div>
 
               <h1 className="text-3xl font-black tracking-tight text-slate-950 dark:text-white sm:text-4xl">
-                Profile Settings
+                {t('Profile Settings')}
               </h1>
 
               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400 sm:text-base">
-                Manage your account identity, profile photo, and basic information in one place.
+                {t('Manage your account identity, profile photo, and basic information in one place.')}
               </p>
             </div>
 
             <div className="rounded-3xl border border-slate-200 bg-white/70 p-4 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/10">
               <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
-                Logged in as
+                {t('Logged in as')}
               </p>
               <p className="mt-1 max-w-[260px] truncate text-sm font-bold text-slate-800 dark:text-slate-100">
                 {email}
@@ -264,7 +279,7 @@ export default function Profile() {
                     {avatarUrl ? (
                       <img
                         src={avatarUrl}
-                        alt="Profile avatar"
+                        alt={t('Profile avatar')}
                         className="h-full w-full object-cover"
                       />
                     ) : (
@@ -276,7 +291,7 @@ export default function Profile() {
                 </div>
 
                 <div className="absolute inset-0 flex items-center justify-center rounded-[2rem] bg-black/50 text-xs font-black text-white opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100">
-                  View Photo
+                  {t('View Photo')}
                 </div>
               </button>
 
@@ -289,7 +304,7 @@ export default function Profile() {
               />
 
               <h2 className="mt-6 max-w-full truncate text-2xl font-black text-slate-950 dark:text-white">
-                {name || 'User'}
+                {name || t('User')}
               </h2>
 
               <p className="mt-1 max-w-full truncate text-sm text-slate-500 dark:text-slate-400">
@@ -300,44 +315,44 @@ export default function Profile() {
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
-                      Photo Detail
+                      {t('Photo Detail')}
                     </p>
 
                     <p className="mt-1 text-sm font-black text-slate-900 dark:text-white">
-                      {avatarUrl ? 'Custom Avatar' : 'Default Initials'}
+                      {avatarUrl ? t('Custom Avatar') : t('Default Initials')}
                     </p>
                   </div>
 
                   <span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-bold text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
-                    {avatarUrl ? 'Active' : 'Default'}
+                    {avatarUrl ? t('Active') : t('Default')}
                   </span>
                 </div>
 
                 <div className="mt-4 space-y-3">
                   <div className="flex items-center justify-between gap-4 border-t border-slate-200 pt-3 dark:border-white/10">
                     <span className="text-xs font-semibold text-slate-400">
-                      Photo Type
+                      {t('Photo Type')}
                     </span>
                     <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
-                      Profile Picture
+                      {t('Profile Picture')}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between gap-4 border-t border-slate-200 pt-3 dark:border-white/10">
                     <span className="text-xs font-semibold text-slate-400">
-                      Visibility
+                      {t('Visibility')}
                     </span>
                     <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
-                      Account Only
+                      {t('Account Only')}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between gap-4 border-t border-slate-200 pt-3 dark:border-white/10">
                     <span className="text-xs font-semibold text-slate-400">
-                      Status
+                      {t('Status')}
                     </span>
                     <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
-                      {avatarUrl ? 'Uploaded' : 'Using Initials'}
+                      {avatarUrl ? t('Uploaded') : t('Using Initials')}
                     </span>
                   </div>
                 </div>
@@ -349,35 +364,35 @@ export default function Profile() {
           <section className="rounded-[2rem] border border-black/5 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.04] sm:p-8">
             <div className="border-b border-slate-200 pb-6 dark:border-white/10">
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-sky-500">
-                Personal Information
+                {t('Personal Information')}
               </p>
 
               <h2 className="mt-2 text-2xl font-black text-slate-950 dark:text-white">
-                Edit Profile
+                {t('Edit Profile')}
               </h2>
 
               <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                Update your profile information and avatar to keep your account up to date.
+                {t('Update your profile information and avatar to keep your account up to date.')}
               </p>
             </div>
 
             <div className="mt-6 space-y-6">
               <div>
                 <label className="mb-2 block text-sm font-bold text-slate-700 dark:text-slate-200">
-                  Full Name
+                  {t('Full Name')}
                 </label>
 
                 <input
                   value={name}
                   onChange={(event) => setName(event.target.value)}
                   className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold text-slate-900 outline-none transition focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:border-sky-400"
-                  placeholder="Full name"
+                  placeholder={t('Full name')}
                 />
               </div>
 
               <div>
                 <label className="mb-2 block text-sm font-bold text-slate-700 dark:text-slate-200">
-                  Email
+                  {t('Email')}
                 </label>
 
                 <input
@@ -387,13 +402,13 @@ export default function Profile() {
                 />
 
                 <p className="mt-2 text-xs text-slate-400">
-                  Email follows the Supabase Auth account, so it cannot be edited from this page.
+                  {t('Email follows the Supabase Auth account, so it cannot be edited from this page.')}
                 </p>
               </div>
 
               <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5 dark:border-white/10 dark:bg-slate-950/60">
                 <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
-                  Preview
+                  {t('Preview')}
                 </p>
 
                 <div className="mt-4 flex items-center gap-4">
@@ -401,7 +416,7 @@ export default function Profile() {
                     {avatarUrl ? (
                       <img
                         src={avatarUrl}
-                        alt="Avatar preview"
+                        alt={t('Avatar preview')}
                         className="h-full w-full object-cover"
                       />
                     ) : (
@@ -411,7 +426,7 @@ export default function Profile() {
 
                   <div className="min-w-0">
                     <p className="truncate text-sm font-black text-slate-900 dark:text-white">
-                      {name || 'User'}
+                      {name || t('User')}
                     </p>
                     <p className="truncate text-xs text-slate-500 dark:text-slate-400">
                       {email}
@@ -427,7 +442,7 @@ export default function Profile() {
                   disabled={saving || uploading}
                   className="h-12 rounded-2xl border border-slate-200 px-6 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:text-slate-200 dark:hover:bg-white/5"
                 >
-                  {uploading ? 'Uploading...' : 'Upload Avatar'}
+                  {uploading ? t('Uploading...') : t('Upload Avatar')}
                 </button>
 
                 <button
@@ -436,7 +451,7 @@ export default function Profile() {
                   disabled={saving || uploading}
                   className="h-12 rounded-2xl bg-gradient-to-r from-sky-500 to-indigo-500 px-8 text-sm font-black text-white shadow-lg shadow-sky-500/20 transition hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
                 >
-                  {saving ? 'Saving...' : 'Save Changes'}
+                  {saving ? t('Saving...') : t('Save Changes')}
                 </button>
               </div>
             </div>
@@ -447,7 +462,7 @@ export default function Profile() {
         <section className="grid gap-6 md:grid-cols-2">
           <div className="rounded-[2rem] border border-black/5 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
             <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
-              Email
+              {t('Email')}
             </p>
 
             <p className="mt-2 truncate text-lg font-black text-slate-900 dark:text-slate-100">
@@ -457,7 +472,7 @@ export default function Profile() {
 
           <div className="rounded-[2rem] border border-black/5 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
             <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
-              Member Since
+              {t('Member Since')}
             </p>
 
             <p className="mt-2 text-lg font-black text-slate-900 dark:text-slate-100">
@@ -481,7 +496,7 @@ export default function Profile() {
               {avatarUrl ? (
                 <img
                   src={avatarUrl}
-                  alt="Profile preview"
+                  alt={t('Profile preview')}
                   className="max-h-[70vh] w-full object-cover"
                 />
               ) : (
@@ -493,7 +508,7 @@ export default function Profile() {
 
             <div className="mt-4">
               <p className="text-lg font-black text-slate-950 dark:text-white">
-                {name || 'User'}
+                {name || t('User')}
               </p>
               <p className="mt-1 truncate text-sm text-slate-500 dark:text-slate-400">
                 {email}
@@ -506,7 +521,7 @@ export default function Profile() {
                 onClick={() => setShowPhotoPreview(false)}
                 className="h-11 flex-1 rounded-2xl border border-slate-200 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:text-slate-200 dark:hover:bg-white/5"
               >
-                Close
+                {t('Close')}
               </button>
 
               <button
@@ -518,7 +533,7 @@ export default function Profile() {
                 disabled={saving || uploading}
                 className="h-11 flex-1 rounded-2xl bg-gradient-to-r from-sky-500 to-indigo-500 text-sm font-black text-white shadow-lg shadow-sky-500/20 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Change Photo
+                {t('Change Photo')}
               </button>
             </div>
           </div>
