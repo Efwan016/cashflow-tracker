@@ -76,6 +76,25 @@ export function useTransactions(
     [userId]
   )
 
+  const editTransaction = useCallback(
+    async (transaction: Transaction, next: Partial<Transaction>) => {
+      if (!userId) return false
+
+      try {
+        await transactionService.updateTransaction(transaction, next, userId)
+        await loadTransactions()
+
+        toast.success('Transaction updated')
+        return true
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error'
+        toast.error('Update failed: ' + message)
+        return false
+      }
+    },
+    [loadTransactions, userId]
+  )
+
   useEffect(() => {
     loadTransactions()
   }, [loadTransactions])
@@ -85,6 +104,7 @@ export function useTransactions(
     isLoading,
     refresh: loadTransactions,
     removeTransaction,
+    editTransaction,
   }
   
 }

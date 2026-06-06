@@ -5,11 +5,13 @@ import { useTransactionForm } from '../hooks/useTransactionForm'
 import { TransactionForm } from './TransactionForm'
 import ChartComponent from '../components/Chart'
 import { Pagination } from '../components/Pagination'
-import { createCurrencyFormatter, createNumberFormatter } from '../../lib/utils'
+import { createNumberFormatter } from '../../lib/utils'
 import { supabase } from '../../lib/supabase'
 import type { Transaction as TransactionType } from '../../types/types'
 import { useLanguage } from '../providers/useLanguage'
 import type { Language } from '../../lib/i18n'
+import { toast } from 'react-toastify'
+import { useCurrencyFormatter } from '../providers/useCurrencyFormatter'
 
 const LANGUAGE_LOCALES: Record<Language, string> = {
   en: 'en-US',
@@ -32,7 +34,7 @@ export default function Transaction() {
   const [userId, setUserId] = useState<string | null>(null)
   const firstInputRef = useRef<HTMLSelectElement | null>(null)
 
-  const { transactions, isLoading, refresh, removeTransaction } = useTransactions(userId, filterType, startDate, endDate);
+  const { transactions, isLoading, refresh, removeTransaction, editTransaction } = useTransactions(userId, filterType, startDate, endDate);
   const { products } = useProducts(userId);
   const handleFormSuccess = useCallback(() => {
     refresh()
@@ -42,6 +44,15 @@ export default function Transaction() {
 
   const [currentPage, setCurrentPage] = useState(1)
   const [bestSellingCurrentPage, setBestSellingCurrentPage] = useState(1)
+  const [editingTransactionId, setEditingTransactionId] = useState<string | null>(null)
+  const [isUpdatingTransaction, setIsUpdatingTransaction] = useState(false)
+  const [transactionEditForm, setTransactionEditForm] = useState({
+    productId: '',
+    manualName: '',
+    qty: '1',
+    total: '0',
+    modalPrice: '0',
+  })
   const itemsPerPage = 10
   const itemsPerPageBestSelling = 5
 
@@ -107,7 +118,7 @@ export default function Transaction() {
     }
   }, [])
 
-  const fmt = useMemo(() => createCurrencyFormatter(), [])
+  const fmt = useCurrencyFormatter()
   const num = useMemo(() => createNumberFormatter(), [])
   const formatDisplayDate = useCallback(
     (date: string, options: Intl.DateTimeFormatOptions) =>
@@ -125,6 +136,80 @@ export default function Transaction() {
     const pro = transactions.reduce((s: number, t: TransactionType) => s + (t.profit ?? 0), 0);
     return { qty, rev, pro };
   }, [transactions]);
+
+  const startTransactionEdit = useCallback((transaction: TransactionType) => {
+    setEditingTransactionId(transaction.id)
+    setTransactionEditForm({
+      productId: transaction.product_id || '',
+      manualName: transaction.product_name || '',
+      qty: String(transaction.qty || 1),
+      total: String(transaction.total || 0),
+      modalPrice: String(transaction.harga_modal || 0),
+    })
+  }, [])
+
+  const cancelTransactionEdit = useCallback(() => {
+    setEditingTransactionId(null)
+    setTransactionEditForm({
+      productId: '',
+      manualName: '',
+      qty: '1',
+      total: '0',
+      modalPrice: '0',
+    })
+  }, [])
+
+  const handleTransactionProductEdit = useCallback((productId: string) => {
+    const product = products.find((item) => item.id === productId)
+    const qty = Number(transactionEditForm.qty) || 0
+
+    setTransactionEditForm(prev => ({
+      ...prev,
+      productId,
+      manualName: product ? product.name : '',
+      total: product ? String(qty * product.harga_jual) : prev.total,
+      modalPrice: product ? String(product.harga_modal) : prev.modalPrice,
+    }))
+  }, [products, transactionEditForm.qty])
+
+  const saveTransactionEdit = useCallback(async (transaction: TransactionType) => {
+    const qty = Number(transactionEditForm.qty)
+    const totalValue = Number(transactionEditForm.total)
+    const modalPrice = Number(transactionEditForm.modalPrice)
+
+    if (!Number.isFinite(qty) || qty <= 0) {
+      toast.error('Quantity must be greater than 0')
+      return
+    }
+
+    if (!Number.isFinite(totalValue) || !Number.isFinite(modalPrice) || totalValue < 0 || modalPrice < 0) {
+      toast.error('Amount must be greater than zero.')
+      return
+    }
+
+    if (!transactionEditForm.productId && !transactionEditForm.manualName.trim()) {
+      toast.error('Product name is required')
+      return
+    }
+
+    const product = products.find((item) => item.id === transactionEditForm.productId)
+    const salePrice = qty > 0 ? totalValue / qty : 0
+
+    setIsUpdatingTransaction(true)
+    const updated = await editTransaction(transaction, {
+      product_id: transactionEditForm.productId || null,
+      product_name: product ? product.name : transactionEditForm.manualName.trim(),
+      qty,
+      harga_jual: salePrice,
+      harga_modal: modalPrice,
+      total: totalValue,
+      profit: totalValue - modalPrice * qty,
+      mode: transactionEditForm.productId ? 'WITH_STOCK' : 'MANUAL',
+    })
+    setIsUpdatingTransaction(false)
+
+    if (updated) cancelTransactionEdit()
+  }, [cancelTransactionEdit, editTransaction, products, transactionEditForm])
 
 
 
@@ -257,24 +342,125 @@ export default function Transaction() {
                     </td>
                   </tr>
                 ) : (
-                  paginatedTransactions.map((transaction) => (
-                    <tr key={transaction.id} className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors group">
-                      <td className="px-6 py-4 font-medium text-slate-900 dark:text-slate-100">{transaction.product_name || t('Manual Sale')}</td>
-                      <td className="px-6 py-4 text-center font-mono">{num.format(transaction.qty)}</td>
-                      <td className="px-6 py-4">{fmt.format(transaction.total)}</td>
-                      <td className="px-6 py-4">{fmt.format(transaction.harga_modal || 0)}</td>
-                      <td className="px-6 py-4 text-emerald-600 dark:text-emerald-400 font-semibold">{fmt.format(transaction.profit || 0)}</td>
-                      <td className="px-6 py-4 text-right">
-                        <button
-                          onClick={() => removeTransaction(transaction)}
-                          disabled={isLoading}
-                          className="rounded-xl border border-rose-500/10 bg-rose-500/5 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-rose-400 transition hover:bg-rose-500/20 disabled:opacity-50"
-                        >
-                          {t('Delete')}
-                        </button>
-                      </td>
-                    </tr>
-                  ))
+                  paginatedTransactions.map((transaction) => {
+                    const isEditing = editingTransactionId === transaction.id
+                    const editQty = Number(transactionEditForm.qty) || 0
+                    const editTotal = Number(transactionEditForm.total) || 0
+                    const editModal = Number(transactionEditForm.modalPrice) || 0
+                    const editProfit = editTotal - editModal * editQty
+
+                    return (
+                      <tr key={transaction.id} className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors group">
+                        <td className="px-6 py-4 font-medium text-slate-900 dark:text-slate-100">
+                          {isEditing ? (
+                            <div className="grid min-w-[220px] gap-2">
+                              <select
+                                value={transactionEditForm.productId}
+                                onChange={(event) => handleTransactionProductEdit(event.target.value)}
+                                className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-900 dark:text-white outline-none focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20"
+                              >
+                                <option value="">{t('Manual Sale')}</option>
+                                {products.map((product) => (
+                                  <option key={product.id} value={product.id}>{product.name}</option>
+                                ))}
+                              </select>
+                              {!transactionEditForm.productId && (
+                                <input
+                                  value={transactionEditForm.manualName}
+                                  onChange={(event) => setTransactionEditForm(prev => ({ ...prev, manualName: event.target.value }))}
+                                  className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-900 dark:text-white outline-none focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20"
+                                />
+                              )}
+                            </div>
+                          ) : (
+                            transaction.product_name || t('Manual Sale')
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-center font-mono">
+                          {isEditing ? (
+                            <input
+                              type="number"
+                              min="1"
+                              value={transactionEditForm.qty}
+                              onChange={(event) => setTransactionEditForm(prev => ({ ...prev, qty: event.target.value }))}
+                              className="w-24 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-center text-xs text-slate-900 dark:text-white outline-none focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20"
+                            />
+                          ) : (
+                            num.format(transaction.qty)
+                          )}
+                        </td>
+                        <td className="px-6 py-4">
+                          {isEditing ? (
+                            <input
+                              type="number"
+                              min="0"
+                              value={transactionEditForm.total}
+                              onChange={(event) => setTransactionEditForm(prev => ({ ...prev, total: event.target.value }))}
+                              className="w-32 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-900 dark:text-white outline-none focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20"
+                            />
+                          ) : (
+                            fmt.format(transaction.total)
+                          )}
+                        </td>
+                        <td className="px-6 py-4">
+                          {isEditing ? (
+                            <input
+                              type="number"
+                              min="0"
+                              value={transactionEditForm.modalPrice}
+                              onChange={(event) => setTransactionEditForm(prev => ({ ...prev, modalPrice: event.target.value }))}
+                              className="w-32 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-900 dark:text-white outline-none focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20"
+                            />
+                          ) : (
+                            fmt.format(transaction.harga_modal || 0)
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-emerald-600 dark:text-emerald-400 font-semibold">
+                          {fmt.format(isEditing ? editProfit : transaction.profit || 0)}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          {isEditing ? (
+                            <div className="flex justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() => saveTransactionEdit(transaction)}
+                                disabled={isUpdatingTransaction}
+                                className="rounded-xl border border-emerald-500/10 bg-emerald-500/10 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 transition hover:bg-emerald-500/20 disabled:opacity-50"
+                              >
+                                {t('Save')}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={cancelTransactionEdit}
+                                disabled={isUpdatingTransaction}
+                                className="rounded-xl border border-slate-200 dark:border-slate-700 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 transition hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50"
+                              >
+                                {t('Cancel edit')}
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() => startTransactionEdit(transaction)}
+                                disabled={isLoading || isUpdatingTransaction}
+                                className="rounded-xl border border-sky-500/10 bg-sky-500/5 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 transition hover:bg-sky-500/20 disabled:opacity-50"
+                              >
+                                {t('Edit')}
+                              </button>
+                              <button
+                                onClick={() => removeTransaction(transaction)}
+                                disabled={isLoading}
+                                className="rounded-xl border border-rose-500/10 bg-rose-500/5 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-rose-400 transition hover:bg-rose-500/20 disabled:opacity-50"
+                              >
+                                {t('Delete')}
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })
                 )}
               </tbody>
               {transactions.length > 0 && (

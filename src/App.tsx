@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import Layout from './component/layout/layout'
 import { LanguageProvider } from './component/providers/LanguageProvider'
+import { CurrencyProvider } from './component/providers/CurrencyProvider'
 
 // Styles
 import 'react-toastify/dist/ReactToastify.css';
@@ -42,6 +43,7 @@ const DetailInfo = lazy(() => import('./component/pages/Setting/DetailInfo'));
 function App() {
   return (
     <LanguageProvider>
+      <CurrencyProvider>
       <BrowserRouter>
         <Suspense fallback={<Skeleton />}>
         <Routes>
@@ -94,6 +96,7 @@ function App() {
         }
       />
     </BrowserRouter>
+      </CurrencyProvider>
     </LanguageProvider>
   )
 }

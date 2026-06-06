@@ -24,15 +24,15 @@ describe('utils', () => {
     }
   })
 
-  test('createCurrencyFormatter returns IDR for id-ID locale', () => {
-    const original = navigator.language
-    try {
-      Object.defineProperty(navigator, 'language', { value: 'id-ID', configurable: true })
-      const fmt = createCurrencyFormatter()
-      expect(fmt.format(1000)).toMatch(/IDR|Rp/)
-    } finally {
-      Object.defineProperty(navigator, 'language', { value: original })
-    }
+  test('createCurrencyFormatter formats currency from active app language', () => {
+    expect(createCurrencyFormatter('id').format(1000)).toMatch(/IDR|Rp/)
+    expect(createCurrencyFormatter('en').format(1000)).toMatch(/\$|USD/)
+    expect(createCurrencyFormatter('zh').format(1000)).toContain('CN¥')
+    expect(createCurrencyFormatter('ja').format(1000)).toContain('JP¥')
+  })
+
+  test('createCurrencyFormatter converts base IDR amounts with a supplied rate', () => {
+    expect(createCurrencyFormatter('en', 1 / 18000).format(18000)).toMatch(/\$1|USD\s?1/)
   })
 
   test('getLocalDate returns today in en-CA format', () => {

@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useLanguage } from '../providers/useLanguage'
-import { createCurrencyFormatter, createNumberFormatter, getTzOffset } from '../../lib/utils'
+import { createNumberFormatter, getTzOffset } from '../../lib/utils'
 import type { Expense, FilterType, Product, Stock, Transaction } from '../../types/types'
+import { useCurrencyFormatter } from '../providers/useCurrencyFormatter'
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24
 const ITEMS_PER_PAGE = 5
@@ -187,6 +188,24 @@ export function useReportsData(initialFilterType?: FilterType, initialStartDate?
     })}`
   }, [currentRange, language])
 
+  const previousDateRangeLabel = useMemo(() => {
+    if (previousRange.start === previousRange.end) {
+      return formatDisplayDate(parseLocalDate(previousRange.start), language, {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      })
+    }
+    return `${formatDisplayDate(parseLocalDate(previousRange.start), language, {
+      day: 'numeric',
+      month: 'short',
+    })} - ${formatDisplayDate(parseLocalDate(previousRange.end), language, {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    })}`
+  }, [previousRange, language])
+
   const filterTypeLabel = useMemo(() => {
     switch (filterType) {
       case 'today':
@@ -206,7 +225,7 @@ export function useReportsData(initialFilterType?: FilterType, initialStartDate?
     }
   }, [filterType, t])
 
-  const fmt = useMemo(() => createCurrencyFormatter(), [])
+  const fmt = useCurrencyFormatter()
   const num = useMemo(() => createNumberFormatter(), [])
 
   const productDetails = useMemo(
@@ -966,6 +985,7 @@ export function useReportsData(initialFilterType?: FilterType, initialStartDate?
     isRefreshing,
     realtimeConnected,
     dateRangeLabel,
+    previousDateRangeLabel,
     filterTypeLabel,
     onFilterTypeChange: handleFilterTypeChange,
     onDateChange: handleDateChange,

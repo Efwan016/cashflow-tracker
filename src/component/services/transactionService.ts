@@ -97,6 +97,60 @@ export const transactionService = {
     }
   },
 
+  async updateTransaction(tx: Transaction, next: Partial<Transaction>, userId: string) {
+    const nextProductId = next.product_id || null;
+    const nextQty = next.qty ?? tx.qty;
+
+    if (nextProductId) {
+      const stockQtyNeeded = tx.product_id === nextProductId
+        ? Math.max(0, nextQty - tx.qty)
+        : nextQty;
+
+      if (stockQtyNeeded > 0) {
+        const { data: stock } = await supabase
+          .from('Stock')
+          .select('total')
+          .eq('product_id', nextProductId)
+          .eq('user_id', userId)
+          .single();
+
+        if (!stock || stock.total < stockQtyNeeded) {
+          throw new Error('Stok tidak mencukupi untuk transaksi ini');
+        }
+      }
+    }
+
+    const { error: txError } = await supabase
+      .from('Transactions')
+      .update(next)
+      .eq('id', tx.id)
+      .eq('user_id', userId);
+
+    if (txError) throw txError;
+
+    if (tx.product_id && tx.product_id !== nextProductId) {
+      const { error } = await supabase.rpc('update_stock', {
+        p_product_id: tx.product_id,
+        p_qty: tx.qty,
+        p_user_id: userId
+      });
+      if (error) throw error;
+    }
+
+    if (nextProductId) {
+      const qtyDelta = tx.product_id === nextProductId ? nextQty - tx.qty : nextQty;
+
+      if (qtyDelta !== 0) {
+        const { error } = await supabase.rpc('update_stock', {
+          p_product_id: nextProductId,
+          p_qty: -qtyDelta,
+          p_user_id: userId
+        });
+        if (error) throw error;
+      }
+    }
+  },
+
   async deleteTransaction(tx: Transaction, userId: string) {
     // 1. Hapus Transaksi
     const { error } = await supabase

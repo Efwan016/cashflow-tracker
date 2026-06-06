@@ -20,6 +20,7 @@ import 'chartjs-adapter-date-fns'
 import { Chart as ReactChart } from 'react-chartjs-2'
 import { useLanguage } from '../providers/useLanguage'
 import type { ChartProps } from '../../types/types'
+import { useCurrencyFormatter } from '../providers/useCurrencyFormatter'
 
 ChartJS.register(
   BarController,
@@ -34,14 +35,6 @@ ChartJS.register(
   Legend,
   Filler
 )
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    maximumFractionDigits: 0,
-  }).format(value)
-}
 
 function formatCompact(value: number) {
   const abs = Math.abs(value)
@@ -98,6 +91,8 @@ function createLineGradient(context: ScriptableContext<'line'>) {
 
 export default function Chart({ data, variant = 'cashflow' }: ChartProps) {
   const { t, language } = useLanguage()
+  const currencyFormatter = useCurrencyFormatter()
+  const formatCurrency = (value: number) => currencyFormatter.format(value)
   const isBarOnly = variant === 'bar'
 
   const hasData =

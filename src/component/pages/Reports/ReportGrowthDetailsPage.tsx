@@ -15,7 +15,17 @@ export default function ReportGrowthDetailsPage() {
   const startDate = searchParams.get('start') || ''
   const endDate = searchParams.get('end') || ''
 
-  const { growthCards, averageCards, currentTotals, previousTotals, loading, error, fmt } = useReportsData(filterType, startDate, endDate)
+  const {
+    growthCards,
+    averageCards,
+    currentTotals,
+    previousTotals,
+    loading,
+    error,
+    fmt,
+    dateRangeLabel,
+    previousDateRangeLabel,
+  } = useReportsData(filterType, startDate, endDate)
 
   // Derived Metrics for Efficiency
   const grossMargin = currentTotals.revenue > 0 
@@ -165,15 +175,23 @@ export default function ReportGrowthDetailsPage() {
         <section className="mb-10 rounded-3xl sm:rounded-[40px] border border-slate-200 bg-white overflow-hidden dark:border-slate-700 dark:bg-slate-950/80">
           <div className="p-6 sm:p-8 border-b border-slate-100 dark:border-slate-800">
             <h2 className="text-xl font-semibold">{t('Comparative Performance')}</h2>
-            <p className="text-sm text-slate-500 mt-1">{t('Direct comparison with the previous period')}</p>
+            <p className="text-sm text-slate-500 mt-1">
+              {t('Direct comparison with the previous period')} · {previousDateRangeLabel} vs {dateRangeLabel}
+            </p>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left min-w-[600px]">
               <thead className="bg-slate-50 dark:bg-slate-900/50 text-xs uppercase tracking-wider text-slate-500">
                 <tr>
                   <th className="px-8 py-4">{t('Metric')}</th>
-                  <th className="px-8 py-4">{t('Previous Period')}</th>
-                  <th className="px-8 py-4">{t('Current Period')}</th>
+                  <th className="px-8 py-4">
+                    <span className="block">{t('Previous Period')}</span>
+                    <span className="mt-1 block text-[11px] normal-case tracking-normal text-slate-400 dark:text-slate-500">{previousDateRangeLabel}</span>
+                  </th>
+                  <th className="px-8 py-4">
+                    <span className="block">{t('Current Period')}</span>
+                    <span className="mt-1 block text-[11px] normal-case tracking-normal text-slate-400 dark:text-slate-500">{dateRangeLabel}</span>
+                  </th>
                   <th className="px-8 py-4">{t('Delta')}</th>
                 </tr>
               </thead>
@@ -200,6 +218,14 @@ export default function ReportGrowthDetailsPage() {
                   <td className="px-8 py-5 font-bold text-rose-500">{fmt.format(currentTotals.expenses)}</td>
                   <td className={`px-8 py-5 font-bold ${currentTotals.expenses <= previousTotals.expenses ? 'text-emerald-500' : 'text-rose-500'}`}>
                     {fmt.format(currentTotals.expenses - previousTotals.expenses)}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="px-8 py-5 font-medium">{t('Transaction Count')}</td>
+                  <td className="px-8 py-5 text-slate-500">{previousTotals.transactionsCount}</td>
+                  <td className="px-8 py-5 font-bold">{currentTotals.transactionsCount}</td>
+                  <td className={`px-8 py-5 font-bold ${currentTotals.transactionsCount >= previousTotals.transactionsCount ? 'text-emerald-500' : 'text-rose-500'}`}>
+                    {currentTotals.transactionsCount - previousTotals.transactionsCount}
                   </td>
                 </tr>
               </tbody>

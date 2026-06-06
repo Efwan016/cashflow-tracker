@@ -1,8 +1,8 @@
 import { NavLink, useLocation } from 'react-router-dom'
 import { useMemo, useState } from 'react'
 import { Check, ChevronDown, Languages } from 'lucide-react'
-import { createCurrencyFormatter } from '../../lib/utils'
 import { useLanguage } from '../providers/useLanguage'
+import { useCurrencyFormatter } from '../providers/useCurrencyFormatter'
 import { languages, type Language } from '../../lib/i18n'
 import ChevronIcon from '../../assets/Icon/ChevronIcon'
 import { navItems } from '../hooks/navIteems'
@@ -36,7 +36,7 @@ export default function Sidebar({
     )
   })
 
-  const fmt = useMemo(() => createCurrencyFormatter(), [])
+  const fmt = useCurrencyFormatter()
   const currentLanguage = useMemo(() => {
     return languages.find((item) => item.code === language) ?? languages[0]
   }, [language])

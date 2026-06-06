@@ -13,10 +13,10 @@ import {
   getTzOffset,
   getLocalDate,
   toDateKey,
-  createCurrencyFormatter,
   createNumberFormatter,
 } from '../../lib/utils'
 import { useLanguage } from '../providers/useLanguage'
+import { useCurrencyFormatter } from '../providers/useCurrencyFormatter'
 import type {
   Transaction,
   Expense,
@@ -490,7 +490,7 @@ export default function Dashboard() {
     refetch,
   } = useDashboardData(filter, startDate, endDate, t)
 
-  const fmt = useMemo(() => createCurrencyFormatter(), [])
+  const fmt = useCurrencyFormatter()
   const num = useMemo(() => createNumberFormatter(), [])
 
   const metrics = useMemo(() => {

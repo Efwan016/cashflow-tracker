@@ -3,10 +3,11 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { toast } from 'react-toastify'
 import { Pagination } from '../components/Pagination'
-import { createCurrencyFormatter, getTzOffset, getLocalDate, formatDateTimeLocal } from '../../lib/utils'
+import { getTzOffset, getLocalDate, formatDateTimeLocal } from '../../lib/utils'
 import type { Expense } from '../../types/types'
 import { useLanguage } from '../providers/useLanguage'
 import type { Language } from '../../lib/i18n'
+import { useCurrencyFormatter } from '../providers/useCurrencyFormatter'
 
 const LANGUAGE_LOCALES: Record<Language, string> = {
   en: 'en-US',
@@ -32,6 +33,7 @@ export default function Expense() {
   const [loading, setLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isUpdating, setIsUpdating] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
   const [filterType, setFilterType] = useState('today') // today, last7, thisMonth, specific, range
   const [startDate, setStartDate] = useState('')
@@ -39,6 +41,11 @@ export default function Expense() {
   const [sortBy, setSortBy] = useState('date-desc')
 
   const [currentPage, setCurrentPage] = useState(1)
+  const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null)
+  const [expenseEditForm, setExpenseEditForm] = useState({
+    description: '',
+    amount: '',
+  })
   const itemsPerPage = 10
 
   const formattedAmount = useMemo(() => {
@@ -46,7 +53,7 @@ export default function Expense() {
     return Number.isFinite(parsed) ? parsed : 0
   }, [amount])
 
-  const fmt = useMemo(() => createCurrencyFormatter(), []);
+  const fmt = useCurrencyFormatter();
   const tzOffset = useMemo(() => getTzOffset(), []);
   const formatDisplayDate = useCallback(
     (date: string) =>
@@ -252,6 +259,63 @@ export default function Expense() {
     )
   }
 
+  const startExpenseEdit = (expense: Expense) => {
+    setEditingExpenseId(expense.id)
+    setExpenseEditForm({
+      description: expense.description,
+      amount: String(expense.total),
+    })
+  }
+
+  const cancelExpenseEdit = () => {
+    setEditingExpenseId(null)
+    setExpenseEditForm({
+      description: '',
+      amount: '',
+    })
+  }
+
+  const saveExpenseEdit = async (expense: Expense) => {
+    const nextAmount = Number(expenseEditForm.amount)
+
+    if (!expenseEditForm.description.trim() || !expenseEditForm.amount) {
+      toast.error(t('Description and amount are required.'))
+      return
+    }
+
+    if (!Number.isFinite(nextAmount) || nextAmount <= 0) {
+      toast.error(t('Amount must be greater than zero.'))
+      return
+    }
+
+    if (!userId) {
+      toast.error(t('Session expired, please log in again.'))
+      return
+    }
+
+    setIsUpdating(true)
+    try {
+      const { error } = await supabase
+        .from('expenses')
+        .update({
+          description: expenseEditForm.description.trim(),
+          total: nextAmount,
+        })
+        .eq('id', expense.id)
+        .eq('user_id', userId)
+
+      if (error) throw error
+
+      toast.success(t('Save changes'))
+      cancelExpenseEdit()
+      loadData()
+    } catch {
+      toast.error(t('Failed to save expense.'))
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
       <div className="pointer-events-none fixed inset-0 overflow-hidden hidden dark:block" aria-hidden>
@@ -425,24 +489,81 @@ export default function Expense() {
                 ) : expenses.length === 0 ? (
                   <tr><td colSpan={4} className="px-6 py-10 text-center text-slate-500">{t('No expenses recorded for this period.')}</td></tr>
                 ) : (
-                  paginatedExpenses.map((exp) => (
-                    <tr key={exp.id} className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors group">
-                      <td className="px-6 py-4 font-medium text-slate-900 dark:text-slate-100">{exp.description}</td>
-                      <td className="px-6 py-4 text-center text-slate-500">
-                        {formatDisplayDate(exp.created_at)}
-                      </td>
-                      <td className="px-6 py-4 text-rose-600 dark:text-rose-400 font-semibold">{fmt.format(exp.total)}</td>
-                      <td className="px-6 py-4 text-right">
-                        <button
-                          onClick={() => handleDelete(exp.id)}
-                          disabled={isDeleting}
-                          className="rounded-xl border border-rose-500/10 bg-rose-500/5 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 transition hover:bg-rose-500/20 disabled:opacity-50"
-                        >
-                          {t('Delete')}
-                        </button>
-                      </td>
-                    </tr>
-                  ))
+                  paginatedExpenses.map((exp) => {
+                    const isEditing = editingExpenseId === exp.id
+
+                    return (
+                      <tr key={exp.id} className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors group">
+                        <td className="px-6 py-4 font-medium text-slate-900 dark:text-slate-100">
+                          {isEditing ? (
+                            <input
+                              value={expenseEditForm.description}
+                              onChange={(event) => setExpenseEditForm(prev => ({ ...prev, description: event.target.value }))}
+                              className="min-w-[220px] rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-900 dark:text-white outline-none focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20"
+                            />
+                          ) : (
+                            exp.description
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-center text-slate-500">
+                          {formatDisplayDate(exp.created_at)}
+                        </td>
+                        <td className="px-6 py-4 text-rose-600 dark:text-rose-400 font-semibold">
+                          {isEditing ? (
+                            <input
+                              type="number"
+                              min="0"
+                              value={expenseEditForm.amount}
+                              onChange={(event) => setExpenseEditForm(prev => ({ ...prev, amount: event.target.value }))}
+                              className="w-32 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-900 dark:text-white outline-none focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20"
+                            />
+                          ) : (
+                            fmt.format(exp.total)
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          {isEditing ? (
+                            <div className="flex justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() => saveExpenseEdit(exp)}
+                                disabled={isUpdating}
+                                className="rounded-xl border border-emerald-500/10 bg-emerald-500/10 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 transition hover:bg-emerald-500/20 disabled:opacity-50"
+                              >
+                                {t('Save')}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={cancelExpenseEdit}
+                                disabled={isUpdating}
+                                className="rounded-xl border border-slate-200 dark:border-slate-700 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 transition hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50"
+                              >
+                                {t('Cancel edit')}
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() => startExpenseEdit(exp)}
+                                disabled={isDeleting || isUpdating}
+                                className="rounded-xl border border-sky-500/10 bg-sky-500/5 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 transition hover:bg-sky-500/20 disabled:opacity-50"
+                              >
+                                {t('Edit')}
+                              </button>
+                              <button
+                                onClick={() => handleDelete(exp.id)}
+                                disabled={isDeleting}
+                                className="rounded-xl border border-rose-500/10 bg-rose-500/5 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 transition hover:bg-rose-500/20 disabled:opacity-50"
+                              >
+                                {t('Delete')}
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })
                 )}
               </tbody>
               {expenses.length > 0 && (

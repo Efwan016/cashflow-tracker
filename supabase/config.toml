@@ -15,3 +15,9 @@ enabled = true
 verify_jwt = false
 import_map = "./functions/smart-cashier-alert/deno.json"
 entrypoint = "./functions/smart-cashier-alert/index.ts"
+
+[functions.currency-rate]
+enabled = true
+verify_jwt = false
+import_map = "./functions/currency-rate/deno.json"
+entrypoint = "./functions/currency-rate/index.ts"

@@ -1,10 +1,10 @@
 import { useEffect, useState, useCallback, useMemo } from 'react'
 import { toast } from 'react-toastify'
 import { supabase } from '../../lib/supabase'
-import { createCurrencyFormatter } from '../../lib/utils'
 import { Pagination } from '../components/Pagination'
 import type { Product } from '../../types/types'
 import { useLanguage } from '../providers/useLanguage'
+import { useCurrencyFormatter } from '../providers/useCurrencyFormatter'
 
 export default function ProductPage() {
   const { t } = useLanguage()
@@ -28,7 +28,7 @@ export default function ProductPage() {
     setSuccess('')
   }
 
-  const fmt = useMemo(() => createCurrencyFormatter(), []);
+  const fmt = useCurrencyFormatter();
 
   const getUserId = async () => {
     const { data } = await supabase.auth.getUser()

@@ -35,17 +35,75 @@ export const toDateKey = (d: string) => new Date(d).toISOString().split('T')[0];
 /**
  * Creates a locale-aware currency formatter for dashboard and report amounts.
  *
- * @returns An `Intl.NumberFormat` that formats whole-number IDR for Indonesian
- * users or whole-number USD for other locales.
+ * @returns An `Intl.NumberFormat` that formats whole-number amounts with the
+ * currency matched to the active app language.
  */
-export const createCurrencyFormatter = () => {
-  const isID = navigator.language.startsWith('id') || Intl.DateTimeFormat().resolvedOptions().timeZone?.includes('Jakarta');
-  return new Intl.NumberFormat(navigator.language, {
+export const CURRENCY_BY_LANGUAGE = {
+  en: 'USD',
+  id: 'IDR',
+  es: 'EUR',
+  zh: 'CNY',
+  fr: 'EUR',
+  de: 'EUR',
+  ja: 'JPY',
+  pt: 'EUR',
+  ru: 'RUB',
+  ar: 'SAR',
+} as const;
+
+export const LOCALE_BY_LANGUAGE = {
+  en: 'en-US',
+  id: 'id-ID',
+  es: 'es-ES',
+  zh: 'zh-CN',
+  fr: 'fr-FR',
+  de: 'de-DE',
+  ja: 'ja-JP',
+  pt: 'pt-PT',
+  ru: 'ru-RU',
+  ar: 'ar-SA',
+} as const;
+
+const CURRENCY_LOCALE_BY_LANGUAGE = {
+  ...LOCALE_BY_LANGUAGE,
+  zh: 'en-GB',
+  ja: 'en-GB',
+} as const;
+
+export type CurrencyLanguage = keyof typeof CURRENCY_BY_LANGUAGE;
+
+export const getCurrencyForLanguage = (language?: CurrencyLanguage) => {
+  const fallbackLanguage = (document.documentElement.lang || navigator.language.slice(0, 2)) as CurrencyLanguage;
+  const activeLanguage = language && language in CURRENCY_BY_LANGUAGE ? language : fallbackLanguage;
+  return CURRENCY_BY_LANGUAGE[activeLanguage] ?? 'USD';
+};
+
+export const createCurrencyFormatter = (language?: CurrencyLanguage, conversionRate = 1) => {
+  const fallbackLanguage = (document.documentElement.lang || navigator.language.slice(0, 2)) as CurrencyLanguage;
+  const activeLanguage = language && language in CURRENCY_BY_LANGUAGE ? language : fallbackLanguage;
+  const locale = CURRENCY_LOCALE_BY_LANGUAGE[activeLanguage] ?? navigator.language;
+  const currency = getCurrencyForLanguage(activeLanguage);
+
+  const formatter = new Intl.NumberFormat(locale, {
     style: 'currency',
-    currency: isID ? 'IDR' : 'USD',
+    currency,
     minimumFractionDigits: 0,
     maximumFractionDigits: 0
   });
+
+  if (conversionRate !== 1) {
+    const nativeFormat = formatter.format.bind(formatter);
+    const formatConverted = (value: number | bigint) => {
+      const numericValue = typeof value === 'bigint' ? Number(value) : value;
+      return nativeFormat(numericValue * conversionRate);
+    };
+
+    Object.defineProperty(formatter, 'format', {
+      value: formatConverted,
+    });
+  }
+
+  return formatter;
 };
 
 /**
