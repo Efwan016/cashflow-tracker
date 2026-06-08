@@ -78,7 +78,7 @@ function useDashboardData(
       } else if (filter === 'thisMonth') {
         const now = new Date()
         const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-        const firstDayStr = firstDayOfMonth.toISOString().split('T')[0]
+        const firstDayStr = firstDayOfMonth.toLocaleDateString('en-CA')
 
         startStr = `${firstDayStr}T00:00:00.000${tz}`
       } else if (filter === 'last3month') {

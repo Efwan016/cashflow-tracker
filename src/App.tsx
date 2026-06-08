@@ -40,6 +40,7 @@ const Terms = lazy(() => import('./component/pages/Setting/Term'));
 const DetailInfo = lazy(() => import('./component/pages/Setting/DetailInfo'));
 
 
+
 function App() {
   return (
     <LanguageProvider>

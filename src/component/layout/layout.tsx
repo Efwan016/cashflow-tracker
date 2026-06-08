@@ -4,6 +4,7 @@ import Topbar from "./Topbar"
 import Footer from "./Footer"
 import { supabase } from "../../lib/supabase"
 import { toast } from "react-toastify"
+import { getLocalDate, getTzOffset } from "../../lib/utils"
 
 export default function Layout({ children }: { children: ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
@@ -42,20 +43,11 @@ export default function Layout({ children }: { children: ReactNode }) {
   setName(profile?.full_name || user.email?.split('@')[0] || 'User')
   setAvatarUrl(profile?.avatar_url || null)
 
-  // 🔥 Hitung Net Profit bulan ini: tanggal 1 sampai sekarang
   const now = new Date()
-
-  const startOfMonth = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    1,
-    0,
-    0,
-    0,
-    0
-  ).toISOString()
-
-  const endOfNow = now.toISOString()
+  const tz = getTzOffset()
+  const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+  const startOfMonth = `${firstDayOfMonth.toLocaleDateString('en-CA')}T00:00:00.000${tz}`
+  const endOfNow = `${getLocalDate()}T23:59:59.999${tz}`
 
   const [
     { data: transactions, error: txError },
@@ -126,7 +118,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         .on('postgres_changes', {
           event: '*',
           schema: 'public',
-          table: 'transactions',
+          table: 'Transactions',
           filter: `user_id=eq.${user.id}`
         }, () => {
           clearTimeout(timeout)
