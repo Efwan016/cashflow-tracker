@@ -315,7 +315,7 @@ export function StockLogsTable({
                         onClick={() => onDelete(log.id, log.product_id, log.qty, log.type)}
                         disabled={isDeleting}
                         aria-label={t('Delete stock log')}
-                        className="inline-flex items-center gap-1.5 rounded-xl border border-rose-500/20 bg-rose-500/8 px-3 py-1.5 text-[11px] font-bold text-rose-400 opacity-0 transition-all group-hover:opacity-100 hover:bg-rose-500/15 disabled:cursor-not-allowed disabled:opacity-40"
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-rose-500/20 bg-rose-500/8 px-3 py-1.5 text-[11px] font-bold text-rose-400 opacity-90 hover:bg-rose-500/15 hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-40"
                       >
                         <Trash2 className="h-3 w-3" />
                         {t('Delete')}

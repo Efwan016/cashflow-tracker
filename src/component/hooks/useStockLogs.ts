@@ -72,11 +72,6 @@ export function useStockLogs(searchQuery: string) {
           .order('name', { ascending: true }),
       ])
 
-      console.log('logRes data:', logRes.data)
-      console.log('logRes error:', logRes.error)
-      console.log('productRes data:', productRes.data)
-      console.log('productRes error:', productRes.error)
-      
       if (logRes.error) throw logRes.error
       if (productRes.error) throw productRes.error
 
@@ -165,21 +160,19 @@ export function useStockLogs(searchQuery: string) {
     (message: string, onConfirm: () => void) => {
       const toastId = 'confirm-delete-log'
 
-      toast.info(
-        toast.info(
-          React.createElement(ConfirmToast, {
-            message,
-            toastId,
-            onConfirm,
-          }),
-          {
-            toastId,
-            autoClose: false,
-            closeOnClick: false,
-            closeButton: false,
-            draggable: false,
-          }
-        )
+      toast(
+        React.createElement(ConfirmToast, {
+          message,
+          toastId,
+          onConfirm,
+        }),
+        {
+          toastId,
+          autoClose: false,
+          closeOnClick: false,
+          closeButton: false,
+          draggable: false,
+        }
       )
     },
     []
