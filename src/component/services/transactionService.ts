@@ -120,33 +120,35 @@ export const transactionService = {
       }
     }
 
+    const txUpdatePayload = { ...next } as Partial<Transaction>
+
     const { error: txError } = await supabase
       .from('Transactions')
-      .update(next)
+      .update(txUpdatePayload)
       .eq('id', tx.id)
-      .eq('user_id', userId);
+      .eq('user_id', userId)
 
-    if (txError) throw txError;
+    if (txError) throw txError
 
     if (tx.product_id && tx.product_id !== nextProductId) {
       const { error } = await supabase.rpc('update_stock', {
         p_product_id: tx.product_id,
         p_qty: tx.qty,
         p_user_id: userId
-      });
-      if (error) throw error;
+      })
+      if (error) throw error
     }
 
     if (nextProductId) {
-      const qtyDelta = tx.product_id === nextProductId ? nextQty - tx.qty : nextQty;
+      const qtyDelta = tx.product_id === nextProductId ? nextQty - tx.qty : nextQty
 
       if (qtyDelta !== 0) {
         const { error } = await supabase.rpc('update_stock', {
           p_product_id: nextProductId,
           p_qty: -qtyDelta,
           p_user_id: userId
-        });
-        if (error) throw error;
+        })
+        if (error) throw error
       }
     }
   },
