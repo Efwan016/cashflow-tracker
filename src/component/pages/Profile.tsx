@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { supabase } from '../../lib/supabase'
 import { useLanguage } from '../providers/useLanguage'
+import { RouteSeo } from '../../lib/seo'
 
 const LANGUAGE_LOCALES = {
   en: 'en-US',
@@ -16,6 +17,14 @@ const LANGUAGE_LOCALES = {
   ru: 'ru-RU',
   ar: 'ar-SA',
 } as const
+
+const PAGE_SEO = {
+  title: 'Profil | Cashflow Tracker',
+  description: 'Kelola identitas akun, foto profil, dan informasi dasar pengguna.',
+  canonical: 'https://adzanitech.web.id/profile',
+  ogImage: 'https://adzanitech.web.id/images/Profile.png',
+  robots: 'noindex, follow',
+}
 
 export default function Profile() {
   const { t, language } = useLanguage()
@@ -230,7 +239,9 @@ export default function Profile() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 p-4 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100 sm:p-6">
+    <>
+      <RouteSeo meta={PAGE_SEO} />
+      <main className="min-h-screen bg-slate-50 p-4 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100 sm:p-6">
       <div className="mx-auto max-w-6xl space-y-6">
         {/* HEADER */}
         <section className="relative overflow-hidden rounded-[2rem] border border-black/5 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.04] sm:p-8">
@@ -540,5 +551,6 @@ export default function Profile() {
         </div>
       )}
     </main>
+    </>
   )
 }

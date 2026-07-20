@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../../lib/supabase'
 import { toast } from 'react-toastify'
 import { useLanguage } from '../../providers/useLanguage'
+import { RouteSeo } from '../../../lib/seo'
 
 const LANGUAGE_LOCALES = {
     en: 'en-US',
@@ -16,6 +17,13 @@ const LANGUAGE_LOCALES = {
     ru: 'ru-RU',
     ar: 'ar-SA',
 } as const
+
+const PAGE_SEO = {
+  title: 'Informasi Akun | Cashflow Tracker',
+  description: 'Kelola informasi akun, keamanan, dan privasi pengguna Cashflow Tracker.',
+  canonical: 'https://adzanitech.web.id/detailinfo',
+  robots: 'noindex, follow',
+}
 
 export default function DetailInfo() {
     const { t, language } = useLanguage()
@@ -131,7 +139,9 @@ export default function DetailInfo() {
         setSavingPassword(false)
     }
     return (
-        <main className="min-h-screen bg-gradient-to-br from-[#020617] via-slate-900 to-black text-white p-6">
+        <>
+          <RouteSeo meta={PAGE_SEO} />
+          <main className="min-h-screen bg-gradient-to-br from-[#020617] via-slate-900 to-black text-white p-6">
             <div className="max-w-3xl mx-auto space-y-6">
 
                 {/* BACK */}
@@ -243,5 +253,6 @@ export default function DetailInfo() {
                 </div>
             </div>
         </main>
+      </>
     )
 }

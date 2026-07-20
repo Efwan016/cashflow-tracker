@@ -1,15 +1,10 @@
 User-agent: *
 Allow: /
-Disallow: /dashboard
-Disallow: /transactions
-Disallow: /products
-Disallow: /expenses
-Disallow: /inventory
-Disallow: /reports
 Disallow: /profile
 Disallow: /settings
+Disallow: /forgot-password
+Disallow: /reset-password
 Disallow: /delete
 Disallow: /detailinfo
 
 Sitemap: https://adzanitech.web.id/sitemap.xml
-Host: https://adzanitech.web.id/

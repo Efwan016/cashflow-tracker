@@ -11,6 +11,14 @@ import LastAIInsight from './Reports/LastAIInsight'
 import { useReportsData } from '../hooks/useReportsData'
 import type { jsPDF as JsPDFDocument } from 'jspdf'
 import type { Transaction } from '../../types/types'
+import { RouteSeo } from '../../lib/seo'
+
+const PAGE_SEO = {
+  title: 'Laporan | Cashflow Tracker',
+  description: 'Lihat laporan keuangan, tren penjualan, stok, dan performa produk bisnis Anda.',
+  canonical: 'https://adzanitech.web.id/reports',
+  robots: 'index, follow',
+}
 
 type Translate = (key: string) => string
 
@@ -438,7 +446,9 @@ export default function Reports() {
   const previewTransactions = filteredTransactions.slice(0, 5) as Transaction[]
 
   return (
-    <main className="min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
+    <>
+      <RouteSeo meta={PAGE_SEO} />
+      <main className="min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="mb-8 overflow-hidden rounded-[30px] border border-slate-200 bg-white/90 p-6 shadow-xl shadow-slate-900/10 transition-colors dark:border-slate-700 dark:bg-slate-950/95">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
@@ -738,6 +748,7 @@ export default function Reports() {
           productDetails={productDetails}
         />
       </div>
-    </main >
+    </main>
+    </>
   )
 }
