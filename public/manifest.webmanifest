@@ -1,0 +1,20 @@
+{
+  "name": "Cashflow Tracker",
+  "short_name": "Cashflow",
+  "start_url": "https://adzanitech.web.id/",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/IconCashflow.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}

@@ -4,13 +4,16 @@ import { ToastContainer } from 'react-toastify';
 import Layout from './component/layout/layout'
 import { LanguageProvider } from './component/providers/LanguageProvider'
 import { CurrencyProvider } from './component/providers/CurrencyProvider'
-
-// Styles
-import 'react-toastify/dist/ReactToastify.css';
+import { HelmetProvider } from 'react-helmet-async'
+import { RouteSeo } from './lib/seo'
 import './App.css';
 import Skeleton from './component/components/Skeleton';
+
 import ForgotPassword from './component/pages/ForgotPassword';
 import ResetPassword from './component/pages/Setting/ResetPasword';
+
+import type { HelmetServerState } from 'react-helmet-async'
+const helmetContext: { helmet?: HelmetServerState | null | undefined } = {}
 
 
 // Lazy Loaded Components
@@ -40,11 +43,11 @@ const Terms = lazy(() => import('./component/pages/Setting/Term'));
 const DetailInfo = lazy(() => import('./component/pages/Setting/DetailInfo'));
 
 
-
 function App() {
   return (
-    <LanguageProvider>
-      <CurrencyProvider>
+    <HelmetProvider context={helmetContext}>
+      <LanguageProvider>
+        <CurrencyProvider>
       <BrowserRouter>
         <Suspense fallback={<Skeleton />}>
         <Routes>
@@ -80,6 +83,7 @@ function App() {
             />
           ))}
         </Routes>
+        <RouteSeo />
       </Suspense>
 
       <ToastContainer
@@ -99,6 +103,7 @@ function App() {
     </BrowserRouter>
       </CurrencyProvider>
     </LanguageProvider>
+    </HelmetProvider>
   )
 }
 

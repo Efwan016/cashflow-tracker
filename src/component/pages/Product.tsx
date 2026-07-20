@@ -5,6 +5,15 @@ import { Pagination } from '../components/Pagination'
 import type { Product } from '../../types/types'
 import { useLanguage } from '../providers/useLanguage'
 import { useCurrencyFormatter } from '../providers/useCurrencyFormatter'
+import { RouteSeo } from '../../lib/seo'
+
+const PAGE_SEO = {
+  title: 'Produk | Cashflow Tracker',
+  description: 'Atur daftar produk, harga jual, harga modal, dan status ketersediaan stok.',
+  canonical: 'https://adzanitech.web.id/products',
+  ogImage: 'https://adzanitech.web.id/images/Product.png',
+  robots: 'noindex, follow',
+}
 
 export default function ProductPage() {
   const { t } = useLanguage()
@@ -243,7 +252,9 @@ export default function ProductPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
+    <>
+      <RouteSeo meta={PAGE_SEO} />
+      <main className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="mb-10 rounded-3xl sm:rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-gradient-to-br dark:from-slate-900/90 dark:to-slate-950/80 p-6 sm:p-8 shadow-xl dark:shadow-[0_30px_120px_-50px_rgba(15,23,42,0.85)] backdrop-blur-xl transition-colors">
           <p className="text-sm uppercase tracking-[0.35em] text-sky-600 dark:text-sky-300/80">{t('Product catalog')}</p>
@@ -409,5 +420,6 @@ export default function ProductPage() {
         </div>
       </div>
     </main>
+    </>
   )
 }
