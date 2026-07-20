@@ -4,6 +4,7 @@ import { toast } from 'react-toastify'
 import { supabase } from '../../lib/supabase'
 import { languages } from '../../lib/i18n'
 import { useLanguage } from '../providers/useLanguage'
+import MarqueeText from '../components/ui/marquee-text'
 import GoogleIcon from '../../assets/Icon/GoogleIcon'
 import EyeOpen from '../../assets/Icon/eyeOpen'
 import EyeClosed from '../../assets/Icon/eyeClosed'
@@ -98,6 +99,12 @@ export default function Auth() {
                 <div className="absolute left-10 bottom-12 h-48 w-48 rounded-full bg-cyan-400/10 blur-3xl" />
                 <div className="absolute right-10 bottom-8 h-52 w-52 rounded-full bg-indigo-400/10 blur-3xl" />
             </div>
+
+            <MarqueeText
+                text="Cashflow AI — Track your cash flow smarter — Fast, simple, elegant — Secure finance workspace — "
+                speed={50}
+                className="relative z-20 border-b border-white/10 bg-slate-950/80 py-2 backdrop-blur"
+            />
 
             <div className="relative mx-auto flex min-h-screen w-full max-w-7xl items-center px-4 py-10 sm:px-6 lg:px-8">
                 <div className="grid w-full overflow-hidden rounded-[36px] border border-white/10 bg-slate-950/60 p-2 shadow-[0_30px_100px_rgba(2,6,23,0.45)] backdrop-blur-2xl lg:grid-cols-[0.95fr_1.05fr] lg:p-0">
@@ -378,6 +385,12 @@ export default function Auth() {
                     </section>
                 </div>
             </div>
+
+            <MarqueeText
+                text="Cashflow AI — Income — Expenses — Reports — Inventory — Profile — "
+                speed={60}
+                className="relative z-20 border-t border-white/10 bg-slate-950/80 py-2 backdrop-blur"
+            />
         </main>
     )
 }
