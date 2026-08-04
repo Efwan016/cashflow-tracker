@@ -59,7 +59,7 @@ export default function InventoryPage() {
 
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
-      <div className="mx-auto max-w-7xl space-y-5 px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl space-y-4 px-3 py-5 sm:px-4 sm:py-6 lg:px-8">
 
         {/* ── Header ─────────────────────────────────────────────────────────── */}
         <InventoryHeader
@@ -80,7 +80,7 @@ export default function InventoryPage() {
         />
 
         {/* ── Main Content ─────────────────────────────────────────────────────── */}
-        <div className="grid gap-5 lg:grid-cols-[360px_1fr]">
+        <div className="grid gap-4 lg:grid-cols-[1fr]">
 
           {/* ── Left: Stock Control Panel ───────────────────────────────────── */}
           <StockControlPanel

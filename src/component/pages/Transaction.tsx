@@ -215,7 +215,7 @@ export default function Transaction() {
 
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-3 py-6 sm:px-4 sm:py-8 lg:px-8">
         <div className="mb-10 rounded-3xl sm:rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-6 sm:p-8 shadow-xl dark:shadow-[0_30px_120px_-50px_rgba(15,23,42,0.85)] backdrop-blur-xl transition-colors">
           <p className="text-sm uppercase tracking-[0.35em] text-sky-600 dark:text-sky-300/80">{t('Sales Entry')}</p>
           <h1 className="mt-3 text-2xl sm:text-4xl font-semibold text-slate-900 dark:text-white">{t('Record transaction')}</h1>
@@ -224,7 +224,8 @@ export default function Transaction() {
           </p>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
+        <div className="grid gap-5 lg:grid-cols-[1fr]">
+          <div className="w-full overflow-hidden">
           <TransactionForm
             products={products}
             formData={form}
@@ -236,34 +237,14 @@ export default function Transaction() {
             expectedProfit={fmt.format(profit)}
             initialFocusRef={firstInputRef}
           />
-
-          <aside className="rounded-3xl sm:rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-6 sm:p-8 shadow-2xl dark:shadow-slate-950/20 backdrop-blur-xl transition-colors">
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">{t('Workflow Guide')}</h2>
-            <ul className="mt-6 space-y-4 text-sm text-slate-500 dark:text-slate-400">
-              <li className="flex gap-3">
-                <span className="text-sky-600 dark:text-sky-400 font-bold">01</span>
-                <span className="text-slate-600 dark:text-slate-400">{t('Select a product to auto-fill prices and link to inventory counts.')}</span>
-              </li>
-              <li className="flex gap-3">
-                <span className="text-sky-600 dark:text-sky-400 font-bold">02</span>
-                <span className="text-slate-600 dark:text-slate-400">{t('Profit is calculated as')} <code>({t('Sale')} - {t('Cost')}) * {t('Qty')}</code>.</span>
-              </li>
-              <li className="flex gap-3">
-                <span className="text-sky-600 dark:text-sky-400 font-bold">03</span>
-                <span className="text-slate-600 dark:text-slate-400">{t('Deleting a transaction will automatically restore the product stock level.')}</span>
-              </li>
-            </ul>
-            <div className="mt-10 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 dark:from-slate-950/90 dark:to-slate-900/80 p-5 text-sm text-slate-600 dark:text-slate-300">
-              {t('Manual transactions do not impact inventory levels but are included in financial reports.')}
-            </div>
-          </aside>
+          </div>
         </div>
 
-        <div className="mt-10 rounded-3xl sm:rounded-[40px] border border-black/5 dark:border-white/5 bg-white dark:bg-slate-900/90 dark:from-slate-900/50 dark:to-slate-950/40 p-6 sm:p-8 shadow-2xl backdrop-blur-xl transition-colors">
-          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-10 rounded-3xl sm:rounded-[40px] border border-black/5 dark:border-white/5 bg-white dark:bg-slate-900/90 dark:from-slate-900/50 dark:to-slate-950/40 p-4 sm:p-6 shadow-2xl backdrop-blur-xl transition-colors overflow-hidden">
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-sky-600 dark:text-sky-400/80">{t('History')}</p>
-              <h2 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
+              <h2 className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">
                 {filterType === 'all' && t('Recent Activity')}
                 {filterType === 'today' && t("Today's Sales")}
                 {filterType === 'last7' && t('Last 7 Days')}
@@ -273,7 +254,7 @@ export default function Transaction() {
               </h2>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center gap-2">
               <select
                 value={filterType}
                 onChange={(e) => {
@@ -283,7 +264,7 @@ export default function Transaction() {
                     setEndDate('')
                   }
                 }}
-                className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/90 px-4 py-2.5 text-xs font-bold text-slate-900 dark:text-slate-100 outline-none backdrop-blur-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/90  focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20 transition-colors"
+                className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/90 px-3 py-2 text-[10px] font-bold text-slate-900 dark:text-slate-100 outline-none backdrop-blur-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/90 focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20 transition-colors"
               >
                 <option value="all">{t('Recent activity')}</option>
                 <option value="today">{t('Today')}</option>
@@ -299,16 +280,16 @@ export default function Transaction() {
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/90 px-4 py-2.5 text-xs font-medium text-slate-900 dark:text-white outline-none backdrop-blur-xl transition-all focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10 dark:[color-scheme:dark] hover:bg-slate-50 dark:hover:bg-slate-800/80"
+                    className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/90 px-3 py-2 text-[10px] font-medium text-slate-900 dark:text-white outline-none backdrop-blur-xl transition-all focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/10 dark:[color-scheme:dark] hover:bg-slate-50 dark:hover:bg-slate-800/80"
                   />
                   {filterType === 'range' && (
                     <>
-                      <span className="text-slate-500 text-xs">{t('to')}</span>
+                      <span className="text-slate-500 text-[10px]">{t('to')}</span>
                       <input
                         type="date"
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
-                        className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/80 px-4 py-2.5 text-xs font-medium text-slate-900 dark:text-white outline-none backdrop-blur-xl transition-all focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10 dark:[color-scheme:dark] hover:bg-slate-50 dark:hover:bg-slate-800/80"
+                        className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/80 px-3 py-2 text-[10px] font-medium text-slate-900 dark:text-white outline-none backdrop-blur-xl transition-all focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/10 dark:[color-scheme:dark] hover:bg-slate-50 dark:hover:bg-slate-800/80"
                       />
                     </>
                   )}
@@ -317,27 +298,26 @@ export default function Transaction() {
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-[32px] border border-slate-200 dark:border-slate-800/50 bg-white dark:bg-slate-900/90">
-            <table className="w-full text-left text-xs sm:text-sm text-slate-600 dark:text-slate-300">
-              <thead className="border-b border-slate-200 dark:border-slate-800/50 bg-slate-50 dark:bg-slate-900 text-[10px] uppercase tracking-widest text-slate-500">
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800/50 bg-white dark:bg-slate-900/90">
+            <table className="w-full text-left text-[10px] text-slate-600 dark:text-slate-300">
+              <thead className="border-b border-slate-200 dark:border-slate-800/50 bg-slate-50 dark:bg-slate-900 text-[9px] uppercase tracking-widest text-slate-500">
                 <tr>
-                  <th className="px-6 py-5 font-medium">{t('Product')}</th>
-                  <th className="px-6 py-5 font-medium text-center">{t('Qty')}</th>
-                  <th className="px-6 py-5 font-medium">{t('Revenue')}</th>
-                  <th className="px-6 py-5 font-medium">{t('Modal')}</th>
-                  <th className="px-6 py-5 font-medium">{t('Profit')}</th>
-                  <th className="px-6 py-5 text-right">{t('Action')}</th>
-
+                  <th className="px-3 py-3 font-medium">{t('Product')}</th>
+                  <th className="px-3 py-3 font-medium text-center">{t('Qty')}</th>
+                  <th className="px-3 py-3 font-medium">{t('Revenue')}</th>
+                  <th className="px-3 py-3 font-medium hidden sm:table-cell">{t('Modal')}</th>
+                  <th className="px-3 py-3 font-medium">{t('Profit')}</th>
+                  <th className="px-3 py-3 text-right">{t('Action')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/30">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-10 text-center text-slate-500">{t('Loading transactions...')}</td>
+                    <td colSpan={6} className="px-4 py-8 text-center text-slate-500">{t('Loading transactions...')}</td>
                   </tr>
                 ) : transactions.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-10 text-center text-slate-500">
+                    <td colSpan={6} className="px-4 py-8 text-center text-slate-500">
                       {t('No transactions recorded for this period.')}
                     </td>
                   </tr>
@@ -351,13 +331,13 @@ export default function Transaction() {
 
                     return (
                       <tr key={transaction.id} className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors group">
-                        <td className="px-6 py-4 font-medium text-slate-900 dark:text-slate-100">
+                        <td className="px-3 py-3 font-medium text-slate-900 dark:text-slate-100 max-w-[100px] truncate">
                           {isEditing ? (
-                            <div className="grid min-w-[220px] gap-2">
+                            <div className="grid gap-2">
                               <select
                                 value={transactionEditForm.productId}
                                 onChange={(event) => handleTransactionProductEdit(event.target.value)}
-                                className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-900 dark:text-white outline-none focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20"
+                                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-[10px] text-slate-900 dark:text-white outline-none focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20"
                               >
                                 <option value="">{t('Manual Sale')}</option>
                                 {products.map((product) => (
@@ -368,7 +348,7 @@ export default function Transaction() {
                                 <input
                                   value={transactionEditForm.manualName}
                                   onChange={(event) => setTransactionEditForm(prev => ({ ...prev, manualName: event.target.value }))}
-                                  className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-900 dark:text-white outline-none focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20"
+                                  className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-[10px] text-slate-900 dark:text-white outline-none focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20"
                                 />
                               )}
                             </div>
@@ -376,56 +356,56 @@ export default function Transaction() {
                             transaction.product_name || t('Manual Sale')
                           )}
                         </td>
-                        <td className="px-6 py-4 text-center font-mono">
+                        <td className="px-3 py-3 text-center font-mono">
                           {isEditing ? (
                             <input
                               type="number"
                               min="1"
                               value={transactionEditForm.qty}
                               onChange={(event) => setTransactionEditForm(prev => ({ ...prev, qty: event.target.value }))}
-                              className="w-24 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-center text-xs text-slate-900 dark:text-white outline-none focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20"
+                              className="w-16 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-center text-[10px] text-slate-900 dark:text-white outline-none focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20"
                             />
                           ) : (
                             num.format(transaction.qty)
                           )}
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-3 py-3">
                           {isEditing ? (
                             <input
                               type="number"
                               min="0"
                               value={transactionEditForm.total}
                               onChange={(event) => setTransactionEditForm(prev => ({ ...prev, total: event.target.value }))}
-                              className="w-32 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-900 dark:text-white outline-none focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20"
+                              className="w-20 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-[10px] text-slate-900 dark:text-white outline-none focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20"
                             />
                           ) : (
                             fmt.format(transaction.total)
                           )}
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-3 py-3">
                           {isEditing ? (
                             <input
                               type="number"
                               min="0"
                               value={transactionEditForm.modalPrice}
                               onChange={(event) => setTransactionEditForm(prev => ({ ...prev, modalPrice: event.target.value }))}
-                              className="w-32 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-900 dark:text-white outline-none focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20"
+                              className="w-20 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-[10px] text-slate-900 dark:text-white outline-none focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20"
                             />
                           ) : (
                             fmt.format(transaction.harga_modal || 0)
                           )}
                         </td>
-                        <td className="px-6 py-4 text-emerald-600 dark:text-emerald-400 font-semibold">
+                        <td className="px-3 py-3 text-emerald-600 dark:text-emerald-400 font-semibold hidden sm:table-cell">
                           {fmt.format(isEditing ? editProfit : transaction.profit || 0)}
                         </td>
-                        <td className="px-6 py-4 text-right">
+                        <td className="px-3 py-3 text-right">
                           {isEditing ? (
-                            <div className="flex justify-end gap-2">
+                            <div className="flex justify-end gap-1.5">
                               <button
                                 type="button"
                                 onClick={() => saveTransactionEdit(transaction)}
                                 disabled={isUpdatingTransaction}
-                                className="rounded-xl border border-emerald-500/10 bg-emerald-500/10 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 transition hover:bg-emerald-500/20 disabled:opacity-50"
+                                className="rounded-lg border border-emerald-500/10 bg-emerald-500/10 px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 transition hover:bg-emerald-500/20 disabled:opacity-50"
                               >
                                 {t('Save')}
                               </button>
@@ -433,25 +413,25 @@ export default function Transaction() {
                                 type="button"
                                 onClick={cancelTransactionEdit}
                                 disabled={isUpdatingTransaction}
-                                className="rounded-xl border border-slate-200 dark:border-slate-700 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 transition hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50"
+                                className="rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 transition hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50"
                               >
-                                {t('Cancel edit')}
+                                {t('Cancel')}
                               </button>
                             </div>
                           ) : (
-                            <div className="flex justify-end gap-2">
+                            <div className="flex justify-end gap-1.5">
                               <button
                                 type="button"
                                 onClick={() => startTransactionEdit(transaction)}
                                 disabled={isLoading || isUpdatingTransaction}
-                                className="rounded-xl border border-sky-500/10 bg-sky-500/5 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 transition hover:bg-sky-500/20 disabled:opacity-50"
+                                className="rounded-lg border border-sky-500/10 bg-sky-500/5 px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 transition hover:bg-sky-500/20 disabled:opacity-50"
                               >
                                 {t('Edit')}
                               </button>
                               <button
                                 onClick={() => removeTransaction(transaction)}
                                 disabled={isLoading}
-                                className="rounded-xl border border-rose-500/10 bg-rose-500/5 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-rose-400 transition hover:bg-rose-500/20 disabled:opacity-50"
+                                className="rounded-lg border border-rose-500/10 bg-rose-500/5 px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider text-rose-400 transition hover:bg-rose-500/20 disabled:opacity-50"
                               >
                                 {t('Delete')}
                               </button>
@@ -466,12 +446,12 @@ export default function Transaction() {
               {transactions.length > 0 && (
                 <tfoot className="border-t border-slate-200 dark:border-slate-800/50 bg-slate-50 dark:bg-sky-900/50 text-slate-900 dark:text-slate-200 transition-colors font-bold">
                   <tr>
-                    <td className="px-6 py-4">{t('Total')}</td>
-                    <td className="px-6 py-4 text-center font-mono">{num.format(summary.qty)}</td>
-                    <td className="px-6 py-4">{fmt.format(summary.rev)}</td>
-                    <td className="px-6 py-4"></td>
-                    <td className="px-6 py-4 text-emerald-600 dark:text-emerald-400">{fmt.format(summary.pro)}</td>
-                    <td className="px-6 py-4 text-right"></td>
+                    <td className="px-3 py-3">{t('Total')}</td>
+                    <td className="px-3 py-3 text-center font-mono">{num.format(summary.qty)}</td>
+                    <td className="px-3 py-3">{fmt.format(summary.rev)}</td>
+                    <td className="px-3 py-3 hidden sm:table-cell"></td>
+                    <td className="px-3 py-3 text-emerald-600 dark:text-emerald-400">{fmt.format(summary.pro)}</td>
+                    <td className="px-3 py-3 text-right"></td>
                   </tr>
                 </tfoot>
               )}
@@ -488,38 +468,38 @@ export default function Transaction() {
         </div>
 
         {/* Best Selling Performance */}
-        <div className="mt-10 grid gap-6 lg:grid-cols-2">
-          <div className="rounded-3xl sm:rounded-[40px] border border-slate-900/90 dark:border-slate-200 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-6 sm:p-8 shadow-2xl dark:shadow-slate-950/20 backdrop-blur-xl transition-colors overflow-hidden">
-            <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-6">{t('Best Selling Performance')}</h3>
-            <div className="max-h-[500px] overflow-auto rounded-3xl border border-slate-200 dark:border-slate-800/50 bg-slate-50 dark:bg-gradient-to-br dark:from-slate-950/20 dark:to-slate-900/40 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden transition-colors">
-              <table className="w-full text-left text-xs sm:text-sm text-slate-600 dark:text-slate-300">
-                <thead className="border-b border-slate-900/900 dark:border-slate-200 bg-white dark:bg-slate-900/90 text-[10px] uppercase tracking-widest text-slate-400">
+        <div className="mt-10 grid gap-4 lg:grid-cols-2">
+          <div className="rounded-2xl border border-slate-900/90 dark:border-slate-200 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-4 sm:p-6 shadow-2xl dark:shadow-slate-950/20 backdrop-blur-xl transition-colors overflow-hidden">
+            <h3 className="text-base font-semibold text-slate-900 dark:text-white mb-3">{t('Best Selling Performance')}</h3>
+            <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800/50 bg-slate-50 dark:bg-gradient-to-br dark:from-slate-950/20 dark:to-slate-900/40 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden transition-colors">
+              <table className="w-full min-w-[300px] text-left text-[9px] text-slate-600 dark:text-slate-300">
+                <thead className="border-b border-slate-900/90 dark:border-slate-200 bg-white dark:bg-slate-900/90 text-[8px] uppercase tracking-widest text-slate-400">
                   <tr>
-                    <th className="px-6 py-5 font-medium">{t('Product')}</th>
-                    <th className="px-6 py-5 font-medium text-center">{t('Qty Sold')}</th>
-                    <th className="px-6 py-5 font-medium">{t('Revenue')}</th>
-                    <th className="px-6 py-5 font-medium">{t('Profit')}</th>
+                    <th className="px-2 py-2 font-medium">{t('Product')}</th>
+                    <th className="px-2 py-2 font-medium text-center">{t('Qty Sold')}</th>
+                    <th className="px-2 py-2 font-medium">{t('Revenue')}</th>
+                    <th className="px-2 py-2 font-medium">{t('Profit')}</th>
                   </tr>
                 </thead>
-                <tbody className="border border-slate-900/90 dark:border-slate-200 divide-y divide-slate-100 dark:divide-slate-900/90 bg-white dark:bg-slate-900/90 ">
+                <tbody className="border border-slate-900/90 dark:border-slate-200 divide-y divide-slate-100 dark:divide-slate-900/90 bg-white dark:bg-slate-900/90">
                   {paginatedBestSelling.map((item, index) => (
                     <tr key={item.name} className="hover:bg-slate-100 dark:hover:bg-white/[0.02] transition-colors group">
-                      <td className="px-6 py-4 font-medium text-slate-900 dark:text-slate-100 flex items-center gap-3">
-                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-sky-500/10 dark:from-sky-500/20 to-indigo-500/10 dark:to-indigo-500/20 text-[10px] font-bold text-sky-600 dark:text-sky-400 border border-sky-500/30 group-hover:scale-110 transition-transform">
+                      <td className="px-2 py-2 font-medium text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                        <span className="flex h-4 w-4 items-center justify-center rounded-full bg-gradient-to-r from-sky-500/10 dark:from-sky-500/20 to-indigo-500/10 dark:to-indigo-500/20 text-[8px] font-bold text-sky-600 dark:text-sky-400 border border-sky-500/30 group-hover:scale-110 transition-transform">
                           {index + 1}
                         </span>
                         {item.name}
                       </td>
-                      <td className="px-6 py-4 text-center font-mono">{num.format(item.qty)}</td>
-                      <td className="px-6 py-4">{fmt.format(item.revenue)}</td>
-                      <td className="px-6 py-4 text-emerald-600 dark:text-emerald-400 font-semibold">{fmt.format(item.profit)}</td>
+                      <td className="px-2 py-2 text-center font-mono">{num.format(item.qty)}</td>
+                      <td className="px-2 py-2">{fmt.format(item.revenue)}</td>
+                      <td className="px-2 py-2 text-emerald-600 dark:text-emerald-400 font-semibold">{fmt.format(item.profit)}</td>
                     </tr>
                   ))}
                 </tbody>
                 {bestSelling.length > itemsPerPageBestSelling && (
                   <tfoot className="border-t rounded-lg border-slate-900/90 dark:border-slate-200 divide-y divide-slate-100 dark:divide-slate-900/90 bg-white dark:bg-slate-900/90 text-slate-900 dark:text-slate-400 transition-colors">
                     <tr>
-                      <td colSpan={4} className="px-6 py-4">
+                      <td colSpan={4} className="px-2 py-2">
                         <Pagination
                           currentPage={bestSellingCurrentPage}
                           totalItems={bestSelling.length}
@@ -534,9 +514,9 @@ export default function Transaction() {
             </div>
           </div>
 
-          <div className="rounded-3xl sm:rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-6 sm:p-8 shadow-2xl dark:shadow-slate-950/20 backdrop-blur-xl transition-colors">
-            <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-6">{t('Sales Performance Chart')}</h3>
-            <div className="h-80">
+          <div className="rounded-2xl border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-4 sm:p-6 shadow-2xl dark:shadow-slate-950/20 backdrop-blur-xl transition-colors overflow-hidden">
+            <h3 className="text-base font-semibold text-slate-900 dark:text-white mb-3">{t('Sales Performance Chart')}</h3>
+            <div className="h-48 sm:h-56">
               <ChartComponent data={bestSellingChartData} variant="bar" />
             </div>
           </div>

@@ -200,12 +200,12 @@ export default function Topbar({ toggleSidebar }: { toggleSidebar: () => void })
     }
 
     return (
-     <div
+    <div
     className={`
-        relative flex flex-col gap-6 rounded-[32px] border border-black/5 dark:border-white/10
-        bg-white/90 dark:bg-slate-900/60 p-5 shadow-xl dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)]
+        relative flex flex-col gap-4 rounded-[28px] border border-black/5 dark:border-white/10
+        bg-white/90 dark:bg-slate-900/60 p-4 shadow-xl dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)]
         backdrop-blur-2xl
-        lg:flex-row lg:items-center lg:justify-between
+        lg:flex-row lg:items-center lg:justify-between lg:p-5 lg:gap-6
 
         transition-all duration-300 ease-in-out will-change-transform
 
@@ -232,10 +232,10 @@ export default function Topbar({ toggleSidebar }: { toggleSidebar: () => void })
                 </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-4 lg:flex-nowrap">
-                <div ref={searchRef} className="group relative flex-1 lg:min-w-[320px]">
+            <div className="flex flex-wrap items-center gap-2 lg:flex-nowrap">
+                <div ref={searchRef} className="group relative flex-1 lg:min-w-[240px]">
                     <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-sky-500 transition-colors">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-sky-500 transition-colors">
                             <SearchIcon />
                         </span>
                         <input
@@ -247,16 +247,16 @@ export default function Topbar({ toggleSidebar }: { toggleSidebar: () => void })
                                 setShowResults(true)
                             }}
                             onFocus={() => setShowResults(true)}
-                            placeholder={t('Search pages... (Ctrl+K)')}
-                            className="h-11 w-full rounded-2xl border border-black/5 bg-slate-100 pl-11 pr-4 text-sm text-slate-900 outline-none transition-all focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10 dark:border-white/5 dark:bg-slate-800/30 dark:text-slate-100 dark:placeholder-slate-500"
+                            placeholder={t('Search...')}
+                            className="h-9 w-full rounded-xl border border-black/5 bg-slate-100 pl-9 pr-3 text-xs text-slate-900 outline-none transition-all focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/10 dark:border-white/5 dark:bg-slate-800/30 dark:text-slate-100 dark:placeholder-slate-500"
                         />
                     </div>
 
                     {/* Search Results Dropdown */}
                     {showResults && searchQuery && (
-                        <div className="absolute top-full left-0 z-[60] mt-3 w-full overflow-hidden rounded-2xl border border-black/5 bg-white/95 text-slate-900 p-2 shadow-2xl backdrop-blur-2xl dark:border-white/10 dark:bg-slate-900/95 dark:text-slate-200">
+                        <div className="absolute top-full left-0 z-[60] mt-2 w-full overflow-hidden rounded-xl border border-black/5 bg-white/95 text-slate-900 p-2 shadow-2xl backdrop-blur-2xl dark:border-white/10 dark:bg-slate-900/95 dark:text-slate-200">
                             {filteredResults.length > 0 ? (
-                                <div className="max-h-[300px] overflow-y-auto">
+                                <div className="max-h-[250px] overflow-y-auto">
                                     {filteredResults.map((item, idx) => (
                                         <button
                                             key={idx}
@@ -265,28 +265,28 @@ export default function Topbar({ toggleSidebar }: { toggleSidebar: () => void })
                                                 setShowResults(false)
                                                 setSearchQuery('')
                                             }}
-                                            className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-left hover:bg-slate-100 transition-colors dark:hover:bg-slate-800"
+                                            className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left hover:bg-slate-100 transition-colors dark:hover:bg-slate-800"
                                         >
-                                            <span className="text-sm font-medium text-slate-900 dark:text-slate-200">{t(item.title)}</span>
-                                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{t(item.category)}</span>
+                                            <span className="text-xs font-medium text-slate-900 dark:text-slate-200">{t(item.title)}</span>
+                                            <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{t(item.category)}</span>
                                         </button>
                                     ))}
                                 </div>
                             ) : (
-                                <div className="px-4 py-8 text-center">
-                                    <p className="text-sm text-slate-500">{t('No results found for')} "{searchQuery}"</p>
+                                <div className="px-3 py-6 text-center">
+                                    <p className="text-xs text-slate-500">{t('No results found for')} "{searchQuery}"</p>
                                 </div>
                             )}
                         </div>
                     )}
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                     {/* Night Mode Toggle */}
                     <button 
                         type="button"
                         onClick={() => setIsDarkMode(!isDarkMode)}
-                        className="flex h-11 w-11 items-center justify-center rounded-2xl border border-black/5 bg-slate-100 text-slate-900 transition-all hover:bg-slate-200 hover:text-sky-600 dark:border-white/5 dark:bg-slate-800/30 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-sky-400"
+                        className="flex h-9 w-9 items-center justify-center rounded-xl border border-black/5 bg-slate-100 text-slate-900 transition-all hover:bg-slate-200 hover:text-sky-600 dark:border-white/5 dark:bg-slate-800/30 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-sky-400"
                     >
                         {isDarkMode ? <SunIcon /> : <MoonIcon />}
                     </button>
@@ -294,9 +294,9 @@ export default function Topbar({ toggleSidebar }: { toggleSidebar: () => void })
                     <div className="relative">
                     <button
                         onClick={() => setOpenMenu(!openMenu)}
-                        className={`flex items-center gap-3 rounded-2xl border border-black/5 bg-white/90 p-1.5 pr-4 transition-all hover:bg-slate-100 dark:border-white/5 dark:bg-slate-950/40 dark:hover:bg-slate-800 ${openMenu ? 'ring-2 ring-sky-500/50' : 'hover:border-black/10 dark:hover:border-white/10'}`}
+                        className={`flex items-center gap-2 rounded-xl border border-black/5 bg-white/90 p-1.5 pr-3 transition-all hover:bg-slate-100 dark:border-white/5 dark:bg-slate-950/40 dark:hover:bg-slate-800 ${openMenu ? 'ring-2 ring-sky-500/50' : 'hover:border-black/10 dark:hover:border-white/10'}`}
                     >
-                        <div className="h-10 w-10 rounded-xl overflow-hidden shadow-lg shadow-sky-500/20">
+                        <div className="h-8 w-8 rounded-lg overflow-hidden shadow-lg shadow-sky-500/20">
                             {avatarUrl ? (
                                 <img
                                     src={avatarUrl}
@@ -304,25 +304,24 @@ export default function Topbar({ toggleSidebar }: { toggleSidebar: () => void })
                                     className="h-full w-full object-cover"
                                 />
                             ) : (
-                                <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-sky-500 to-indigo-600 text-xs font-bold text-white">
+                                <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-sky-500 to-indigo-600 text-[10px] font-bold text-white">
                                     {initials}
                                 </div>
                             )}
                         </div>
                         <div className="min-w-0 text-left">
-                            <p className="max-w-[100px] truncate text-xs font-bold text-slate-900 dark:text-white">{name}</p>
-                            <p className="max-w-[100px] truncate text-[10px] font-medium text-slate-500">{email || t('Premium Plan')}</p>
+                            <p className="max-w-[80px] truncate text-[11px] font-bold text-slate-900 dark:text-white">{name}</p>
                         </div>
                     </button>
 
                     {openMenu && (
-                        <div className="absolute right-0 mt-3 w-56 origin-top-right rounded-2xl border border-black/5 bg-white/95 p-2 shadow-2xl ring-1 ring-black/5 backdrop-blur-2xl dark:border-white/10 dark:bg-slate-900/95 dark:ring-white/5">
+                        <div className="absolute right-0 mt-2 w-48 origin-top-right rounded-xl border border-black/5 bg-white/95 p-2 shadow-2xl ring-1 ring-black/5 backdrop-blur-2xl dark:border-white/10 dark:bg-slate-900/95 dark:ring-white/5">
                             <button
                                 onClick={() => {
                                     setOpenMenu(false)
                                     navigate('/profile')
                                 }}
-                                className="group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-900 transition-all hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white"
+                                className="group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-medium text-slate-900 transition-all hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white"
                             >
                                 <span className="text-slate-500 group-hover:text-sky-400 transition-colors"><UserIcon /></span>
                                 {t('Profile')}
@@ -330,7 +329,7 @@ export default function Topbar({ toggleSidebar }: { toggleSidebar: () => void })
 
                             <button
                                 onClick={handleLogout}
-                                className="group mt-1 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-rose-600 transition-all hover:bg-rose-100 hover:text-rose-700 dark:text-rose-400 dark:hover:bg-rose-500/10 dark:hover:text-rose-300"
+                                className="group mt-1 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-medium text-rose-600 transition-all hover:bg-rose-100 hover:text-rose-700 dark:text-rose-400 dark:hover:bg-rose-500/10 dark:hover:text-rose-300"
                             >
                                 <span className="text-rose-500/50 group-hover:text-rose-400 transition-colors"><LogoutIcon /></span>
                                 {t('Logout')}

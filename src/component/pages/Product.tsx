@@ -255,7 +255,7 @@ export default function ProductPage() {
     <>
       <RouteSeo meta={PAGE_SEO} />
       <main className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-3 py-6 sm:px-4 sm:py-8 lg:px-8">
         <div className="mb-10 rounded-3xl sm:rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-gradient-to-br dark:from-slate-900/90 dark:to-slate-950/80 p-6 sm:p-8 shadow-xl dark:shadow-[0_30px_120px_-50px_rgba(15,23,42,0.85)] backdrop-blur-xl transition-colors">
           <p className="text-sm uppercase tracking-[0.35em] text-sky-600 dark:text-sky-300/80">{t('Product catalog')}</p>
           <h1 className="mt-3 text-2xl sm:text-4xl font-semibold text-slate-900 dark:text-white">{t('Manage your products')}</h1>
@@ -264,8 +264,8 @@ export default function ProductPage() {
           </p>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
-          <section className="rounded-3xl sm:rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 p-6 sm:p-8 shadow-2xl dark:shadow-slate-950/20 transition-colors">
+        <div className="grid gap-5 lg:grid-cols-[1fr]">
+          <section className="rounded-3xl sm:rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 p-5 sm:p-6 shadow-2xl dark:shadow-slate-950/20 transition-colors">
             <div className="space-y-6">
               {error && (
                 <div className="rounded-3xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-100">{error}</div>
@@ -321,25 +321,9 @@ export default function ProductPage() {
               </div>
             </div>
           </section>
-
-          <aside className="rounded-3xl sm:rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 p-6 sm:p-8 shadow-2xl dark:shadow-slate-950/20 transition-colors">
-            <div className="space-y-5">
-              <div>
-                <p className="text-sm uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">{t('Catalog tips')}</p>
-                <h2 className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">{t('Product-driven workflow')}</h2>
-              </div>
-              <div className="space-y-4 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                <p>{t('Use products to standardize stock, transactions, and reporting across the app.')}</p>
-                <p>{t('When product data is available, stock and transaction pages can auto-fill prices.')}</p>
-              </div>
-              <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/90 p-5 text-sm text-slate-600 dark:text-slate-300 transition-colors">
-                {t('Product IDs should be unique. Updating an existing ID will overwrite its name and prices.')}
-              </div>
-            </div>
-          </aside>
         </div>
 
-        <div className="mt-10 rounded-3xl sm:rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 p-6 sm:p-8 shadow-2xl dark:shadow-slate-950/20 transition-colors">
+        <div className="mt-10 rounded-3xl sm:rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 p-5 sm:p-6 shadow-2xl dark:shadow-slate-950/20 transition-colors">
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-sm uppercase tracking-[0.35em] text-sky-600 dark:text-sky-300/80">{t('Product list')}</p>
@@ -362,15 +346,15 @@ export default function ProductPage() {
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-[32px] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/90 transition-colors">
-            <table className="w-full text-left text-sm text-slate-600 dark:text-slate-200">
-              <thead className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/90 text-slate-500 dark:text-slate-400">
+          <div className="overflow-x-auto rounded-[24px] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/90 transition-colors">
+            <table className="w-full text-left text-[10px] sm:text-sm text-slate-600 dark:text-slate-200">
+              <thead className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/90 text-[9px] uppercase tracking-widest text-slate-500 dark:text-slate-400">
                 <tr>
-                  <th className="px-4 py-4">{t('Product ID')}</th>
-                  <th className="px-4 py-4">{t('Name')}</th>
-                  <th className="px-4 py-4">{t('Cost price')}</th>
-                  <th className="px-4 py-4">{t('Sale price')}</th>
-                  <th className="px-4 py-4 text-right">{t('Action')}</th>
+                  <th className="px-3 py-3">{t('Product ID')}</th>
+                  <th className="px-3 py-3">{t('Name')}</th>
+                  <th className="px-3 py-3">{t('Cost price')}</th>
+                  <th className="px-3 py-3">{t('Sale price')}</th>
+                  <th className="px-3 py-3 text-right">{t('Action')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">

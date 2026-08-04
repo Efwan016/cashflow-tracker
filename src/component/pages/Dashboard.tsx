@@ -344,42 +344,42 @@ function KpiCard({
   return (
     <div
       className="group 
-    relative overflow-hidden rounded-[1.5rem] 
-    border border-slate-200 bg-white p-4 shadow-sm
+    relative overflow-hidden rounded-[1.2rem] 
+    border border-slate-200 bg-white p-3 shadow-sm
      backdrop-blur-2xl transition-all duration-300
       hover:-translate-y-0.5 hover:border-sky-400/30 hover:shadow-xl hover:shadow-sky-500/5 
       dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-white/[0.07] 
-      sm:rounded-[2rem] 
-      sm:p-6"
+      sm:rounded-[1.5rem] 
+      sm:p-4"
     >
       <div
         className={`absolute -right-8 -top-8 h-28 w-28 rounded-full opacity-10 blur-3xl transition-transform duration-500 group-hover:scale-150 ${a.glow}`}
       />
 
       <div className="relative">
-        <div className="mb-5 flex items-start justify-between gap-4">
-          <div className={`rounded-2xl p-3 ring-1 ${a.bg} ${a.text} ${a.ring}`}>
+        <div className="mb-3 flex items-start justify-between gap-2">
+          <div className={`rounded-xl p-2 ring-1 ${a.bg} ${a.text} ${a.ring}`}>
             {icon}
           </div>
 
           {sub && (
-            <span className="max-w-[120px] text-right text-[10px] font-bold leading-4 text-slate-400">
+            <span className="max-w-[100px] text-right text-[9px] font-bold leading-3 text-slate-400">
               {sub}
             </span>
           )}
         </div>
 
-        <p className="mb-1 text-[11px] font-black uppercase tracking-widest text-slate-400">
+        <p className="mb-0.5 text-[10px] font-black uppercase tracking-widest text-slate-400">
           {label}
         </p>
 
-        <p className={`truncate text-xl font-black tracking-tight sm:text-2xl ${a.text}`}>
+        <p className={`truncate text-base font-black tracking-tight sm:text-lg ${a.text}`}>
           {value}
         </p>
 
 
         {pct !== undefined && (
-          <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-white/10">
+          <div className="mt-3 h-1 overflow-hidden rounded-full bg-slate-200 dark:bg-white/10">
             <div
               className={`h-full rounded-full bg-gradient-to-r transition-all duration-1000 ease-out ${a.bar}`}
               style={{ width: `${Math.min(100, Math.max(0, pct))}%` }}
@@ -697,7 +697,7 @@ const bestSellingChartData = useMemo(
         <div className="absolute left-[-160px] top-[40%] h-[360px] w-[360px] rounded-full bg-emerald-500/10 blur-[100px]" />
       </div>
 
-      <div className="relative mx-auto max-w-7xl px-3 py-4 sm:px-6 lg:px-8">
+      <div className="relative mx-auto max-w-7xl px-3 py-3 sm:px-5 sm:py-5 lg:px-8">
         {/* HEADER */}
         <header className="mb-8 flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
           <div className="min-w-0">
@@ -712,7 +712,7 @@ const bestSellingChartData = useMemo(
               </span>
             </div>
 
-            <h1 className="text-3xl font-black tracking-tight text-slate-950 dark:text-white sm:text-5xl">
+            <h1 className="text-2xl font-black tracking-tight text-slate-950 dark:text-white sm:text-3xl">
               {t('Hello')},{' '}
               <span className="bg-gradient-to-r from-sky-400 via-indigo-400 to-fuchsia-400 bg-clip-text text-transparent">
                 {firstName}
@@ -720,17 +720,17 @@ const bestSellingChartData = useMemo(
               👋
             </h1>
 
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">
+            <p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
               {t('Track revenue, expenses, profit, stock movement, and business activity in real time.')}
             </p>
           </div>
 
-          <div className="w-full rounded-[1.5rem] border border-slate-200 bg-white/80 p-3 shadow-sm backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.04] xl:w-auto">
-            <div className="grid gap-3 sm:grid-cols-[minmax(180px,220px)_auto] xl:flex xl:items-center xl:justify-end">
+          <div className="w-full rounded-[1.5rem] border border-slate-200 bg-white/80 p-3 shadow-sm backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.04]">
+            <div className="grid gap-2 sm:grid-cols-[minmax(140px,180px)_auto] xl:flex xl:items-center xl:justify-end">
               <select
                 value={filter}
                 onChange={(event) => setFilter(event.target.value as FilterType)}
-                className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-xs font-black text-slate-700 outline-none transition focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-500/10 dark:border-white/10 dark:bg-slate-950/50 dark:text-slate-100 dark:focus:bg-slate-950"
+                className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-[11px] font-black text-slate-700 outline-none transition focus:border-sky-400 focus:bg-white focus:ring-2 focus:ring-sky-500/10 dark:border-white/10 dark:bg-slate-950/50 dark:text-slate-100 dark:focus:bg-slate-950"
               >
                 <option value="today">{t('Today')}</option>
                 <option value="last7">{t('Last 7 Days')}</option>
@@ -744,7 +744,7 @@ const bestSellingChartData = useMemo(
                 type="button"
                 onClick={refetch}
                 disabled={loading}
-                className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-black text-slate-700 transition hover:border-sky-400 hover:bg-white disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-slate-950/50 dark:text-slate-100 dark:hover:bg-white/[0.08] sm:w-auto"
+                className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 text-[11px] font-black text-slate-700 transition hover:border-sky-400 hover:bg-white disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-slate-950/50 dark:text-slate-100 dark:hover:bg-white/[0.08] sm:w-auto"
               >
                 <span className={loading ? 'animate-spin' : ''}>
                   <IC.Refresh />
@@ -754,12 +754,12 @@ const bestSellingChartData = useMemo(
             </div>
 
             {(filter === 'specific' || filter === 'range') && (
-              <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+              <div className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
                 <input
                   type="date"
                   value={startDate}
                   onChange={(event) => setStartDate(event.target.value)}
-                  className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-xs font-bold text-slate-700 outline-none transition focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-500/10 dark:border-white/10 dark:bg-slate-950/50 dark:text-slate-100 dark:focus:bg-slate-950"
+                  className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-[11px] font-bold text-slate-700 outline-none transition focus:border-sky-400 focus:bg-white focus:ring-2 focus:ring-sky-500/10 dark:border-white/10 dark:bg-slate-950/50 dark:text-slate-100 dark:focus:bg-slate-950"
                 />
 
                 {filter === 'range' && (
@@ -772,7 +772,7 @@ const bestSellingChartData = useMemo(
                       type="date"
                       value={endDate}
                       onChange={(event) => setEndDate(event.target.value)}
-                      className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-xs font-bold text-slate-700 outline-none transition focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-500/10 dark:border-white/10 dark:bg-slate-950/50 dark:text-slate-100 dark:focus:bg-slate-950"
+                      className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-[11px] font-bold text-slate-700 outline-none transition focus:border-sky-400 focus:bg-white focus:ring-2 focus:ring-sky-500/10 dark:border-white/10 dark:bg-slate-950/50 dark:text-slate-100 dark:focus:bg-slate-950"
                     />
                   </>
                 )}
@@ -852,11 +852,11 @@ const bestSellingChartData = useMemo(
         </section>
 
         {/* KPI CARDS */}
-        <section className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <section className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <KpiCard
             label={t('Revenue')}
             value={fmt.format(metrics.revenue)}
-            sub={`${metrics.txCount} ${t('transactions')}`}
+            sub={`${metrics.txCount} ${t('tx')}`}
             pct={metrics.revSharePct}
             accent="emerald"
             icon={<IC.Revenue />}
@@ -874,16 +874,17 @@ const bestSellingChartData = useMemo(
           <KpiCard
             label={t('Gross Profit')}
             value={fmt.format(metrics.grossProfit)}
-            sub={`${metrics.marginPct}% ${t('of revenue')}`}
+            sub={`${metrics.marginPct}% ${t('of rev')}`}
             pct={metrics.marginPct}
             accent="sky"
             icon={<IC.Profit />}
           />
 
           <KpiCard
-            label={t('Stock Value')}
+            label={t('Stock')}
             value={fmt.format(metrics.stockValue)}
-            sub={`${num.format(metrics.stockQty)} ${t('units')} · ${metrics.skus} SKUs`}
+            sub={`${num.format(metrics.stockQty)} ${t('units')}`}
+            pct={0}
             accent="amber"
             icon={<IC.Box />}
           />

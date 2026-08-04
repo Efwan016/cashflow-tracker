@@ -2,7 +2,51 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Mobile-first responsive utilities for iPhone 12 Mini (375px) */
+@media (max-width: 374px) {
+  .mobile-full-width {
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    margin-right: calc(-50vw + 50%);
+  }
+  .mobile-text-xs {
+    font-size: 0.75rem;
+    line-height: 1rem;
+  }
+  .mobile-text-sm {
+    font-size: 0.8125rem;
+    line-height: 1.25rem;
+  }
+  .mobile-p-2 {
+    padding: 0.5rem;
+  }
+  .mobile-p-3 {
+    padding: 0.75rem;
+  }
+  .mobile-gap-2 {
+    gap: 0.5rem;
+  }
+  .mobile-gap-3 {
+    gap: 0.75rem;
+  }
+}
 
+/* Ensure touch targets are at least 44px on mobile */
+@media (max-width: 768px) {
+  button, 
+  [role="button"],
+  select,
+  input[type="date"],
+  input[type="text"],
+  input[type="search"] {
+    min-height: 40px;
+  }
+  
+  /* Better touch spacing for table rows */
+  table tbody tr {
+    min-height: 44px;
+  }
+}
 
 @media (prefers-color-scheme: dark) {
   :root {

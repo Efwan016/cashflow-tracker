@@ -322,7 +322,7 @@ export default function Expense() {
         <div className="animate-[pulse_10s_ease-in-out_infinite] absolute rounded-full" style={{ width: 640, height: 640, top: -200, left: '12%', background: 'radial-gradient(circle, rgba(6,182,212,0.16) 0%, transparent 70%)', filter: 'blur(65px)' }} />
         <div className="animate-[pulse_8s_ease-in-out_infinite_reverse] absolute rounded-full" style={{ width: 520, height: 520, bottom: -80, right: '8%', background: 'radial-gradient(circle, rgba(124,58,237,0.14) 0%, transparent 70%)', filter: 'blur(65px)' }} />
       </div>
-      <div className="relative mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-3 py-6 sm:px-4 sm:py-8 lg:px-8">
         <div className="mb-10 rounded-3xl sm:rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-6 sm:p-8 shadow-xl dark:shadow-[0_30px_120px_-50px_rgba(15,23,42,0.85)] backdrop-blur-xl transition-colors">
           <p className="text-sm uppercase tracking-[0.35em] text-sky-600 dark:text-sky-300/80">{t('Add expense')}</p>
           <h1 className="mt-3 text-2xl sm:text-4xl font-semibold text-slate-900 dark:text-white">{t('Record a new expense')}</h1>
@@ -331,8 +331,8 @@ export default function Expense() {
           </p>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
-          <section className="rounded-3xl sm:rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-6 sm:p-8 shadow-2xl dark:shadow-slate-950/20 backdrop-blur-xl transition-colors">
+        <div className="grid gap-5 lg:grid-cols-[1fr]">
+          <section className="rounded-3xl sm:rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-5 sm:p-6 shadow-2xl dark:shadow-slate-950/20 backdrop-blur-xl transition-colors">
             <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="space-y-6">
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="grid gap-3 text-left">
@@ -380,34 +380,6 @@ export default function Expense() {
               </div>
             </form>
           </section>
-
-          <aside className="rounded-3xl sm:rounded-[40px] border border-black/5 dark:border-white/10 bg-white dark:bg-slate-900/90 dark:from-slate-900/90 dark:to-slate-950/80 p-6 sm:p-8 shadow-2xl dark:shadow-slate-950/20 backdrop-blur-xl transition-colors">
-            <div className="space-y-5">
-              <div>
-                <p className="text-sm uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">{t('Expense tracking')}</p>
-                <h2 className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">{t('Capture spend instantly')}</h2>
-              </div>
-              
-              <div className="grid gap-4">
-                <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 dark:from-slate-950/50 dark:to-slate-900/60 p-5 shadow-lg transition-colors">
-                  <p className="text-sm text-slate-500 dark:text-slate-400">{t('Total period spend')}</p>
-                  <p className="mt-3 text-3xl font-semibold text-rose-600 dark:text-rose-400">{fmt.format(totalFilteredExpense)}</p>
-                  <p className="mt-1 text-[10px] text-slate-500 uppercase tracking-wider">{filterTypeLabel}</p>
-                </div>
-              </div>
-
-              <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 p-5 shadow-sm transition-colors">
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-400 dark:text-slate-500">{t('Why it matters')}</p>
-                <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">{t('Expenses are essential for accurate cashflow reporting and real net profit calculation.')}</p>
-              </div>
-              <NavLink
-                to="/reports"
-                className="inline-flex w-full items-center justify-center rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/90 px-4 py-3 text-sm font-semibold text-slate-700 dark:text-slate-200 transition hover:border-sky-400 hover:bg-slate-50 dark:hover:bg-slate-800"
-              >
-                {t('Review reports')}
-              </NavLink>
-            </div>
-          </aside>
         </div>
 
         {/* HISTORY SECTION */}
@@ -473,14 +445,14 @@ export default function Expense() {
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-[32px]  border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 dark:from-slate-950/20 dark:to-slate-900/40 transition-colors">
-            <table className="w-full text-left text-xs sm:text-sm text-white dark:text-slate-300">
-              <thead className="border-b border-slate-200 dark:border-slate-800 text-[10px] uppercase tracking-widest text-slate-900/90 dark:text-white/80 bg-slate-50 dark:white dark:bg-slate-900/90 dark:from-slate-950/50 dark:to-slate-900/50">
+          <div className="overflow-x-auto rounded-[24px] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 dark:from-slate-950/20 dark:to-slate-900/40 transition-colors">
+            <table className="w-full text-left text-[10px] sm:text-xs text-white dark:text-slate-300">
+              <thead className="border-b border-slate-200 dark:border-slate-800 text-[9px] uppercase tracking-widest text-slate-900/90 dark:text-white/80 bg-slate-50 dark:white dark:bg-slate-900/90 dark:from-slate-950/50 dark:to-slate-900/50">
                 <tr>
-                  <th className="px-6 py-5 font-medium">{t('Description')}</th>
-                  <th className="px-6 py-5 font-medium text-center">{t('Date')}</th>
-                  <th className="px-6 py-5 font-medium">{t('Amount')}</th>
-                  <th className="px-6 py-5 text-right">{t('Action')}</th>
+                  <th className="px-3 py-3 font-medium">{t('Description')}</th>
+                  <th className="px-3 py-3 font-medium text-center">{t('Date')}</th>
+                  <th className="px-3 py-3 font-medium">{t('Amount')}</th>
+                  <th className="px-3 py-3 text-right">{t('Action')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/30">

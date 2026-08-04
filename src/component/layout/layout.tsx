@@ -194,15 +194,13 @@ export default function Layout({ children }: { children: ReactNode }) {
       {/* Overlay mobile */}
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
           onClick={closeSidebar}
         />
       )}
       {/* Content */}
-      {/* Content */}
       <div
-        className={`flex flex-col min-h-screen transition-all ${isDesktopSidebarOpen ? "lg:ml-72" : "lg:ml-0"
-          }`}
+        className={`flex flex-col min-h-screen transition-all duration-300 ${isDesktopSidebarOpen ? 'lg:ml-72' : 'lg:ml-0'}`}
       >
 
         {/* Topbar (FIXED) */}

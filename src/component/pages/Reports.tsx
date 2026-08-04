@@ -448,8 +448,8 @@ export default function Reports() {
   return (
     <>
       <RouteSeo meta={PAGE_SEO} />
-      <main className="min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <main className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
+        <div className="mx-auto max-w-7xl px-3 py-6 sm:px-4 sm:py-8 lg:px-8">
         <div className="mb-8 overflow-hidden rounded-[30px] border border-slate-200 bg-white/90 p-6 shadow-xl shadow-slate-900/10 transition-colors dark:border-slate-700 dark:bg-slate-950/95">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div>

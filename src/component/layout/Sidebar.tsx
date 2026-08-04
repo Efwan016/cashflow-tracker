@@ -62,7 +62,7 @@ export default function Sidebar({
 
   return (
     <aside
-      className={`fixed left-0 top-0 z-50 flex h-dvh w-[18rem] flex-col justify-between overflow-y-auto border-r border-black/5 bg-white/90 p-4 text-slate-900 shadow-2xl shadow-slate-200/40 backdrop-blur-2xl transition-transform duration-300 ease-out [scrollbar-width:none] dark:border-white/10 dark:bg-slate-950/90 dark:text-slate-100 dark:shadow-slate-950/40 sm:p-5 lg:w-72 [&::-webkit-scrollbar]:hidden ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      className={`fixed left-0 top-0 z-50 flex h-dvh w-[85vw] max-w-[280px] flex-col justify-between overflow-y-auto border-r border-black/5 bg-white/90 p-4 text-slate-900 shadow-2xl shadow-slate-200/40 backdrop-blur-2xl transition-transform duration-300 ease-out [scrollbar-width:none] dark:border-white/10 dark:bg-slate-950/90 dark:text-slate-100 dark:shadow-slate-950/40 sm:p-5 sm:w-[22rem] lg:w-72 [&::-webkit-scrollbar]:hidden ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } ${isDesktopSidebarOpen ? 'lg:translate-x-0' : 'lg:-translate-x-full'
         }`}
     >
