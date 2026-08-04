@@ -67,7 +67,6 @@ export default function Topbar({ toggleSidebar }: { toggleSidebar: () => void })
     const searchRef = useRef<HTMLDivElement>(null)
     const searchInputRef = useRef<HTMLInputElement>(null)
 
-    const [email, setEmail] = useState<string>('')
     const [name, setName] = useState<string>('user')
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
     const [show, setShow] = useState(true)
@@ -155,8 +154,6 @@ export default function Topbar({ toggleSidebar }: { toggleSidebar: () => void })
             const { data } = await supabase.auth.getUser()
             const user = data?.user
             if (!user) return
-
-            setEmail(user.email ?? '')
 
             //  ambil profile dari DB
             const { data: profile } = await supabase

@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect, useCallback, useRef } from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { toast } from 'react-toastify'
 import { Pagination } from '../components/Pagination'
@@ -169,24 +169,7 @@ export default function Expense() {
     return expenses.reduce((sum, exp) => sum + exp.total, 0)
   }, [expenses])
 
-  const filterTypeLabel = useMemo(() => {
-    switch (filterType) {
-      case 'today':
-        return t('Today')
-      case 'last7':
-        return t('Last 7 Days')
-      case 'thisMonth':
-        return t('This Month')
-      case 'specific':
-        return startDate ? formatDisplayDate(startDate) : t('Pick a Date')
-      case 'range':
-        return startDate && endDate ? `${formatDisplayDate(startDate)} ${t('to')} ${formatDisplayDate(endDate)}` : t('Date Range')
-      default:
-        return t('Recent items')
-    }
-  }, [endDate, filterType, formatDisplayDate, startDate, t])
-
-  // 🔥 HANDLERS
+  // HANDLERS
   const handleSubmit = async () => {
     if (!description || !amount) {
       toast.error(t('Description and amount are required.'))
