@@ -298,7 +298,7 @@ export default function Transaction() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800/50 bg-white dark:bg-slate-900/90">
+          <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800/50 bg-white dark:bg-slate-900/90 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             <table className="w-full text-left text-[10px] text-slate-600 dark:text-slate-300">
               <thead className="border-b border-slate-200 dark:border-slate-800/50 bg-slate-50 dark:bg-slate-900 text-[9px] uppercase tracking-widest text-slate-500">
                 <tr>

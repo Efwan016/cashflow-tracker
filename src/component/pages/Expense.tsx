@@ -366,18 +366,18 @@ export default function Expense() {
         </div>
 
         {/* HISTORY SECTION */}
-        <div className="mt-10 rounded-3xl sm:rounded-[40px] border border-black/5 dark:border-white/5 bg-white dark:bg-slate-900/90 dark:from-slate-900/50 dark:to-slate-950/40 p-6 sm:p-8 shadow-2xl backdrop-blur-xl transition-colors">
+        <div className="mt-10 rounded-3xl sm:rounded-[40px] border border-black/5 dark:border-white/5 bg-white dark:bg-slate-900/90 dark:from-slate-900/50 dark:to-slate-950/40 p-4 sm:p-6 shadow-2xl backdrop-blur-xl transition-colors overflow-hidden">
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-sky-600 dark:text-sky-400/80">{t('History')}</p>
-              <h2 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">{t('Expense Log')}</h2>
+              <h2 className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">{t('Expense Log')}</h2>
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/90 px-4 py-2.5 text-xs font-bold text-slate-900 dark:text-slate-100 outline-none backdrop-blur-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/90 focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20 transition-colors"
+                className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/90 px-3 py-2 text-[10px] font-bold text-slate-900 dark:text-slate-100 outline-none backdrop-blur-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/90 focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20 transition-colors"
               >
                 <option value="date-desc" className="text-slate-900 dark:text-white">{t('Newest')}</option>
                 <option value="date-asc">{t('Oldest')}</option>
@@ -395,7 +395,7 @@ export default function Expense() {
                     setEndDate('')
                   }
                 }}
-                     className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/90 px-4 py-2.5 text-xs font-medium text-slate-900 dark:text-white outline-none backdrop-blur-xl transition-all focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10 dark:[color-scheme:dark] hover:bg-slate-50 dark:hover:bg-slate-800/80"
+                className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/90 px-3 py-2 text-[10px] font-bold text-slate-900 dark:text-slate-100 outline-none backdrop-blur-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/90 focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20 transition-colors"
               >
                 <option value="today">{t('Today')}</option>
                 <option value="last7">{t('Last 7 Days')}</option>
@@ -410,16 +410,16 @@ export default function Expense() {
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 dark:from-slate-950/50 dark:to-slate-900/80 px-4 py-2 text-xs text-slate-900 dark:text-white outline-none focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10 dark:[color-scheme:dark]"
+                    className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/90 px-3 py-2 text-[10px] font-medium text-slate-900 dark:text-white outline-none backdrop-blur-xl transition-all focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/10 dark:[color-scheme:dark] hover:bg-slate-50 dark:hover:bg-slate-800/80"
                   />
                   {filterType === 'range' && (
                     <>
-                      <span className="text-slate-500 text-xs">{t('to')}</span>
+                      <span className="text-slate-500 text-[10px]">{t('to')}</span>
                       <input
                         type="date"
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
-                        className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 dark:from-slate-950/50 dark:to-slate-900/80 px-4 py-2 text-xs text-slate-900 dark:text-white outline-none focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10 dark:[color-scheme:dark]"
+                        className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/90 px-3 py-2 text-[10px] font-medium text-slate-900 dark:text-white outline-none backdrop-blur-xl transition-all focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/10 dark:[color-scheme:dark] hover:bg-slate-50 dark:hover:bg-slate-800/80"
                       />
                     </>
                   )}
@@ -428,9 +428,9 @@ export default function Expense() {
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-[24px] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 dark:from-slate-950/20 dark:to-slate-900/40 transition-colors">
+          <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800/50 bg-white dark:bg-slate-900/90 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             <table className="w-full text-left text-[10px] sm:text-xs text-white dark:text-slate-300">
-              <thead className="border-b border-slate-200 dark:border-slate-800 text-[9px] uppercase tracking-widest text-slate-900/90 dark:text-white/80 bg-slate-50 dark:white dark:bg-slate-900/90 dark:from-slate-950/50 dark:to-slate-900/50">
+              <thead className="border-b border-slate-200 dark:border-slate-800/50 bg-slate-50 dark:bg-slate-900 text-[9px] uppercase tracking-widest text-slate-500">
                 <tr>
                   <th className="px-3 py-3 font-medium">{t('Description')}</th>
                   <th className="px-3 py-3 font-medium text-center">{t('Date')}</th>
@@ -451,10 +451,10 @@ export default function Expense() {
                       <tr key={exp.id} className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors group">
                         <td className="px-6 py-4 font-medium text-slate-900 dark:text-slate-100">
                           {isEditing ? (
-                            <input
+                          <input
                               value={expenseEditForm.description}
                               onChange={(event) => setExpenseEditForm(prev => ({ ...prev, description: event.target.value }))}
-                              className="min-w-[220px] rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-900 dark:text-white outline-none focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20"
+                              className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-[10px] text-slate-900 dark:text-white outline-none focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20"
                             />
                           ) : (
                             exp.description
@@ -465,12 +465,12 @@ export default function Expense() {
                         </td>
                         <td className="px-6 py-4 text-rose-600 dark:text-rose-400 font-semibold">
                           {isEditing ? (
-                            <input
+                          <input
                               type="number"
                               min="0"
                               value={expenseEditForm.amount}
                               onChange={(event) => setExpenseEditForm(prev => ({ ...prev, amount: event.target.value }))}
-                              className="w-32 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-900 dark:text-white outline-none focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20"
+                              className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-[10px] text-slate-900 dark:text-white outline-none focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/20"
                             />
                           ) : (
                             fmt.format(exp.total)
@@ -478,12 +478,12 @@ export default function Expense() {
                         </td>
                         <td className="px-6 py-4 text-right">
                           {isEditing ? (
-                            <div className="flex justify-end gap-2">
+                            <div className="flex justify-end gap-1.5">
                               <button
                                 type="button"
                                 onClick={() => saveExpenseEdit(exp)}
                                 disabled={isUpdating}
-                                className="rounded-xl border border-emerald-500/10 bg-emerald-500/10 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 transition hover:bg-emerald-500/20 disabled:opacity-50"
+                                className="rounded-lg border border-emerald-500/10 bg-emerald-500/10 px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 transition hover:bg-emerald-500/20 disabled:opacity-50"
                               >
                                 {t('Save')}
                               </button>
@@ -491,25 +491,26 @@ export default function Expense() {
                                 type="button"
                                 onClick={cancelExpenseEdit}
                                 disabled={isUpdating}
-                                className="rounded-xl border border-slate-200 dark:border-slate-700 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 transition hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50"
+                                className="rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 transition hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50"
                               >
                                 {t('Cancel edit')}
                               </button>
                             </div>
                           ) : (
-                            <div className="flex justify-end gap-2">
+                            <div className="flex justify-end gap-1.5">
                               <button
                                 type="button"
                                 onClick={() => startExpenseEdit(exp)}
                                 disabled={isDeleting || isUpdating}
-                                className="rounded-xl border border-sky-500/10 bg-sky-500/5 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 transition hover:bg-sky-500/20 disabled:opacity-50"
+                                className="rounded-lg border border-sky-500/10 bg-sky-500/5 px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 transition hover:bg-sky-500/20 disabled:opacity-50"
                               >
                                 {t('Edit')}
                               </button>
                               <button
+                                type="button"
                                 onClick={() => handleDelete(exp.id)}
                                 disabled={isDeleting}
-                                className="rounded-xl border border-rose-500/10 bg-rose-500/5 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 transition hover:bg-rose-500/20 disabled:opacity-50"
+                                className="rounded-lg border border-rose-500/10 bg-rose-500/5 px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider text-rose-400 transition hover:bg-rose-500/20 disabled:opacity-50"
                               >
                                 {t('Delete')}
                               </button>
